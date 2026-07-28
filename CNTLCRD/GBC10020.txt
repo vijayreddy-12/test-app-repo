@@ -1,0 +1,2 @@
+SELECT GROUP_ID, CERT_ID, CUST_ID                                               
+FROM   DBCYCD1.TGCT;                                                            
