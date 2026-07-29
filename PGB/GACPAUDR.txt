@@ -1,4 +1,0 @@
-  DSN SYSTEM(DDBC)                                                              
-      RUN PROGRAM(GACPAUDR) -                                                   
-      PLAN(YCBTCHD1)                                                            
-  END                                                                           
