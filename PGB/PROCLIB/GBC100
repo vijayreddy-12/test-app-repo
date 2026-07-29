@@ -1,0 +1,46 @@
+//GBC100 PROC  CLVL='PROD.STANDARD',                                            
+//             CSTAT='PEN.GROUP',                                               
+//             DSSID='PDBC',                                                    
+//             DSTAT=PGB,                                                       
+//             DBNM='DYC01P',                                                   
+//             GEN1='(+1)',                                                     
+//             SPACE1='(CYL,(400,50),RLSE)',                                    
+//             UNIT01=PROD                                                      
+//*--------------------------------------------------------------*              
+//* HISTORY                                                                     
+//* OCT2016  C360R2       CREATED                                               
+//*--------------------------------------------------------------*              
+//********************************************************************          
+//* UNLOAD CPD DATA REQUIRED FOR C360                                *          
+//********************************************************************          
+//*                                                                             
+//********************************************************************          
+//* TCUST                                                            *          
+//********************************************************************          
+//GBC10010  EXEC DBCTIAUL,SSID=&DSSID                                           
+//STEPLIB   DD DSN=PCX.DB2.DSNLNST,DISP=SHR                                     
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSPUNCH  DD DUMMY                                                            
+//SYSREC00  DD DSN=&DSTAT..UNLD.&DBNM..GBC100.ZCUST.DATA&GEN1,                  
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT01,                                                    
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(PYV.MODEL,RECFM=FB,LRECL=23,BLKSIZE=0)                      
+//SYSIN     DD DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(GBC10010)                   
+//********************************************************************          
+//* TGCT                                                             *          
+//********************************************************************          
+//GBC10020  EXEC DBCTIAUL,SSID=&DSSID,COND=(4,LT)                               
+//STEPLIB   DD DSN=PCX.DB2.DSNLNST,DISP=SHR                                     
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSPUNCH  DD DUMMY                                                            
+//SYSREC00  DD DSN=&DSTAT..UNLD.&DBNM..GBC100.ZGCT.DATA&GEN1,                   
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT01,                                                    
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(PYV.MODEL,RECFM=FB,LRECL=23,BLKSIZE=0)                      
+//SYSIN     DD DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(GBC10020)                   

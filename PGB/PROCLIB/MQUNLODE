@@ -1,0 +1,86 @@
+//YTQUNLDE PROC  DMPOUT=A,                                                      
+//             DPVERS=PGW.PROD,                <-- PARSER FILES                 
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             QTFPARM='',                     <-- QMGR, QNAME                  
+//             SYSOUT=A                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* EXECUTE PROGRAM GACQTOF TO UNLOAD MESSAGES IN A QUEUE TO A FILE  **         
+//*                                                                  **         
+//*  THE PARM PASSED INTO GACQTOF IS USED FOR CONNECTING TO THE      **         
+//*  PROPER QUEUE MANAGER AND IDENTIFYING WHICH IS THE REQUEST QUEUE **         
+//*  TO BE PROCESSED.                                                **         
+//*                                                                  **         
+//*           __VALID VALUES ARE 'CDQ1' 'CTQ1' 'CAQ1' 'CPQ1'.        **         
+//*           | - TO INDICATE WHICH QUEUE MANAGER JOB IS RUNNING IN  **         
+//*           |                                                      **         
+//*           |             __UP TO 48 CHARACTER QUEUE NAME ALLOWED  **         
+//*           |             | - E.G. ISD2.YT.REQUEST.0304            **         
+//*           |             |                                        **         
+//*          _|_   _________|__________                              **         
+//*         /   \ /                    \                             **         
+//*  PARM=('CPQ1','MLI.Q.YT.EL04.REQUEST')                           **         
+//*                                                                  **         
+//*  IF THE PARM IS SPECIFIED, THIS BATCH PROCESS IS ASSUMED TO BE   **         
+//*  TRIGGERED BY THE PRESENCE OF A MESSAGE IN THE REQUEST QUEUE.    **         
+//*  THE INFORMATION FOUND IN THE MESSAGE WILL SPECIFY THE DETAILS   **         
+//*  OF EACH UNIT OF WORK REQUESTED:                                 **         
+//*          - INPUT QUEUE OF MESSAGES TO BE UNLOADED                **         
+//*          - OUTPUT FILE TO BE ALLOCATED DYNAMICALLY               **         
+//*          - REPLY QUEUE TO BE SENT THE COMPLETION MESSAGE         **         
+//*                                                                  **         
+//*  IF THE PARM IS NOT SPECIFIED, THIS BATCH PROCESS IS ASSUMED TO  **         
+//*  BE SCHEDULED AND THE INFORMATION FOUND IN A CONTROL CARD FILE   **         
+//*  (DLSI10) WILL SPECIFY THE DETAILS OF A UNIT OF WORK REQUESTED.  **         
+//*  SEE THE SAMPLE CONTROL CARD QTFSAMPL IN ENDEVOR FOR DETAILS.    **         
+//*                                                                   *         
+//*********************************************************************         
+//*  CHANGE LOG:                                                                
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                                  
+//*********************************************************************         
+//*                                                                             
+//QTOFILE EXEC PGM=GACQTOF,                                                     
+//             COND=(0,NE),                                                     
+//             PARM=&QTFPARM                                                    
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DLSI10 - LEADCARD (OPTIONAL)                                     **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=NULLFILE,                                                    
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* VERSION 2 PARSER FILES                                           **         
+//*                                                                   *         
+//*********************************************************************         
+//MLX2PA03  DD DSN=&DPVERS..MLX2PA03.VSAM,                                      
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* VERSION 1 PARSER FILES                                           **         
+//*                                                                   *         
+//*********************************************************************         
+//MLETETSD  DD DSN=&DPVERS..MLETPA02.ETSD.VSAM,                                 
+//             DISP=SHR                                                         
+//MLETDESC  DD DSN=&DPVERS..MLETPA03.DISP.VSAM,                                 
+//             DISP=SHR                                                         
+//MLETTMAP  DD DSN=&DPVERS..MLETPA04.FLDS.VSAM,                                 
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* OUTPUTS                                                          **         
+//*                                                                   *         
+//*********************************************************************         
+//SYSOUTU   DD SYSOUT=&SYSOUT                                                   
+//SYSLST    DD SYSOUT=&SYSOUT                                                   
+//ABENDAID  DD SYSOUT=&DMPOUT                                                   
+//SYSUDUMP  DD SYSOUT=&DMPOUT                                                   
+//SYSABOUT  DD SYSOUT=&SYSOUT                                                   
+//SYSOUT    DD SYSOUT=&SYSOUT                                                   
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&SYSOUT                                                   

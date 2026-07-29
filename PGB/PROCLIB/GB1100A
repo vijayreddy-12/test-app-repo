@@ -1,0 +1,140 @@
+//GB1100A PROC AFPPRT='(*.OUT1),DCB=RECFM=FB,SYSOUT=N,DEST=LOCAL',              
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             LASR2='(5,PGBPR002)',        ** MASS CHANGE REPORT               
+//             OLVL=PROD,                   ** PRINTED OUTPUT LEVEL             
+//             OSTAT='PGB.REGN',            ** PRINTED OUTPUT STATUS            
+//             OUTA='*',                    ** SYSOUT   DEFN                    
+//             OUTS='S',                    ** SYSOUT FOR ABENDS                
+//             SPACE2='(CYL,(10,10),RLSE)', ** OUTPUT FILE SIZE TEMP            
+//             TEMP=WORK,                   ** WORK UNIT                        
+//             TSOLVL=PROD.STANDARD,        ** TSO DATASET                      
+//             TSOSTAT='PEN.GROUP'          ** TSO DATASET LEVEL                
+//*********************************************************************         
+//* HISTORY                                                           *         
+//* MAY2017   - T313239 - AUTOMATION OF TERMINATIONS FROM MASS CHG    *         
+//*********************************************************************         
+//* GB110045 - GCCPFRMF - REDO GB110040 WITH NON-SALARY CHANGE,      **         
+//*                       NON-TERMINATION FILE                       **         
+//* GB110050 - IEBGENER - PRINT THE AFP FORMS                        **         
+//* GB110070 - GCCPFRMM - PRINT THE MASS CHANGE RDS REPORT           **         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB110045 - RE-FORMAT THE FORM OUTPUT INTO AFP LAYOUT      **         
+//*                                                                   *         
+//*        IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2   *         
+//*                   THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN       *         
+//*                   (IN THIS CASE THE PROGRAM IS GCCPFRMF           *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110045 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(PGBICDB4),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI70    DD DSN=&OSTAT..&OLVL..FORMOUT.OTHER,                                
+//             DISP=OLD                                                         
+//DLSO20    DD DSN=PGB.PGB1100A.GB110045.AFPEXTOT(+1),                          
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=PROD,                                                       
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=FB,LRECL=2000,BLKSIZE=26000)                          
+//DLSO21    DD DSN=PGB.PGB1100A.GB110045.RPTEXTOT(+1),                          
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=PROD,                                                       
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=FB,LRECL=140,BLKSIZE=27860)                           
+//DLSO22    DD DSN=&&MASEXTOT,                                                  
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=FB,LRECL=240,BLKSIZE=27840)                           
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//SYSOUTU   DD SYSOUT=&OUTA.                                                    
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*  GB110050 - USE IEBGENER TO PRINT E-FORMS (AFP) IN HALIFAX        *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110050 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD DUMMY                                                            
+//SYSUT1    DD DSN=PGB.PGB1100A.GB110045.AFPEXTOT(+1),                          
+//             DISP=SHR                                                         
+//SYSUT2    DD OUTPUT=&AFPPRT                                                   
+//SYSIN     DD DUMMY                                                            
+//*********************************************************************         
+//*                                                                   *         
+//*        GB110070 - PRINT THE MASS CHANGE REPORT  (RDS)            **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110070 EXEC PGM=GCCPFRMM,                                                   
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI10    DD DSN=&&MASEXTOT,                                                  
+//             DISP=(OLD,PASS)                                                  
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//DLSO22    DD DCB=(RECFM=FBA,LRECL=170,BLKSIZE=27880),                         
+//             SYSOUT=&LASR2                                                    
+//SYSOUTU   DD SYSOUT=&OUTA.                                                    
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*   GB110080 - CHECK AWD FILE, IF EMPTY                             *         
+//*              SET COND CODE=6                                      *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110080 EXEC PGM=IDCAMS                                                      
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA),                                                 
+//             SYSOUT=&OUTA                                                     
+//IFILE     DD DSN=PGB.PGB1100A.GB110045.AFPEXTOT(+1),                          
+//             DISP=SHR                                                         
+//SYSIN     DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(GB1100A1),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*    E-MAIL TO SUPPORT IF AWD FEED IS EMPTY                         *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//MAIL    EXEC PGM=SMTPMAIL,                                                    
+//             COND=(3,NE,GB110080)                                             
+//SMTPOUT   DD SYSOUT=(B,SMTP)                                                  
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SMTPIN    DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(GB1100A2),                       
+//             DISP=SHR                                                         

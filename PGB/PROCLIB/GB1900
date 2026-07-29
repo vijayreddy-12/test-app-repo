@@ -1,0 +1,182 @@
+//GB1900  PROC ALVL=PROD,                                                       
+//             ASTAT=PGW,                   ** AGTADDR STATUS                   
+//             CLVL='PROD.STANDARD',        ** CTLCARDS DATASET                 
+//             CSTAT='PEN.GROUP',           ** CTLCARDS DATASET LEVEL           
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             GEN1='(+1)',                 ** OUTPUT  GDG VOLUME               
+//             OLVL=PROD,                   ** PGB OUTPUT LEVEL                 
+//             OSTAT='PGB.GDXT',            ** PGB STATUS                       
+//             OUTJ='*',                    ** SYSOUT FOR JCL                   
+//             OUTS='S',                    ** SYSOUT FOR ABENDS                
+//             TSOLVL='PROD.STANDARD',      ** TSO DATASET                      
+//             TSOSTAT='PEN.GROUP',         ** TSO DATASET LEVEL                
+//             VDISP=OLD,                   ** VO DATA DISPOSITION              
+//             VLVL=PROD,                   ** VO DATA LEVEL                    
+//             VSPACE=(CYL,(10,5),RLSE),    ** VO DATA SPACE ALLOC              
+//             VSTAT='PYV.VO',              ** VO DATA STATUS                   
+//             VUNIT=PROD                   ** VO DATA STORAGE UNIT             
+//*********************************************************************         
+//* GB190005 - SORT     - COLLECT UPDATES FROM VO INTO A BACKUP       *         
+//* GB190010 - GCCPGDX3 - LOAD EXTRACTS TO CPD                        *         
+//* GB190020 - GCCPGDAG - LOAD AGENT DATA TO CPD                      *         
+//* GB190025 - IDCAMS   - CHECK IF THE STRIPP FILE IS EMPTY OR NOT.   *         
+//*                       IF NOT, NOTIFY GIPSY SUPPORT TO ENGAGE BU   *         
+//*                       TO VERIFY THE GRP/DIV SETUP IN GIPSY MASTER *         
+//* GB190906 - IEFBR14  - DELETE ALL UPDATES FROM VO                  *         
+//* GB190907 - IEFBR14  - SEED THE GDG FOR COLLECTING UPDATES FROM VO *         
+//*********************************************************************         
+//*-------------------------------------------------------------------*         
+//* HISTORY                                                           *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                        *         
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                        *         
+//* SEP2017   - TL323683: ADDED NEW STEPS GB190008,25,30 & 35 TO STOP *         
+//*             JOB FAILURE/CALLOUT DUE TO SQL CODE -530 (FK VIOLATION*         
+//* AUG2023   LGIPS DECOMISSIONIING - DROP PROCESSING FOR GIPSY FILES *         
+//* SEP2024   - FIX PROBLEMATIC RESUBMITS.                            *         
+//*********************************************************************         
+//*                                                                   *         
+//*********************************************************************         
+//* COPY OUT ALL GENERATIONS OF VO CPD UPDATES TO A BACKUP GENERATION *         
+//*********************************************************************         
+//*                                                                             
+//GB190005 EXEC PGM=SORT                                                        
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD SYSOUT=&OUTJ                                                     
+//SORTIN    DD DSN=&VSTAT..&VLVL..CPD.UPDATES,                                  
+//             DISP=&VDISP                                                      
+//SORTOUT   DD DSN=&OSTAT..&OLVL..VO.EXTRACT&GEN1,                              
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&VUNIT,                                                     
+//             SPACE=&VSPACE,                                                   
+//             DCB=*.SORTIN                                                     
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB190005),                           
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*------------------------------------------------------------------**         
+//*        GB190010 -LOAD GROUP/DIVISION EXTRACTS TO CPD             **         
+//*                                                                  **         
+//*          IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2**         
+//*                     THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN    **         
+//*                     (IN THIS CASE THE PROGRAM IS GCCPGDX3)       **         
+//*                                                                  **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB190010 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* PROGRAM EXECUTE CARDS - RUN PROGRAM GCCPGDX1                      *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(GCCPGDX3),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* GIPSY EXTRACT FILE                                               **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&OSTAT..&OLVL..VO.EXTRACT&GEN1,                              
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*         DD DSN=&OSTAT..&OLVL..GFM.EXTRACT&GEN0,                   *         
+//*            DISP=SHR                                               *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO20    DD DSN=&OSTAT..&OLVL..TERMED.GRPACCT,                               
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&VUNIT,                                                     
+//             SPACE=&VSPACE,                                                   
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=27920)                            
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//*        GB190020 -LOAD AGENT DATA FROM AGENCY FEEDS TO CPD        **         
+//*                                                                  **         
+//*          IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2**         
+//*                     THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN    **         
+//*                     (IN THIS CASE THE PROGRAM IS GCCPGDAG)       **         
+//*                                                                  **         
+//*********************************************************************         
+//*                                                                             
+//GB190020 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* PROGRAM EXECUTE CARDS - RUN PROGRAM GCCPGDAG                      *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(GCCPGDAG),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* GIPSY EXTRACT FILE                                               **         
+//*                                                                   *         
+//*********************************************************************         
+//VSDSI60   DD DSN=&ASTAT..ADMN.&ALVL..AGTADDR.VSAM,                            
+//             DISP=SHR                                                         
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*                                                                  **         
+//*********************************************************************         
+//*   CLEAR OUT ALL GENERATIONS OF VO CPD UPDATES                     *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB190906 EXEC PGM=IEFBR14,                                                    
+//             COND=(0,LT)                                                      
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD SYSOUT=&OUTJ                                                     
+//DROPGDG   DD DSN=&VSTAT..&VLVL..CPD.UPDATES,                                  
+//             DISP=(OLD,DELETE,KEEP)                                           
+//*********************************************************************         
+//*                                                                   *         
+//*                                                                  **         
+//*********************************************************************         
+//*   ALLOCATE AN EMPTY GENERATION TO SEED NEXT SET OF VO CPD UPDATES *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB190907 EXEC PGM=IEFBR14,                                                    
+//             COND=(0,LT)                                                      
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD SYSOUT=&OUTJ                                                     
+//SEEDGDG   DD DSN=&VSTAT..&VLVL..CPD.UPDATES&GEN1,                             
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&VUNIT,                                                     
+//             SPACE=(TRK,(1,1),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                               

@@ -1,0 +1,72 @@
+//GBPMAR  PROC CLVL='PROD.STANDARD',           <== CTLCARDS LEVEL               
+//             CSTAT='PEN.GROUP',              <== CTLCARDS LEVEL               
+//             DSLVL=PROD,                                                      
+//             DSSTAT=PEN.GLHNEW,                                               
+//             IFLVL=PROD,                     <== INPUT CONTROL LEVEL          
+//             IFSTAT=PGB,                     <== INPUT CONTROL LEVEL          
+//             LASR1='(5,PGBPR005)',           <== PM ACTIVITY RPT              
+//             OUTJ='*',                       <== SYSOUT FOR JCL               
+//             OUTS='S'                        <== SYSOUT FOR ABENDS            
+//*********************************************************************         
+//*                                                                   *         
+//*        GBPMAR   - PLAN MEMBER REGISTRATION/LOGIN ACTIVITY REPORT **         
+//*------------------------------------------------------------------**         
+//*                                                                   *         
+//*********************************************************************         
+//* GBPMAR10 - GCCPFRMK - PLAN MEMBER REGISTRATION/LOGIN ACTIVITY RPT**         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*********************************************************************         
+//*     IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2      *         
+//*                THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN          *         
+//*                (IN THIS CASE THE PROGRAM IS GCCPFRMI)             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* HISTORY                                                           *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//*********************************************************************         
+//*                                                                             
+//GBPMAR10 EXEC PGM=IKJEFT01,                                                   
+//             REGION=8192K                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(GCCPFRMK),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..STANDARD.TABLE(GAEDATSR),                   
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* SEQ INPUT FILE (PRINT PARAMETER CONTROL CARD)                    **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&IFSTAT..&IFLVL..PGBPMAR.CONTROL,                            
+//             DISP=SHR                                                         
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* PLAN MEMBER ACTIVITY REPORT                                      **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO22    DD DCB=(RECFM=FBA,LRECL=161,BLKSIZE=27853),                         
+//             SYSOUT=&LASR1                                                    

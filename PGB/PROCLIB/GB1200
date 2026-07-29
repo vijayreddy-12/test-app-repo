@@ -1,0 +1,499 @@
+//GB1200  PROC AFPPRT='(*.OUT1),DCB=RECFM=FB,SYSOUT=(N,,M005)',                 
+//             CLVL='PROD.STANDARD',        ** CTLCARDS   LEVEL                 
+//             CSCSORT='(CSCSORT)',         ** SORT CARD FOR CSC FILE           
+//             CSTAT='PEN.GROUP',           ** CTLCARDS   STATUS                
+//             DLVL=ONLINE,                 ** CL2 LIBRARY LEVEL                
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             DSTAT='PYT.HCS',             ** CL2 LIBRARY STATUS               
+//             EXTPGM='(PGBICDB5)',         ** EXTRACT PGM PARMS                
+//             GB120045='(GB120045)',       ** FILEAID CONTROL CARD             
+//             GB120048='(GB120048)',       ** FILEAID CONTROL CARD             
+//             GEN1='(+1)',                 ** NEXT    GDG VOLUME               
+//             LASR1='(5,PGBPR007)',        ** CII ERROR REPORT                 
+//             OLVL=PROD,                   ** PGB OUTPUT LEVEL                 
+//             OSTAT='PGB.REGN',            ** PGB STATUS                       
+//             OUTA='*',                    ** SYSOUT   DEFN                    
+//             OUTJ='*',                    ** SYSOUT FOR JCL                   
+//             OUTS='S',                    ** SYSOUT FOR ABENDS                
+//             SPACE1='(CYL,(2,2),RLSE)',   ** OUTPUT FILE SIZE                 
+//             SPACE2='(CYL,(5,5),RLSE)',   ** OUTPUT FILE SIZE TEMP            
+//             TEMP=WORK,                   ** WORK UNIT                        
+//             TMPLPGM='(PGBICDB9)',        ** TEMPLATE PGM PARMS               
+//             TSOLVL=PROD.STANDARD,        ** TSO DATASET                      
+//             TSOSTAT='PEN.GROUP',         ** TSO DATASET LEVEL                
+//             UNIT=PROD,                   ** SYSTEM UNIT                      
+//             USRCSCN='(HCSCSCNO)',        ** USER CONTROL CARD                
+//             USRCTRL='(HCSADHOC)',        ** USER CONTROL CARD                
+//             USRCTR2='(HCSBDHOC)',        ** USER CONTROL CARD                
+//             USRLIB='PYI.DPG.CONTROL'     ** USER CONTROL LIB                 
+//*********************************************************************         
+//*                                                                   *         
+//* THIS PROC WILL NOW BE RUN BY TWO JCL STREAMS                      *         
+//*  1.REGISTRATION, USING GCCPRGNE FOR AN EXTRACT AND M005 FOR AFP  **         
+//*                                                                  **         
+//*  2.ACTIVATION,   USING GCCPACNE FOR AN EXTRACT AND M??? FOR AFP  **         
+//*                                                                  **         
+//*  ALL OTHER STEPS ARE THE SAME                                    **         
+//*                                                                  **         
+//* GB120010 - GCCPRGNE - EXTRACT NEW REGISTRATIONS FROM CPD         **         
+//*   OR                                                             **         
+//* GB120010 - GCCPACNE - EXTRACT NEW ACTIVATIONS FROM CPD           **         
+//* GB120015 - SORT     - SORT CSC CONTROL CARD                      **         
+//* GB120020 - GCCPRGNA - EXTRACT NAME/ADDRESS ETC FROM CII          **         
+//* GB120030 - SORT     - SORT REGISTRATION LETTER EXTRACTS          **         
+//* GB120035 - GCCPRGNT - DETERMINE ACTIVATION LETTER TEMPLATE       **         
+//* GB120040 - GCCPRGNR - RE-DIRECT ANY SMALL VOLUME BULK LETTERS    **         
+//* GB120045 - FILEAID  - READ CONTROL CARD FOR BUNDLE REDIRECTS     **         
+//* GB120046 - FILEAID  - READ CONTROL CARD FOR BUNDLE REDIRECTS -PIA**         
+//* GB120047 - FILEAID  - PROCESS BUNDLE REDIRECTS                   **         
+//* GB120048 - FILEAID  - PROCESS BUNDLE REDIRECTS FOR PIA           **         
+//* GB120049 - FILEAID  - PROCESS BUNDLE REDIRECTS FOR OTIP          **         
+//* GB120050 - SORT     - SORT REGISTRATION LETTER EXTRACTS AGAIN    **         
+//* GB120060 - GCCPRGNF - FORMAT AFP CONFIRMATION EXTRACT            **         
+//* GB120070 - IEBGENER - PRINT CONFIRMATION LETTERS                 **         
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//* NOV 2002   KLYN   ADDED CONTROL FOR ACTIVATION PROCESSES         **         
+//*                   AND SPLIT USAGE                                **         
+//*                                                                  **         
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//* AUG 2003   KLYN   CHANGED LENGTH OF EXTRACT&GEN1 FILE (GB120010) **         
+//*                   TO ACCOMODATE ADDRESS FOR VO                   **         
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//* APR 2004  BASHAM  ADDED IN CONTENT MANAGER (XC4DCCNT)            **         
+//*                   TO ACCOMODATE VARIATING URL'S AND CSC PHONE    **         
+//*                   NUMBERS                                        **         
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//* JUN 2006  COOPER  ADDED NEW METHOD OF DETERMINING ACTIVATION     **         
+//*                   LETTER TEMPLATE (USING TGD AND TTMPLT) TABLES  **         
+//*                   SPLIT LETTERS IN TO SEPARATE BUNDLES AND       **         
+//*                   ADDED LETTER COUNT SHEET AT END OF EACH BUNDLE **         
+//*                                                                  **         
+//* APR 2007  BASHAWE INCREASE FILE SIZE FOR FIRST OUTPUT FILE TO    **         
+//*                   ACCOMODATE C/O NAME FOR VO MEMBERS             **         
+//*                                                                  **         
+//* JUN 2007  CHAPMBR INCREASE FILE SIZE FOR FIRST OUTPUT FILE TO    **         
+//*                   ACCOMODATE SPONSOR NAME FOR VO MEMBERS         **         
+//*                                                                  **         
+//* JUN 2009  PAIKPRA CONTROL CARD ADDED TO MANAGE CUSTOM CSC NO. FOR**         
+//*                   ACTIVATION AND MKI LETTERS(REF TL 85138)       **         
+//*                   CONTROL CARD ADDED TO PROVIDE TWO OPTIONS FOR  **         
+//*                   REDIRECTION OF MAILING(REF TL 120562 & 108280) **         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//* DEC 2009  SOEDEDA  ADD CONTROL CARD TO FLIP THE MAIL-INSTRUCTION  *         
+//*                    TO "P" WHEN TEMPLATE-ID IS 16 TO 19            *         
+//*                    IN FILEAID STEP GB120047.                      *         
+//*                                                                   *         
+//* MAR 2010  PAIKPRA  INCREASE RECORD LENGTH OF FILES DUE TO CHANGE  *         
+//*                    IN MKI LETER EXTRACT                           *         
+//* SEPT 2010 HASSELFELT TL139845 ADD NEW CONTROL CARD TO ENABLE PIA  *         
+//*                      ONLY SEND TO MESSAGE.                        *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//*        GB120010 - EXTRACT NEW REGISTRATIONS FROM CPD             **         
+//*                                                                  **         
+//*          IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2**         
+//*                     THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN    **         
+//*                     (IN THIS CASE THE PROGRAM IS GCCPRGNE)       **         
+//*                                                                  **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120010 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS&EXTPGM,                          
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* CONFIRMATION LETTER EXTRACT FILE                                 **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO20    DD DSN=&OSTAT..&OLVL..CONFIRM.EXTRACT&GEN1,                         
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//*            DCB=(RECFM=FB,LRECL=316,BLKSIZE=31600)                           
+//             DCB=(RECFM=FB,LRECL=372,BLKSIZE=27900)                           
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120015 - SORT CSC CONTROL CARD WITH POLICY NO. AS THE KEY*         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120015 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSIN     DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS&CSCSORT,                         
+//             DISP=SHR                                                         
+//SORTIN    DD DSN=&USRLIB&USRCSCN,                                             
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&&CSCTEMP,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=27920)                            
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120020 - GET NAME/ADDRESS ETC FROM CLIENTS II FOR       **         
+//*                   REGISTRATION LETTER REQUESTS                   **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120020 EXEC PGM=GCCPRGNA,                                                   
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//TABFILE   DD DSN=&&CSCTEMP,                                                   
+//             DISP=(OLD,PASS)                                                  
+//DLSI10    DD DSN=&OSTAT..&OLVL..CONFIRM.EXTRACT&GEN1,                         
+//             DISP=SHR                                                         
+//VSDSI60   DD DSN=&DSTAT..&DLVL..XC4DEBC,                                      
+//             DISP=SHR                                                         
+//VSDSI61   DD DSN=&DSTAT..&DLVL..XC4DCOV,                                      
+//             DISP=SHR                                                         
+//VSDSI62   DD DSN=&DSTAT..&DLVL..XC4DMEM,                                      
+//             DISP=SHR                                                         
+//VSDSI65   DD DSN=&DSTAT..&DLVL..XC4DLOC,                                      
+//             DISP=SHR                                                         
+//MLCTDB01  DD DSN=&DSTAT..&DLVL..XC4DCCNT,                                     
+//             DISP=SHR                                                         
+//DLSO20    DD DSN=&&CFMEXT,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//DLSO21    DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&LASR1                                                    
+//DLSO22    DD DSN=&OSTAT..&OLVL..VOLIST,                                       
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=30,BLKSIZE=27990)                            
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120030 - SORT REGISTRATION LETTER EXTRACT FILE          **         
+//*           SORT BY:                                               **         
+//*                                                                  **         
+//*                      MAILING INSTRUCTIONS (1 BYTE)               **         
+//*                      GROUP NUMBER         (7 BYTES)              **         
+//*                      DIVISION NUMBER      (3 BYTES)              **         
+//*                      CERTIFICATE NUMBER   (10 BYTES)             **         
+//*                                                                  **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120030 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=RECFM=FBA,                                                   
+//             SYSOUT=&OUTA.                                                    
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB120030),                           
+//             DISP=SHR                                                         
+//SORTIN    DD DSN=&&CFMEXT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//SORTOUT   DD DSN=&&SRTEXT,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120035 - DETERMINE THE TEMPLATE ID FOR PRINTING         **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120035 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS&TMPLPGM,                         
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* CONFIRMATION LETTER EXTRACT FILE                                 **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&&SRTEXT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//DLSO20    DD DSN=&&SRTEXT2,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120040 - RE-DIRECT ANY SMALL VOLUME BULK MAIL LETTERS   **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120040 EXEC PGM=GCCPRGNR,                                                   
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//DLSI10    DD DSN=&&SRTEXT2,                                                   
+//             DISP=(OLD,PASS)                                                  
+//DLSO20    DD DSN=&&RDIREXT,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120045 - REFORMAT CONTROL CARD FOR AD-HOC BUNDLE        **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120045 EXEC FILEAID,                                                        
+//             PARM=TSO                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//DD01      DD DSN=&USRLIB&USRCTRL,                                             
+//             DISP=SHR                                                         
+//DD01O     DD DSN=&&TMPCARD,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)                                
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS&GB120045,                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120046  - REFORMAT CONTROL CARD FOR AD-HOC BUNDLE -PIA   **        
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120046 EXEC FILEAID,                                                        
+//             PARM=TSO                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//DD01      DD DSN=&USRLIB&USRCTR2,                                             
+//             DISP=SHR                                                         
+//DD01O     DD DSN=&&TMP2CARD,                                                  
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)                                
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS&GB120048,                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120047 - CHANGE SELECTED GROUPS TO NEW SPECIAL BUNDLES  **         
+//*                   FOR ACTIVATION LETTERS                         **         
+//*                                                                   *         
+//*                   BUNDLE S - STAFF PLAN                          **         
+//*                   BUNDLE A - AD-HOC (BASED ON CONTROL CARD)      **         
+//*                   USED FOR PIA-FLEX                              **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120047 EXEC FILEAID,                                                        
+//             PARM=TSO                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//DD01      DD DSN=&&RDIREXT,                                                   
+//             DISP=(OLD,PASS)                                                  
+//DD01O     DD DSN=&&SRTEXT3,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB120046),                           
+//             DISP=SHR                                                         
+//          DD DSN=&&TMPCARD,                                                   
+//             DISP=(OLD,PASS)                                                  
+//          DD DSN=&CSTAT..&CLVL..CTLCARDS(GB12004A),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120048  - CHANGE SELECTED GROUPS TO NEW SPECIAL BUNDLES  **        
+//*                   FOR ACTIVATION LETTERS                         **         
+//*                                                                   *         
+//*                   BUNDLE S - STAFF PLAN                          **         
+//*                   BUNDLE A - AD-HOC (BASED ON CONTROL CARD)      **         
+//*                   BUNDLE I - AD-HOC USED FOR PIA ONLY            **         
+//*                                                                  **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120048 EXEC FILEAID,                                                        
+//             PARM=TSO                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//DD01      DD DSN=&&SRTEXT3,                                                   
+//             DISP=(OLD,PASS)                                                  
+//DD01O     DD DSN=&&SRTEXT3A,                                                  
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB120046),                           
+//             DISP=SHR                                                         
+//          DD DSN=&&TMP2CARD,                                                  
+//             DISP=(OLD,PASS)                                                  
+//          DD DSN=&CSTAT..&CLVL..CTLCARDS(GB12004A),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120049 - CHANGE SELECTED GROUPS TO NEW OTIP BUNDLE      **         
+//*                   FOR ACTIVATION LETTERS                         **         
+//*                                                                   *         
+//*                   BUNDLE P - OTIP TPA                            **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120049 EXEC FILEAID,                                                        
+//             PARM=TSO                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//DD01      DD DSN=&&SRTEXT3A,                                                  
+//             DISP=(OLD,PASS)                                                  
+//DD01O     DD DSN=&&SRTEXT3B,                                                  
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB120047),                           
+//             DISP=SHR                                                         
+//          DD DSN=&CSTAT..&CLVL..CTLCARDS(GB12004A),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120050 - SORT REGISTRATION LETTER EXTRACT FILE          **         
+//*           SORT BY:                                               **         
+//*                                                                  **         
+//*                      MAILING INSTRUCTIONS (1 BYTE)               **         
+//*                      GROUP NUMBER         (7 BYTES)              **         
+//*                      DIVISION NUMBER      (3 BYTES)              **         
+//*                      CERTIFICATE NUMBER   (10 BYTES)             **         
+//*                                                                  **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120050 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=RECFM=FBA,                                                   
+//             SYSOUT=&OUTA.                                                    
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB120030),                           
+//             DISP=SHR                                                         
+//SORTIN    DD DSN=&&SRTEXT3B,                                                  
+//             DISP=(OLD,PASS)                                                  
+//SORTOUT   DD DSN=&&SRTEXT4,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//*********************************************************************         
+//*                                                                   *         
+//*        GB120060 - CREATE CONFIRMATION LETTER PRINT FILE          **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120060 EXEC PGM=GCCPRGNF,                                                   
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//DLSI10    DD DSN=&&SRTEXT4,                                                   
+//             DISP=(OLD,PASS)                                                  
+//DLSO20    DD DSN=&&AFPEXT,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//*            DCB=(RECFM=FB,LRECL=506,BLKSIZE=29854)                           
+//             DCB=(RECFM=FB,LRECL=562,BLKSIZE=27538)                           
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*   GB120070 - USE IEBGENER TO PRINT AFP CONFIRMATION LETTERS      **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB120070 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD DUMMY                                                            
+//SYSUT1    DD DSN=&&AFPEXT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//SYSUT2    DD OUTPUT=&AFPPRT                                                   
+//SYSIN     DD DUMMY                                                            

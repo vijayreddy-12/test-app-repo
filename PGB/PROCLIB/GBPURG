@@ -1,0 +1,224 @@
+//GBPURG  PROC CLVL='PROD.STANDARD',           <== CTLCARDS LEVEL               
+//             CSTAT='PEN.GROUP',              <== CTLCARDS LEVEL               
+//             DSLVL='PROD.STANDARD',                                           
+//             DSSTAT=PEN.GLHNEW,                                               
+//             OUTJ='*',                       <== SYSOUT FOR JCL               
+//             OUTS='S'                        <== SYSOUT FOR ABENDS            
+//*********************************************************************         
+//*                                                                   *         
+//*      PURGE USED TO MAINTAIN THE DB2 CUSTOMER PROFILE DATABASE    **         
+//*------------------------------------------------------------------**         
+//*********************************************************************         
+//* GBPURG10 - GCCPFRMD - FORMS PURGE JOB                            **         
+//*********************************************************************         
+//*------------------------------------------------------------------**         
+//*        GBPURG10 - PURGE THE DATABASE (DB2) OF FORMS WHICH ARE    **         
+//*                   OVER NNNN DAYS OLD                             **         
+//*                 - TFORM TABLE                                     *         
+//*------------------------------------------------------------------**         
+//*                                                                  **         
+//*********************************************************************         
+//*     IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2     **         
+//*                THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN         **         
+//*                (IN THIS CASE THE PROGRAM IS GCCPFRMD)            **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* HISTORY                                                           *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                        *         
+//* OCT2017   - T324209 - REINSTATE PGBPURG WITH ONLY THREE STEPS     *         
+//*                       TO PERFORM PURGE ONLY ON TFORM,TSD,TAUDEV,  *         
+//*                       TLH & TSSOLH TABLES.                        *         
+//* JAN2018   - T324209 - TLH & TSSOLH TABLE PURGE PROCESS CHANGED TO *         
+//*                       USE DB2 UTILITY INSTEAD OF COBOL PROGRAM    *         
+//*                       TO MINIMIZE PROCESSING TIME. THIS WILL      *         
+//*                       ENABLE US TO AVOID TABLE LOCK/CONTENTION    *         
+//*                       WITH PM/PA SITE USERS.                      *         
+//*********************************************************************         
+//*                                                                             
+//GBPURG10 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=8192K,                                                    
+//             TIME=100                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(GCCPFRMD),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* SEQ INPUT FILE (PURGE NUMBER OF DAYS)                             *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG01),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* GBPURG20 - GCCPFRMW - SUBMISSIONS PURGE JOB                      **         
+//*********************************************************************         
+//*------------------------------------------------------------------**         
+//*        GBPURG20 - PURGE THE DATABASE (DB2) OF SUBMISSIONS WHICH  **         
+//*                   ARE OVER NNNN DAYS OLD                         **         
+//*                 - TSD TABLE                                      **         
+//*------------------------------------------------------------------**         
+//*                                                                  **         
+//*********************************************************************         
+//*     IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2     **         
+//*                THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN         **         
+//*                (IN THIS CASE THE PROGRAM IS GCCPFRMW)            **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GBPURG20 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=8192K,                                                    
+//             TIME=100                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(GCCPFRMW),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* SEQ INPUT FILE (PURGE NUMBER OF DAYS)                             *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG01),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* GBPURG30 - GCCPFRMA - LOGIN HISTORY PURGE                        **         
+//*********************************************************************         
+//*------------------------------------------------------------------**         
+//*        GBPURG30 - PURGE THE DATABASE (DB2) OF LOGIN HISTORY WHICH**         
+//*                   IF OVER NNNN DAYS OLD                          **         
+//*                 - TLH TABLE                                      **         
+//*------------------------------------------------------------------**         
+//*                                                                  **         
+//*********************************************************************         
+//*     IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2     **         
+//*                THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN         **         
+//*                (IN THIS CASE THE PROGRAM IS GCCPFRMA)            **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//*********************************************************************         
+//* DB2 REORG WITH DISCARD                                                      
+//*********************************************************************         
+//GBPURG30 EXEC DSNUPROC,                                                       
+//             COND=(5,LT),TIME=600,                                            
+//             SYSTEM=PDBC                                                      
+//SYSPUNCH  DD SYSOUT=*                                                         
+//SYSREC    DD DSN=&&SYSREC1,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=SYSWK,                                                      
+//             SPACE=(CYL,(20,20),RLSE),                                        
+//             DCB=BUFNO=50,                                                    
+//             DATACLAS=MULTIVOL                                                
+//SYSDISC   DD DUMMY,                                                           
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=TEST,                                                       
+//             SPACE=(CYL,(20,20),RLSE),                                        
+//             DCB=BUFNO=50,                                                    
+//             DATACLAS=MULTIVOL                                                
+//TEMPLDEF  DD DSN=&CSTAT..&CLVL..CTLCARDS(DB2TMPYC),                           
+//             DISP=SHR                                                         
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG30),                           
+//             DISP=SHR                                                         
+//*                                                                             
+//**********************************************************                    
+//* CHECK DATA                                                                  
+//**********************************************************                    
+//GBPURG35 EXEC DSNUPROC,SYSTEM=PDBC,TIME=600                                   
+//SYSUT1    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
+//SORTOUT   DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
+//SYSERR    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG35),                           
+//             DISP=SHR                                                         
+//*                                                                             
+//**********************************************************                    
+//* DB2 REORG WITH DISCARD                                                      
+//**********************************************************                    
+//GBPURG40 EXEC DSNUPROC,                                                       
+//             COND=(5,LT),TIME=600,                                            
+//             SYSTEM=PDBC                                                      
+//SYSPUNCH  DD SYSOUT=*                                                         
+//SYSREC    DD DSN=&&SYSREC2,                                                   
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=SYSWK,                                                      
+//             SPACE=(CYL,(20,20),RLSE),                                        
+//             DCB=BUFNO=50,                                                    
+//             DATACLAS=MULTIVOL                                                
+//SYSDISC   DD DUMMY,                                                           
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=TEST,                                                       
+//             SPACE=(CYL,(20,20),RLSE),                                        
+//             DCB=BUFNO=50,                                                    
+//             DATACLAS=MULTIVOL                                                
+//TEMPLDEF  DD DSN=&CSTAT..&CLVL..CTLCARDS(DB2TMPYC),                           
+//             DISP=SHR                                                         
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG40),                           
+//             DISP=SHR                                                         
+//*                                                                             
+//**********************************************************                    
+//* CHECK DATA                                                                  
+//**********************************************************                    
+//GBPURG45 EXEC DSNUPROC,SYSTEM=PDBC,TIME=600                                   
+//SYSUT1    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
+//SORTOUT   DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
+//SYSERR    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG45),                           
+//             DISP=SHR                                                         

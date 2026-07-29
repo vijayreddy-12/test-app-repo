@@ -1,0 +1,82 @@
+//GBLAGD  PROC CLVL='PROD.STANDARD',           <== CONTROL CARD LEVEL           
+//             CSTAT='PEN.GROUP',              <== CONTROL CARD LEVEL           
+//             DBMODE=ONLINE,                  <== CII DATABASE LEVEL           
+//             DBVERS='PYT.HCS',               <== CII DATABASE LEVEL           
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             LASR1='(5,PGBPR008)',           <== PM ACTIVITY RPT              
+//             OUTJ='*',                       <== SYSOUT FOR JCL               
+//             OUTS='S'                        <== SYSOUT FOR ABENDS            
+//*********************************************************************         
+//*                                                                   *         
+//*        GBLAGD   - LIST OF ACTIVE GROUP/DIVISIONS WITH GB         **         
+//*                   INTERNET ACCESS                                 *         
+//*------------------------------------------------------------------**         
+//*                                                                   *         
+//*********************************************************************         
+//* GBLAGD10 - GCCPFRMN - LIST OF ACTIVE GROUP/DIVISIONS WITH GB     **         
+//*                       INTERNET ACCESS                             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*********************************************************************         
+//*     IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2      *         
+//*                THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN          *         
+//*                (IN THIS CASE THE PROGRAM IS GCCPFRMN)             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* HISTORY                                                           *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                                  
+//* JUL2023   - LGIPS DECOM - REPLACE GPSY FILES WITH DUMMY                     
+//*********************************************************************         
+//*                                                                             
+//GBLAGD10 EXEC PGM=IKJEFT01                                                    
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(GCCPFRMN),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                 *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* CLIENTS II FILE                                                   *         
+//*                                                                   *         
+//*********************************************************************         
+//XC4DIGRP  DD DSN=&DBVERS..&DBMODE..XC4DIGRP,                                  
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* GIPSY DETAIL FILE                                                 *         
+//*                                                                   *         
+//*********************************************************************         
+//GACBDET7  DD DUMMY                                                            
+//GACBAIX7  DD DUMMY                                                            
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* LIST OF ACTIVE GROUP/DIVISIONS WITH GB INTERNET ACCESS            *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO22    DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&LASR1                                                    

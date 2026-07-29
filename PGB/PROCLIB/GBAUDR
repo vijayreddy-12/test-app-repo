@@ -1,0 +1,46 @@
+//GBAUDR  PROC CLVL='PROD.STANDARD',           <== CTLCARDS LEVEL               
+//             CSTAT='PEN.GROUP',              <== CTLCARDS LEVEL               
+//             LASR1='(5,PGBPR004)',           <== AUDIT REPORT                 
+//             OUTJ='*',                       <== SYSOUT FOR JCL               
+//             OUTS='S'                        <== SYSOUT FOR ABENDS            
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//*        GBAUDR   - CPM AUDIT REPORT                               **         
+//*------------------------------------------------------------------**         
+//*                                                                   *         
+//*********************************************************************         
+//* GBFDBK10 - GACPAUDR - CPM AUDIT REPORT PROGRAM                   **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* HISTORY                                                           *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GBAUDR10 EXEC PGM=IKJEFT01,                                                   
+//             REGION=8192K                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(GACPAUDR),                           
+//             DISP=SHR                                                         
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=23408),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* SECURITY/AUDIT REPORT                                            **         
+//*                                                                   *         
+//*********************************************************************         
+//AUDROUT   DD SYSOUT=&LASR1                                                    

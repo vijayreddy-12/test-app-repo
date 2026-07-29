@@ -1,0 +1,15 @@
+//GB1110  PROC DB2PLAN=P1,             ** DB2 PLAN                              
+//             DB2SSID=PDBC,            ** DB2 SSID                             
+//             PENV1='PEN.GROUP',       ** PROGRAM NDVR LEVEL                   
+//             PLVL1='PROD.STANDARD'    ** PROGRAM LIBRARY LEVEL                
+//*********************************************************************         
+//*                                                                   *         
+//* GETTING INFORMATION FROM CPM DATABASE (TSD & TFORM)               *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB111005 EXEC SAS,                                                            
+//             PARM='SYSPARM=&DB2PLAN DB2SSID=&DB2SSID'                         
+//SYSRPT    DD SYSOUT=(5,PGBPR010)                                              
+//SYSIN     DD DSN=&PENV1..&PLVL1..SAS(GB111005),                               
+//             DISP=SHR                                                         

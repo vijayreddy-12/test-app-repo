@@ -1,0 +1,136 @@
+//GB1000  PROC CLVL='PROD.STANDARD',           <== CTLCARDS LEVEL               
+//             CSTAT='PEN.GROUP',              <== CTLCARDS LEVEL               
+//             DLVL=PROD,                      <== DATASERVER LEVEL             
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             DSTAT='PGB.REGN',               <== DATASERVER LEVEL             
+//             GEN1='(+1)',                    <== NEXT GDG VOLUME              
+//             OUTJ='*',                       <== SYSOUT FOR JCL               
+//             OUTS='S',                       <== SYSOUT FOR ABENDS            
+//             SPACE1='(CYL,(10,10))',         <== OUTPUT FILE SIZE TEM         
+//             SPACE2='(CYL,(10,10))',         <== OUTPUT FILE SIZE TEM         
+//             ULVL='PROD'                     <== UNIT                         
+//*********************************************************************         
+//*                                                                   *         
+//* GB100010 - GCCPFRMI - REFORMAT FORM DATA AND LOAD DB             **         
+//*********************************************************************         
+//*------------------------------------------------------------------**         
+//*        GB100010 - LOAD FORM DATA INTO CUSTOMER PROFILE DB  (DB2) **         
+//*------------------------------------------------------------------**         
+//*                                                                   *         
+//*********************************************************************         
+//*  PROC LAST UPDATED:                                              **         
+//*  ==================                                              **         
+//*                                                                  **         
+//*  PROJECT   DATE     CHANGED BY COMMENTS                          **         
+//*  ------- ---------- ---------- ----------------------------------**         
+//*  ISAM    2001/08/01 WODNIJA    COND= CHANGE TO ALLOW RC=04 (TEMP)**         
+//*  ECU     2008/08/20 IBM GR     UPGRADED IN ECU PROJECT           **         
+//*          2009/09/10 CHAPMBR    ADD SORT AND IDCAMS STEPS         **         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//*********************************************************************         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*  SORT THE DATA AND REMOVE AND DUPLICATE RECORDS THAT MAY HAVE     *         
+//*  BEEN CREATED. WRITE THE DUPLICATES TO A NEW GDG AS THEY NEED TO  *         
+//*  BE RETAINED. THIS IS BEING DONE AS PART OF AN AUTOMATIC MEANS    *         
+//*  TO CORRECT THE BATCH JOB FAILURE.                                *         
+//*                                                                   *         
+//*  SORT1  BY GROUP/ACCT/CERT ELIMINATING DUPLICATES                 *         
+//*  DUPLICATES REMOVED WILL BE WRITTEN TO THE .XSUM FILE             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB100005 EXEC PGM=SORT,                                                       
+//             COND=(8,LT)                                                      
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SORTIN    DD DSN=&&FORMAT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//SORTOUT   DD DSN=&&SORTED,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=WORK,                                                       
+//             SPACE=&SPACE1,                                                   
+//             DCB=(RECFM=VB,LRECL=4000,BLKSIZE=27998)                          
+//SORTXSUM  DD DSN=&DSTAT..&DLVL..FORM.MQXSUM&GEN1,                             
+//             DISP=(NEW,CATLG,CATLG),                                          
+//             UNIT=&ULVL,                                                      
+//             SPACE=&SPACE2                                                    
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB100005),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*     IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2      *         
+//*                THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN          *         
+//*                (IN THIS CASE THE PROGRAM IS GCCPFRMI)             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB100010 EXEC PGM=IKJEFT01,                                                   
+//             COND=(8,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(PGBICDB),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* SEQ INPUT FILE (PARSED FORM EXTRACT FILE)                        **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI70    DD DSN=&&SORTED,                                                    
+//             DISP=(OLD,PASS)                                                  
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*   GB100020 - CHECK ERRORS FILE,  IF NOT EMPTY                     *         
+//*              SET COND CODE=12                                     *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB100020 EXEC PGM=IDCAMS                                                      
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA),                                                 
+//             SYSOUT=&OUTJ                                                     
+//IFILE     DD DSN=&DSTAT..&DLVL..FORM.MQXSUM&GEN1,                             
+//             DISP=SHR                                                         
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB100020),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*    E-MAIL TO SUPPORT IF CONTAINS ERRORS                          **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//MAIL    EXEC PGM=SMTPMAIL,                                                    
+//             COND=(6,NE,GB100020)                                             
+//SMTPOUT   DD SYSOUT=(B,SMTP)                                                  
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSUDUMP  DD SYSOUT=&OUTJ                                                     
+//SMTPIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(GB1000A3),                           
+//             DISP=SHR                                                         

@@ -1,0 +1,91 @@
+//YTMRFMTE PROC  DMPOUT=A,                                                      
+//             DPVERS=PGW.PROD,         <-- PARSER FILES                        
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             ERRSPACE='(TRK,(1,5),RLSE)',                                     
+//             ERRUNIT=PROD,                                                    
+//             MASKEXIT='',            'NO EXIT ERRORS      '                   
+//             MASKPARS='',       I.E. 'NO PARSER SUMMARY   '                   
+//             OUTSPACE='(CYL,(1,5),RLSE)',                                     
+//             OUTUNIT=PROD,                                                    
+//             SYSOUT=A                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* BATCH MESSAGE REFORMAT (PARSING) PROCESS                         **         
+//*                                                                  **         
+//*  THIS BATCH PROCESS IS SCHEDULED AND THE INFORMATION FOUND IN    **         
+//*  A CONTROL CARD FILE (DLSI10) WILL SPECIFY THE DETAILS OF A UNIT **         
+//*  OF WORK REQUESTED. THE INPUT (DLSI70) AND OUTPUT (DLSO71)       **         
+//*  FILES ARE VARIABLE BLOCKED WITH MAXIMUM RECORD LENGTH OF 16000  **         
+//*  BYTES IN ORDER TO HOLD EITHER MESSAGE STREAMS OR COPYBOOK       **         
+//*  STRUCTURES THAT ARE UTILIZED AND/OR CREATED BY USING THE        **         
+//*  MAINFRAME PARSER TO PROVIDE THE DESIRED FORMAT.                 **         
+//*  SEE THE SAMPLE CONTROL CARD RFMTSAMP IN ENDEVOR FOR DETAILS.    **         
+//*                                                                   *         
+//*-------------------------------------------------------------------*         
+//* HISTORY:                                                          *         
+//* 200807XX -  TRUDY     - ENTERPRISE COMPILER PROJECT               *         
+//*                                                                   *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                                  
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                                  
+//*********************************************************************         
+//*                                                                             
+//REFORMAT EXEC PGM=GACBRFMT,                                                   
+//             COND=(0,NE),                                                     
+//             PARM='&MASKPARS.&MASKEXIT'                                       
+//*********************************************************************         
+//*                                                                   *         
+//* DLSI10 - LEADCARD                                                **         
+//* DLSI70 - INPUT DATASET                                           **         
+//* DLSO71 - OUTPUT DATASET                                          **         
+//* DLSO72 - ERROR DATASET (OPTIONAL)                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//DLSI10    DD DSN=NULLFILE,                                                    
+//             DISP=SHR                                                         
+//DLSI70    DD DSN=NULLFILE,                                                    
+//             DISP=SHR                                                         
+//DLSO71    DD DSN=NULLFILE,                                                    
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&OUTUNIT.,                                                  
+//             SPACE=&OUTSPACE.,                                                
+//             DCB=(RECFM=VB,LRECL=16000,BLKSIZE=27998)                         
+//DLSO72    DD DSN=NULLFILE,                                                    
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&ERRUNIT.,                                                  
+//             SPACE=&ERRSPACE.,                                                
+//             DCB=(RECFM=VB,LRECL=16000,BLKSIZE=27998)                         
+//*********************************************************************         
+//*                                                                   *         
+//* VERSION 2 PARSER FILES                                           **         
+//*                                                                   *         
+//*********************************************************************         
+//MLX2PA03  DD DSN=&DPVERS..MLX2PA03.VSAM,                                      
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* VERSION 1 PARSER FILES                                           **         
+//*                                                                   *         
+//*********************************************************************         
+//MLETETSD  DD DSN=&DPVERS..MLETPA02.ETSD.VSAM,                                 
+//             DISP=SHR                                                         
+//MLETDESC  DD DSN=&DPVERS..MLETPA03.DISP.VSAM,                                 
+//             DISP=SHR                                                         
+//MLETTMAP  DD DSN=&DPVERS..MLETPA04.FLDS.VSAM,                                 
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* OUTPUTS                                                          **         
+//*                                                                   *         
+//*********************************************************************         
+//SYSOUTU   DD SYSOUT=&SYSOUT                                                   
+//SYSLST    DD SYSOUT=&SYSOUT                                                   
+//ABENDAID  DD SYSOUT=&DMPOUT                                                   
+//SYSUDUMP  DD SYSOUT=&DMPOUT                                                   
+//SYSABOUT  DD SYSOUT=&SYSOUT                                                   
+//SYSOUT    DD SYSOUT=&SYSOUT                                                   
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&SYSOUT                                                   

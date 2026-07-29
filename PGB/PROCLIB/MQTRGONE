@@ -1,0 +1,23 @@
+//YTQTRONE PROC  MQTRPARM='',         <--- QUEUE MANAGER AND QUEUE NAME         
+//             SYSOUT=A                                                         
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* GENERIC PROC FOR SETTING MQ TRIGGERING BACK ON                   **         
+//*    PARM MUST BE SPECIFIED IN A COMMA DELIMITED FORMAT            **         
+//*    E.G.  MQTRPARM=('CPQ1', 'MLI.Q.YT.EL02.REQUEST').             **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//TRIGON  EXEC PGM=CXMQTRGY,                                                    
+//             PARM=&MQTRPARM                                                   
+//*********************************************************************         
+//*                                                                   *         
+//* OUTPUTS                                                          **         
+//*                                                                   *         
+//*********************************************************************         
+//SYSDBOUT  DD SYSOUT=&SYSOUT                                                   
+//SYSABOUT  DD SYSOUT=&SYSOUT                                                   
+//SYSOUT    DD SYSOUT=&SYSOUT                                                   
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&SYSOUT                                                   

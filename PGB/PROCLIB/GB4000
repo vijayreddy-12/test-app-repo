@@ -1,0 +1,141 @@
+//GB4000  PROC CLVL='PROD.STANDARD',                                            
+//             CSTAT='PEN.GROUP',           ** CTLCARD  STATUS                  
+//             DLVL=PROD,                   ** DATA SET LEVEL                   
+//             DSLVL=PROD,                  ** DATASERVER LEVEL                 
+//             DSSTAT=PEN.GLHNEW,           ** DATASERVER PREFIX                
+//             DSTAT=PYT,                   ** DATA SET STATUS                  
+//             GEN0='(0)',                  ** CURRENT GDG VOLUME               
+//             GEN1='(+1)',                 ** NEXT    GDG VOLUME               
+//             OUTA='*',                    ** SYSOUT DEFN                      
+//             OUTLVL=PROD,                 ** DATA SET STATUS                  
+//             OUTS='S',                    ** SYSUDUMP DEFN                    
+//             OUTSTAT=PGB,                 ** DATA SET STATUS                  
+//             RUNTYPE=PYTHSCA1,            ** RUN TYPE                         
+//             SPACE1='(CYL,(200,20),RLSE)', * OUTPUT FILE SIZE                 
+//             TSOLVL='PROD.STANDARD',      ** TSO DATASET                      
+//             TSOSTAT='PEN.GROUP',         ** TSO DATASET LEVEL                
+//             UNIT=PROD                    ** SYSTEM UNIT                      
+//*********************************************************************         
+//*                                                                   *         
+//* ----------------------------------------------------------------- *         
+//*   CA REPORTING     - REAL TIME REPORTING SCHEDULER EMAIL          *         
+//*                      NOTIFICATION                                 *         
+//* ----------------------------------------------------------------- *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                  **         
+//*------------------------------------------------------------------**         
+//*        GB4000   - REAL TIME REPORTING SCHEDULING, PA SITE        **         
+//*                                                                  **         
+//*********************************************************************         
+//*            CHANGE LOG                                             *         
+//*********************************************************************         
+//* J ELKINS |11/05/04| ADD OUTSTAT TO CHANGE PREFIX ON OUTPUT TO PGB *         
+//*--------------+-------------+--------------------------------------*         
+//* IBM GR   |20/08/08| UPGRADED IN ECU PROJECT                       *         
+//*--------------+-------------+--------------------------------------*         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//*----------+--------+-----------------------------------------------*         
+//*********************************************************************         
+//*********************************************************************         
+//*                                                                   *         
+//* STEP GB400005 - SORT BY USER ID                                   *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB400005 EXEC PGM=SORT,                                                       
+//             COND=(0,NE),                                                     
+//             PARM='CORE=MAX',                                                 
+//             REGION=4096K                                                     
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SORTLIB   DD DUMMY                                                            
+//SORTIN    DD DSN=&DSTAT..WH.&DLVL..&RUNTYPE..REPORT.EMAILS&GEN0,              
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&&EMAILS,                                                    
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=WORK,                                                       
+//             SPACE=(CYL,(20,10),RLSE),                                        
+//             DCB=*.SORTIN                                                     
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB400005),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*  STEP GB400010  - BUILD EMAILS                                    *         
+//*                                                                   *         
+//*       IKJEFT01  - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2  **         
+//*                   THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN      **         
+//*                   (IN THIS CASE THE PROGRAM IS GCCPSCD2)         **         
+//*                                                                  **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB400010 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=8192K                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(GCCPSCD2),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..STANDARD.TABLE(GAEDATSR),                   
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* INPUT CONTROL CARD - CONTAINS TEXT OF EMAIL MESSAGE             ***         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&CSTAT..&CLVL..CTLCARDS(GB400010),                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* INPUT FILE OF USER IDS REQUIRING EMAIL NOTIFICATION              **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI11    DD DSN=&&EMAILS,                                                    
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* OUTPUT FILE OF EMAILS TO BE SENT                                 **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO20    DD DSN=&OUTSTAT..WH.&OUTLVL..REPORT.EMAILS.SENT&GEN1,               
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT,                                                      
+//             SPACE=&SPACE1,                                                   
+//             DCB=(RECFM=FB,LRECL=130,BLKSIZE=27820)                           
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* STEP GB280020 - SEND EMAILS                                       **        
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB400020 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT)                                                      
+//SYSUT1    DD DSN=&OUTSTAT..WH.&OUTLVL..REPORT.EMAILS.SENT&GEN1,               
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=(B,SMTP)                                                  
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSIN     DD DUMMY                                                            
+//                                                                              

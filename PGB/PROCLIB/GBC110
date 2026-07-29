@@ -1,0 +1,77 @@
+//GBC110 PROC  CLVL='PROD.STANDARD',                                            
+//             CSTAT='PEN.GROUP',                                               
+//             DBNM='DYC01P',                                                   
+//             DSTAT=PGB,                                                       
+//             DLVL=PROD,                                                       
+//             GEN2='(+1)',                                                     
+//             GEN0='(0)',                                                      
+//             GEN1='(-1)',                                                     
+//             SPACE1='(CYL,(10,10),RLSE)',                                     
+//             UNIT01=PROD                                                      
+//*                                                                             
+//*******************************************************************           
+//* CPD DATA COMPARES                                               *           
+//*******************************************************************           
+//*--------------------------------------------------------------*              
+//* HISTORY                                                                     
+//* OCT2016  C360R2       CREATED                                               
+//*--------------------------------------------------------------*              
+//*                                                                             
+//*******************************************************************           
+//* GET TCUST TABLE DELTAS                                          *           
+//*******************************************************************           
+//GGC11010 EXEC PGM=SORT                                                        
+//SYSOUT   DD   SYSOUT=*                                                        
+//SORTWK01 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTWK02 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTWK03 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTJNF1 DD   DSN=&DSTAT..UNLD.&DBNM..GBC100.ZCUST.DATA&GEN1,                 
+//         DISP=SHR                                                             
+//SORTJNF2 DD   DSN=&DSTAT..UNLD.&DBNM..GBC100.ZCUST.DATA&GEN0,                 
+//         DISP=SHR                                                             
+//SORTOUT  DD   DSN=&DSTAT..CPD.&DLVL..GBC110.ZCUST.DIFF,                       
+//         DISP=(NEW,CATLG),UNIT=&UNIT01.,                                      
+//         DCB=(*.SORTJNF1),                                                    
+//         SPACE=&SPACE1                                                        
+//SYSIN    DD   DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(GBC11010)                  
+//*                                                                             
+//*******************************************************************           
+//* MERGE CURRENT AND PREVIOUS TGCT RECORDS SUCH THAT ALL GROUPS    *           
+//* ARE AVAILABLE                                                   *           
+//*******************************************************************           
+//GGC11020 EXEC PGM=SORT,COND=(0,LT),                                           
+//         PARM='CORE=MAX'                                                      
+//SYSOUT   DD   SYSOUT=*                                                        
+//SORTWK01 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTWK02 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTWK03 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTIN   DD   DSN=&DSTAT..UNLD.&DBNM..GBC100.ZGCT.DATA&GEN1.,                 
+//         DISP=SHR                                                             
+//         DD   DSN=&DSTAT..UNLD.&DBNM..GBC100.ZGCT.DATA&GEN0.,                 
+//         DISP=SHR                                                             
+//SORTOUT  DD   DSN=&DSTAT..CPD.&DLVL..GBC110.ZGCT.MRG,                         
+//         DISP=(NEW,CATLG),                                                    
+//         UNIT=&UNIT01.,                                                       
+//         DCB=(*.SORTIN),                                                      
+//         SPACE=&SPACE1                                                        
+//SYSIN    DD   DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(GBC11020)                  
+//*                                                                             
+//*******************************************************************           
+//* MATCH TCUST DELTA WITH TGCT TO ADD GROUP AND CERT TO DELTA FILE *           
+//*******************************************************************           
+//GGC11030 EXEC PGM=SORT,COND=(0,LT),                                           
+//         PARM='CORE=MAX'                                                      
+//SYSOUT   DD   SYSOUT=*                                                        
+//SORTWK01 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTWK02 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTWK03 DD   UNIT=SYSWK,SPACE=(CYL,2,RLSE)                                   
+//SORTJNF1 DD   DISP=SHR,                                                       
+//         DSN=&DSTAT..CPD.&DLVL..GBC110.ZCUST.DIFF                             
+//SORTJNF2 DD   DISP=SHR,                                                       
+//         DSN=&DSTAT..CPD.&DLVL..GBC110.ZGCT.MRG                               
+//SORTOUT  DD   DSN=&DSTAT..CPD.&DLVL..GBC110.CLIEXSTG&GEN2.,                   
+//         DISP=(NEW,CATLG,DELETE),                                             
+//         UNIT=&UNIT01.,                                                       
+//         DCB=(*.SORTJNF1),                                                    
+//         SPACE=&SPACE1                                                        
+//SYSIN    DD   DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(GBC11030)                  

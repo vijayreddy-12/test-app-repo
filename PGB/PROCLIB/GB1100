@@ -1,0 +1,271 @@
+//GB1100  PROC CLVL=PROD.STANDARD,          ** CTLCARDS   LEVEL                 
+//             CSTAT='PEN.GROUP',           ** CTLCARDS   STATUS                
+//             DSLVL=PROD.STANDARD,                                             
+//             DSSTAT=PEN.GLHNEW,                                               
+//             GEN1='(+1)',                 ** NEXT GDG VOLUME                  
+//             IFLVL=PROD,                  ** INPUT CTL GRP LEVEL              
+//             IFSTAT='PGB.REGN',           ** INPUT CTL FILE STAT              
+//             LASR1='(5,PGBPR001)',        ** PRINT/DISTR REPORT               
+//             OLVL=PROD,                   ** PRINTED OUTPUT LEVEL             
+//             OSTAT='PGB.REGN',            ** PRINTED OUTPUT STATUS            
+//             OUTA='*',                    ** SYSOUT   DEFN                    
+//             OUTJ='*',                    ** SYSOUT FOR JCL                   
+//             OUTS='S',                    ** SYSOUT FOR ABENDS                
+//             SPACE1='(CYL,(5,5),RLSE)',   ** OUTPUT FILE SIZE                 
+//             SPACE2='(CYL,(10,10),RLSE)', ** OUTPUT FILE SIZE TEMP            
+//             TEMP=WORK,                   ** WORK UNIT                        
+//             TSOLVL=PROD.STANDARD,        ** TSO DATASET                      
+//             TSOSTAT='PEN.GROUP',         ** TSO DATASET LEVEL                
+//             UNIT=PROD                    ** SYSTEM UNIT                      
+//*********************************************************************         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* HISTORY                                                           *         
+//* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                        *         
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                        *         
+//* MAR2014   - T205061 - REDIRECT PRINT TO WATERLOO (DEST=LOCAL)     *         
+//* MAY2017   - T313239 - AUTOMATION OF TERMINATIONS FROM MASS CHG    *         
+//*                       SEPARATE SALARY CHANGE/TERMINATION/OTHER    *         
+//* AUG2017   - T313239 - ADD READ OF GIPSY MASTER TO CREATION OF     *         
+//*                       TERMINATION TRANSACTION FILE                *         
+//* SEP2023   - LGIPS DECOMISSIONING - REPLACE MASTER WITH DUMMY      *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//* GB110020 - GCCPFRME - EXTRACT FORMS FOR PRINTING (FROM DB2)      **         
+//* GB110030 - SORT     - SORT FORM PRINT EXTRACTS                   **         
+//* GB110035 - GCCPFRMT - GENERATE NON-SALARY CHANGE FILE            **         
+//* GB110037 - GCCPFRMX - GENERATE TERMINATION AND OTHER FILES       **         
+//* GB110040 - GCCPFRMF - RE-FORMAT ALL OUTPUT FOR APF REPORT LAYOUT **         
+//* GB110060 - GCCPFRMR - PRINT THE PRINT/DISTRIBUTION REPORT        **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*        GB110020 - EXTRACT FORMS FOR PRINTING  (DB2)              **         
+//*                                                                  **         
+//*          IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2**         
+//*                     THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN    **         
+//*                                                 (GCCPFRME)       **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110020 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(PGBICDB2),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* SEQ INPUT FILE (RE-PRINT PARAMETER CONTROL CARD)                 **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&IFSTAT..&IFLVL..FORMRRUN.CONTROL,                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* SEQ VB OUTPUT FILE (PRINT EXTRACT FILE)                          **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO70    DD DSN=&OSTAT..&OLVL..PRINT.EXTRACT&GEN1,                           
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=VB,LRECL=4000,BLKSIZE=27998)                          
+//SYSOUTU   DD SYSOUT=&OUTJ                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&OUTJ                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*         GB110030 - SORT FORM PRINT EXTRACTS                      **         
+//*           SORT BY:                                               **         
+//*                      CONTRACT STATUS                             **         
+//*                      TAT                        (TEMP SORT FLD 0)**         
+//*                      DESTINATION                (TEMP SORT FLD 1)**         
+//*                      BUSINESS SEGMENT OR REGION (TEMP SORT FLD 2)**         
+//*                      GROUP NUMBER                                **         
+//*                      DIVISION                                    **         
+//*                      FORM                                        **         
+//*                      CERTIFICATE NUMBER                          **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110030 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=RECFM=FBA,                                                   
+//             SYSOUT=&OUTA.                                                    
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB110030),                           
+//             DISP=SHR                                                         
+//SORTIN    DD DSN=&OSTAT..&OLVL..PRINT.EXTRACT&GEN1,                           
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&&SRTEXT,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=VB,LRECL=4000,BLKSIZE=27998)                          
+//*********************************************************************         
+//*                                                                   *         
+//*         GB110035 - CREATE SALARY CHANGE LINE ELIMINATED FILE     **         
+//*                    (&&SRTEXTNS) FROM &&SRTEXT                    **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110035 EXEC PGM=GCCPFRMT,                                                   
+//             COND=(0,LT)                                                      
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//DLSI70    DD DSN=&&SRTEXT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//DLSO71    DD DSN=&&SRTEXTNS,                                                  
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=VB,LRECL=4000,BLKSIZE=27998)                          
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=*                                                         
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=*                                                         
+//SYSOUTU   DD SYSOUT=&OUTA                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*         GB110037 - CREATE TERMINATIONS AND OTHER TRANSACTIONS    **         
+//*                    FILES FROM &&SRTEXTNS                         **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110037 EXEC PGM=GCCPFRMX,                                                   
+//             COND=(0,LT)                                                      
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//GACBMAS7  DD DUMMY                                                            
+//DLSI70    DD DSN=&&SRTEXTNS,                                                  
+//             DISP=(OLD,PASS)                                                  
+//DLSO71    DD DSN=&OSTAT..&OLVL..FORMOUT.OTHER,                                
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=VB,LRECL=4000,BLKSIZE=27998)                          
+//DLSO72    DD DSN=&OSTAT..&OLVL..FORMOUT.TERM,                                 
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=VB,LRECL=4000,BLKSIZE=27998)                          
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=*                                                         
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=*                                                         
+//SYSOUTU   DD SYSOUT=&OUTA                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*        GB110040 - RE-FORMAT THE FORM OUTPUT INTO AFP LAYOUT      **         
+//*                                                                   *         
+//*        IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2   *         
+//*                   THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN       *         
+//*                   (IN THIS CASE THE PROGRAM IS GCCPFRMF           *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110040 EXEC PGM=IKJEFT01,                                                   
+//             COND=(0,LT)                                                      
+//*********************************************************************         
+//*                                                                   *         
+//* TEST/PROD SELECTION (MAPPING,MAP AND DISPLAY,MASKING CALLS)       *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI18    DD DUMMY,                                                           
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* ICDB INTERFACE CARDS                                              *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSTSPRT  DD SYSOUT=*                                                         
+//SYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(PGBICDB4),                       
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//* DATA SERVER FILES                                                **         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI70    DD DSN=&&SRTEXT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//DLSO20    DD DSN=&&AFPEXT,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=FB,LRECL=2000,BLKSIZE=26000)                          
+//DLSO21    DD DSN=&&RPTEXT,                                                    
+//             DISP=(NEW,PASS),                                                 
+//             UNIT=&TEMP.,                                                     
+//             SPACE=&SPACE2.,                                                  
+//             DCB=(RECFM=FB,LRECL=140,BLKSIZE=27860)                           
+//DLSO22    DD DSN=&OSTAT..&OLVL..MASSEXT.ALL,                                  
+//             DISP=(NEW,CATLG),                                                
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=240,BLKSIZE=27840)                           
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//SYSOUTU   DD SYSOUT=&OUTA.                                                    
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*        GB110060 - PRINT THE PRINT/DISTRIBUTION REPORT  (RDS)     **         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GB110060 EXEC PGM=GCCPFRMR,                                                   
+//             COND=(0,LT)                                                      
+//SYSOUT    DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..TABLE(GAEDATSR),                            
+//             DISP=SHR                                                         
+//SYSPRINT  DD DCB=(RECFM=FB,LRECL=133,BLKSIZE=27930),                          
+//             SYSOUT=&OUTA                                                     
+//DLSI10    DD DSN=&&RPTEXT,                                                    
+//             DISP=(OLD,PASS)                                                  
+//SYSABEND  DD SYSOUT=&OUTS                                                     
+//DLSO22    DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
+//             SYSOUT=&LASR1                                                    
+//SYSOUTU   DD SYSOUT=&OUTA.                                                    
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     

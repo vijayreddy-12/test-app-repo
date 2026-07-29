@@ -1,0 +1,22 @@
+//*--------------------------------------------------------------------*        
+//*  LIBRARY OVERRIDES FOR DEV LEVEL                                            
+//*--------------------------------------------------------------------*        
+//*                     !!! NOTE !!!                                            
+//*  IF MAKING CHANGES TO THIS ELEMENT, PLEASE MAKE SURE THAT SIMILAR           
+//*  CHANGES ARE MADE TO THE CORRESPONDING ELEMENT IN THE "GROUP" LIB           
+//*--------------------------------------------------------------------*        
+//*  HISTORY                                                                    
+//*  201306 - TRUDY     - SET TO MATCH J2 INCLUDES                              
+//*                     - ADDED LOADLIB0 & REMOVED DBALOAD                      
+//*                       AS PART OF IDMS TO DB2 CONVERSION                     
+//*--------------------------------------------------------------------*        
+// SET LOADLIB0='PCX.MLICOMMX.LOAD'                                             
+// SET LOADLIB1='PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD'                           
+// SET LOADLIB2='PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD'                          
+// SET LOADLIB3='PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD'                           
+// SET LOADLIB4='PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD'                          
+// SET LOADLIB5='PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD'                           
+// SET LOADLIB6='PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD'                          
+// SET UTILOAD='PCX.MLI.COMMON.LOAD'                                            
+// SET LELIB='SYS1.SCEERUN'                                                     
+// SET DB2LOAD='PCX.DB2.DSNLOAD'                                                
