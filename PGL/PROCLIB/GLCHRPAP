@@ -1,0 +1,228 @@
+//GLCHRPAP PROC CBACCNT=PGL,                                                    
+//             CTLLOC=PEN.GROUP.PROD.STANDARD.CTLCARDS,                         
+//             NODE2=CHRYSLER,                                                  
+//             NODE3=PROD,                                                      
+//             RPTID='(5,PGLPR042)',                                            
+//             UNIT='PROD'                                                      
+//*********************************************************************         
+//* HISTORY                                                                     
+//*-------------------------------------------------------------------*         
+//* 06AUG2014  TL202528  R.PUTATUNDA  STEP140 ADDED TO SEND AN E-MAIL           
+//*                                   WITH CHRYSLER FILE AS ATTACHMENT          
+//*                                                                             
+//*********************************************************************         
+//* ------------------------------------------------------------------          
+//*  COPY TRANSACTIONS FROM CONTROL FILE TO GDG                                 
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP010 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..CONTROL(CHRTRANS),                 
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&CBACCNT..&NODE2..&NODE3..UPDTRAN(+1),                       
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(2,1),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80,DSORG=PS)                                 
+//SYSIN     DD DUMMY                                                            
+//* ------------------------------------------------------------------          
+//*  BACKUP VSAM CHRYSLER CHEQUES BEFORE UPDATE                                 
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP020 EXEC PGM=IDCAMS,                                                      
+//             COND=(0,LT)                                                      
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..CHEQUES,                           
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&CBACCNT..&NODE2..&NODE3..BKUP.BEFUP(+1),                    
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(5,5),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80)                                          
+//SYSMSG    DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSPDUMP  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSIN     DD DSN=&CTLLOC.(REPRO),                                             
+//             DISP=SHR                                                         
+//* ------------------------------------------------------------------          
+//*  UPDATE CHEQUE AMOUNT FOR TRANSMISSION TO TD                                
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP030 EXEC PGM=GLCHRUP,                                                     
+//             COND=(0,LT),                                                     
+//             REGION=1000K                                                     
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..UPDTRAN(+1),                       
+//             DISP=SHR                                                         
+//FILEB     DD DSN=&CBACCNT..&NODE2..&NODE3..CHEQUES,                           
+//             DISP=OLD                                                         
+//* ------------------------------------------------------------------          
+//*  PRODUCE LIST OF UPDATE CHEQUES TRANSACTIONS                                
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP040 EXEC PGM=GLCHRTR,                                                     
+//             COND=(0,LT),                                                     
+//             REGION=1000K                                                     
+//SYSPRINT  DD DCB=(RECFM=FA,LRECL=133),                                        
+//             SYSOUT=&RPTID                                                    
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..UPDTRAN(+1),                       
+//             DISP=SHR                                                         
+//* ------------------------------------------------------------------          
+//*  BACKUP VSAM CHRYSLER CHEQUES AFTER  UPDATE                                 
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP050 EXEC PGM=IDCAMS,                                                      
+//             COND=(0,LT)                                                      
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..CHEQUES,                           
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&CBACCNT..&NODE2..&NODE3..BKUP.AFTUP(+1),                    
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(5,5),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80)                                          
+//SYSMSG    DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSPDUMP  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSIN     DD DSN=&CTLLOC.(REPRO),                                             
+//             DISP=SHR                                                         
+//* ------------------------------------------------------------------          
+//*   REORGANIZE DATA FOR TRANSMISSION ACCORDING TO FUND$IN FORMAT              
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP060 EXEC PGM=GLCHRFU,                                                     
+//             COND=(0,LT),                                                     
+//             REGION=1000K                                                     
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..CHEQUES,                           
+//             DISP=OLD                                                         
+//FILEB     DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.FUNDIN,                    
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(3,2),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=82,DSORG=PS)                                 
+//* ------------------------------------------------------------------          
+//*   BACKUP TRANSMISSION FILE                                                  
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP070 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.FUNDIN,                    
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=TGL.CHRYSLER.TEST.TDWITHD.TRMS.BKUP(+1),                     
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(3,2),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=82,DSORG=PS)                                 
+//SYSIN     DD DUMMY                                                            
+//* ------------------------------------------------------------------          
+//*   SHORTEN THE FUNDIN FILE                                                   
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP080 EXEC PGM=GLCHRCF,                                                     
+//             COND=(0,LT),                                                     
+//             REGION=1000K                                                     
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.FUNDIN,                    
+//             DISP=OLD                                                         
+//FILEB     DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.FUNDIN2,                   
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(3,2),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80,DSORG=PS)                                 
+//* ------------------------------------------------------------------          
+//*  CREATE HEADER CARDS FOR TRANSMISSION BY READING OLD HEADER                 
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP090 EXEC PGM=GLCHRHE,                                                     
+//             COND=(0,LT),                                                     
+//             REGION=1000K                                                     
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.HEADER2,                   
+//             DISP=OLD                                                         
+//FILEB     DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.HEADER2.NEW,               
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(2,2),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80,DSORG=PS)                                 
+//*------------------------------------------------------------                 
+//*  COPY HEADER2                                                               
+//*------------------------------------------------------------                 
+//*                                                                             
+//STEP100 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.HEADER2.NEW,               
+//             DISP=(OLD,,KEEP)                                                 
+//SYSUT2    DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.HEADER2,                   
+//             DISP=OLD                                                         
+//SYSIN     DD DUMMY                                                            
+//*------------------------------------------------------------                 
+//*  MERGE HEADER REC WITH DATA                                                 
+//*------------------------------------------------------------                 
+//*                                                                             
+//STEP110 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.HEADER2,                   
+//             DISP=OLD                                                         
+//          DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.FUNDIN2,                   
+//             DISP=OLD                                                         
+//SYSUT2    DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.TRANSMIS,                  
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(2,2),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80,DSORG=PS)                                 
+//SYSIN     DD DUMMY                                                            
+//* ------------------------------------------------------------------          
+//*  MERGE IBM OPT AND CHRYSLER FILE                                            
+//*  IBM OPT FILE NO LONGER REQUIRED - JUN, 1999                                
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP120 EXEC PGM=GLCHRMF,                                                     
+//             REGION=1000K                                                     
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..TDWITHD.TRANSMIS,                  
+//             DISP=SHR                                                         
+//FILEB     DD DSN=&CBACCNT..&NODE2..&NODE3..TRANSMIS,                          
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(5,5),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80,DSORG=PS)                                 
+//* ------------------------------------------------------------------          
+//*  BACKUP MERGE CHRYSLER PAC TRANSMISSION FILE                                
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP130 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUT1    DD DSN=&CBACCNT..&NODE2..&NODE3..TRANSMIS,                          
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&CBACCNT..&NODE2..&NODE3..TRANSMIS.BKUP(+1),                 
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(CYL,(3,2),RLSE),                                          
+//             DCB=(RECFM=FB,LRECL=80,DSORG=PS)                                 
+//SYSIN     DD DUMMY                                                            
+//* ------------------------------------------------------------------          
+//*  SEND AN E-MAIL TO TRANSFER CHRYSLER FILE AS ATTACHMENT                     
+//* ------------------------------------------------------------------          
+//*                                                                             
+//STEP140  EXEC PGM=IEBGENER                                                    
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSIN     DD DUMMY                                                            
+//SYSUT2    DD SYSOUT=(B,SMTP)                                                  
+//SYSUT1    DD DSN=&CTLLOC.(GLCHRPAI),                                          
+//             DISP=SHR                                                         
+//          DD DSN=&CBACCNT..&NODE2..&NODE3..TRANSMIS,                          
+//             DISP=SHR                                                         

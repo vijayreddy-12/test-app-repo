@@ -1,0 +1,156 @@
+//GLBRS010 PROC APLID='XXX',                                                    
+//             APLID1='XXX',                                                    
+//             CNTLDSN='PEN.GROUP.PROD.STANDARD.CTLCARDS',                      
+//             COND1='(0,NE)',                                                  
+//             GEN0='(+0)',                                                     
+//             GEN1='(+1)',                                                     
+//             ILVL1='PGL',                                                     
+//             ILVL3='PGW',                                                     
+//*            MODEL='PGL.MODEL,',                                              
+//             MODEL='',                                                        
+//             OLVL1='PGL',                                                     
+//             OUTJ='*',                                                        
+//             OUTS='S',                                                        
+//             PARMX='##',                                                      
+//             PARM1='CORE=MAX',                                                
+//             PLVL3=PROD,                                                      
+//             RPTD='(5,PGLPRNNN)',                                             
+//             RPTS='(5,PGLPRNNN)',                                             
+//             SPCE10='(CYL,(5,5),RLSE)',                                       
+//             SPCE20='(TRK,(20,5),RLSE)',                                      
+//             SPCE21='(TRK,(5,5),RLSE)',                                       
+//             SRCE='XXXXXX',                                                   
+//             UNIT1='PROD'                                                     
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* HISTORY :                                                         *         
+//*                                                                   *         
+//* 29OCT2008 - IBM GR - ENTERPRISE COMPILER UPGRADE                  *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//* PS0010   : SORT XXXXXXX CHEQUE ISSUE FILE FOR REPORTS             *         
+//*            SORT FIELDS=(1,3,A,4,3,A,15,5,A,20,10,A),FORMAT=CH     *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0010  EXEC PGM=SORT,                                                        
+//             COND=&COND1,                                                     
+//             PARM='&PARM1'                                                    
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SORTIN    DD DSN=&ILVL1..&SRCE..&APLID..CHEQ.ISSUE,                           
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&OLVL1..&APLID..BRS.CHEQ.ISSUE&GEN1,                         
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPCE10,                                                   
+//             DCB=(&MODEL.RECFM=FB,LRECL=160,BLKSIZE=0)                        
+//*********************************************************************         
+//*                                                                   *         
+//*  SORT FIELDS=(1,3,A,4,3,A,15,5,A,20,10,A),FORMAT=CH               *         
+//*                                                                   *         
+//*********************************************************************         
+//SYSIN     DD DSN=&CNTLDSN(BRS01SRT),                                          
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* PS0020   : PRINT CONTROL DETAIL AND SUMMARY REPORTS FOR           *         
+//*          : MARINER/NAVIGATOR/EXCLAIMS                             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0020  EXEC PGM=BRSI0100,                                                    
+//             COND=&COND1,                                                     
+//             PARM='&PARMX'                                                    
+//BRSISSU   DD DSN=&ILVL1..&APLID..BRS.CHEQ.ISSUE&GEN1,                         
+//             DISP=SHR                                                         
+//DATECRD   DD DSN=&ILVL3..&PLVL3..DATEFILE&GEN0,                               
+//             DISP=SHR                                                         
+//BRSDRPT   DD DSN=&OLVL1..&APLID..BRS.CHEQISSU.DTLREPT&GEN1,                   
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPCE20,                                                   
+//             DCB=(&MODEL.RECFM=FBA,LRECL=133,BLKSIZE=0)                       
+//BRSSRPT   DD DSN=&OLVL1..&APLID..BRS.CHEQISSU.SUMREPT&GEN1,                   
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPCE21,                                                   
+//             DCB=(&MODEL.RECFM=FBA,LRECL=133,BLKSIZE=0)                       
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SNAPDUMP  DD SYSOUT=&OUTS                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSLST    DD SYSOUT=&OUTJ                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTJ                                                     
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* PS0030   : COPY CHEQUE ISSUE FILE FOR BRS                         *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0030  EXEC PGM=IEBGENER,                                                    
+//             COND=&COND1                                                      
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTJ                                                     
+//SYSUT1    DD DSN=&ILVL1..&APLID..BRS.CHEQ.ISSUE&GEN1,                         
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&OLVL1..PROD.&APLID1..ISSUE.FEED,                            
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPCE10,                                                   
+//             DCB=(&MODEL.RECFM=FB,LRECL=160,BLKSIZE=0)                        
+//SYSIN     DD DUMMY                                                            
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* PS0040   : COPY CHEQUE ISSUE CONTROL DETAIL REPORT TO RDS         *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0040  EXEC PGM=IEBGENER,                                                    
+//             COND=&COND1                                                      
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTJ                                                     
+//SYSUT1    DD DSN=&ILVL1..&APLID..BRS.CHEQISSU.DTLREPT&GEN1,                   
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=&RPTD                                                     
+//SYSIN     DD DUMMY                                                            
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* PS0050   : COPY CHEQUE ISSUE CONTROL SUMMARY REPORT TO RDS        *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0050  EXEC PGM=IEBGENER,                                                    
+//             COND=&COND1                                                      
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTJ                                                     
+//SYSUT1    DD DSN=&ILVL1..&APLID..BRS.CHEQISSU.SUMREPT&GEN1,                   
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=&RPTS                                                     
+//SYSIN     DD DUMMY                                                            
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* PS0060   : DELETE FILE FROM XXXXXXXX                              *         
+//*                                                                   *         
+//*********************************************************************         
+//                                                                              
+//PS0060  EXEC PGM=IEFBR14,                                                     
+//             COND=&COND1                                                      
+//DD1       DD DSN=&ILVL1..&SRCE..&APLID..CHEQ.ISSUE,                           
+//             DISP=(MOD,DELETE),                                               
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(TRK,1)                                                    
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD SYSOUT=&OUTJ                                                     

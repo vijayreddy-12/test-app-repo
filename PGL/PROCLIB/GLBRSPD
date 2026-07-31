@@ -1,0 +1,50 @@
+//GLBRSPD PROC APLID='XXX',                                                     
+//*            COND1='(0,NE)',                                                  
+//             GEN1='(+1)',                                                     
+//             ILVL1='PGL',                                                     
+//*            MODEL='PGL.MODEL,',                                              
+//             MODEL='',                                                        
+//             OLVL1='PGL',                                                     
+//             OUTJ='*',                                                        
+//             SPCE5='(TRK,(5,5),RLSE)',                                        
+//             UNIT1='PROD'                                                     
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* HISTORY :                                                         *         
+//*                                                                   *         
+//* 29OCT2008 - IBM GR - ENTERPRISE COMPILER UPGRADE                  *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//* PS0010   : COPY/BACKUP PAYMENT DETAIL FILE FROM ROYAL BANK        *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0010  EXEC PGM=IEBGENER                                                     
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTJ                                                     
+//SYSUT1    DD DSN=&ILVL1..&APLID..FROM.RBC.EFT.PAYMNT.DET,                     
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&OLVL1..&APLID..RBC.EFT.PAYMNT.DET&GEN1,                     
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPCE5,                                                    
+//             DCB=(&MODEL.RECFM=FBA,LRECL=133,BLKSIZE=0)                       
+//SYSIN     DD DUMMY                                                            
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* PS0020   : DELETE FILE FROM XXXXXXXX                              *         
+//*                                                                   *         
+//*********************************************************************         
+//                                                                              
+//PS0020  EXEC PGM=IEFBR14,                                                     
+//             COND=&COND1                                                      
+//DD1       DD DSN=&ILVL1..&APLID..FROM.RBC.EFT.PAYMNT.DET,                     
+//             DISP=(MOD,DELETE),                                               
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(TRK,1)                                                    
+//SYSOUT    DD SYSOUT=&OUTJ                                                     
+//SYSPRINT  DD SYSOUT=&OUTJ                                                     

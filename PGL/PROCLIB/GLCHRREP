@@ -1,0 +1,128 @@
+//GLCHRREP PROC CBACCNT=PGL,                                                    
+//             CTLLOC=PEN.GROUP.PROD.STANDARD.CTLCARDS,                         
+//             NODE2=CHRYSLER,                                                  
+//             NODE3=PROD,                                                      
+//*            OUTMAIL='(B,SMTP)',                                              
+//             RPTID='(5,PGLPR044)',                                            
+//             UNIT='PROD'                                                      
+//*********************************************************************         
+//* HISTORY                                                                     
+//*-------------------------------------------------------------------*         
+//* 31JUL2017  TL333941  GAURAV K.    CHANGE TO FIX PROC ISSUE.                 
+//*                                   REFER TL333941 FOR REFERENCE.             
+//* 11MAY2017  TL301151  M.ISLAM      SEND RDS REPORT PGLPR044 AS AN            
+//*                                   ATTACHMENT TO A E-MAIL ID.                
+//*                                                                             
+//*********************************************************************         
+//*******************************************************************           
+//* SORT THE INPUT FILE TO ONLY PROCESS RECORDS WITH TYPE 2                     
+//*******************************************************************           
+//*                                                                             
+//STEP010 EXEC PGM=SORT                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSSNAP   DD SYSOUT=*                                                         
+//SYSIN     DD DSN=&CTLLOC.(GLCHRSRT),                                          
+//             DISP=SHR                                                         
+//SORTIN    DD DSN=&CBACCNT..&NODE2..&NODE3..CONTROL(CHRYSNOW),                 
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&CBACCNT..&NODE2..&NODE3..REINSORT,                          
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(10,2),RLSE),                                         
+//             DCB=(RECFM=FB,LRECL=80)                                          
+//SORTWK01  DD UNIT=WORK,                                                       
+//             SPACE=(TRK,(25,5),RLSE)                                          
+//SORTWK02  DD UNIT=WORK,                                                       
+//             SPACE=(TRK,(25,5),RLSE)                                          
+//SORTWK03  DD UNIT=WORK,                                                       
+//             SPACE=(TRK,(25,5),RLSE)                                          
+//*******************************************************************           
+//* PRODUCE THE REIN REPORT AND SENDS TO RDS                                    
+//*******************************************************************           
+//*                                                                             
+//STEP020 EXEC PGM=GLCHRREI,                                                    
+//             COND=(0,NE)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..REINSORT,                          
+//             DISP=SHR                                                         
+//FILEC     DD SYSOUT=&RPTID                                                    
+//*                                                                             
+//*******************************************************************           
+//* PRODUCE THE REIN REPORT AND CAPTURE IN A FILE                               
+//*******************************************************************           
+//*                                                                             
+//STEP022 EXEC PGM=GLCHRREI,                                                    
+//             COND=(0,NE)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..REINSORT,                          
+//             DISP=SHR                                                         
+//FILEC     DD DSN=&CBACCNT..&NODE2..&NODE3..REINRPT(+1),                       
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(10,2),RLSE),                                         
+//             DCB=(RECFM=FB,LRECL=133)                                         
+//*                                                                             
+//*********************************************************************         
+//*  FORMAT CONTROL CARD GLCHRRE1 TO 133 CARACTERS                              
+//*********************************************************************         
+//*                                                                             
+//STEP024  EXEC PGM=FILEAID,                                                    
+//         COND=(0,NE)                                                          
+//*                                                                             
+//DD01     DD DSN=&CTLLOC.(GLCHRRE1),                                           
+//            DISP=SHR                                                          
+//*                                                                             
+//DD01O    DD DSN=&&GLCHRRE1,                                                   
+//            DISP=(NEW,PASS,DELETE),                                           
+//            UNIT=SYSDA,                                                       
+//            SPACE=(TRK,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=133,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CTLLOC.(GLCHRRE2),                                           
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//SYSLIST  DD SYSOUT=*                                                          
+//*                                                                             
+//*******************************************************************           
+//* SEND "CHRYSLER OPTIONAL BILLING REINSURANCE REPORT" AS AN                   
+//* ATTACHMENT TO A E-MAIL ID.                                                  
+//*******************************************************************           
+//*                                                                             
+//STEP025  EXEC PGM=IEBGENER,                                                   
+//         COND=(0,NE)                                                          
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSIN     DD DUMMY                                                            
+//SYSUT2    DD SYSOUT=(B,SMTP)                                                  
+//SYSUT1    DD DSN=&&GLCHRRE1,                                                  
+//             DISP=SHR                                                         
+//          DD DSN=&CBACCNT..&NODE2..&NODE3..REINRPT(+1),                       
+//             DISP=SHR                                                         
+//**********************************************************************        
+//* SEND AN E-MAIL TO NOTIFY COMPLETION.                                        
+//**********************************************************************        
+//                                                                              
+//STEP030 EXEC PGM=SMTPMAIL,                                                    
+//             COND=(0,NE)                                                      
+//SMTPOUT   DD SYSOUT=&OUTMAIL                                                  
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&CTLLOC.(GLCHRMAI),                                          
+//             DISP=SHR                                                         
+//          DD DSN=&CBACCNT..&NODE2..&NODE3..REINMAIL,                          
+//             DISP=SHR                                                         
+//*********************************************************                     
+//*   DELETE SORTED FILE AFTER SUCESSFUL RUN              *                     
+//*********************************************************                     
+//*                                                                             
+//STEP04  EXEC PGM=IEFBR14,                                                     
+//             COND=(0,NE,STEP020)                                              
+//DD1       DD DSN=&CBACCNT..&NODE2..&NODE3..REINSORT,                          
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(0))                                                  

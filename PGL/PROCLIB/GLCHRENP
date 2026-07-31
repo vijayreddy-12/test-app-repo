@@ -1,0 +1,82 @@
+//GLCHRENP PROC CBACCNT=PGL,                                                    
+//*            CTLLOC=PEN.GROUP.PROD.STANDARD.CTLCARDS,                         
+//             NODE2=CHRYSLER,                                                  
+//             NODE3=PROD,                                                      
+//             OLVL1=PGL,                                                       
+//*            OUTMAIL='(B,SMTP)',                                              
+//             RENPOUT='Y,DEST=PRT303,COPIES=3',                                
+//             RPTID='(5,PGLPR041)'                                             
+//*********************************************************************         
+//*  HISTORY:                                                         *         
+//*  ========                                                         *         
+//*                                                                   *         
+//*  DATE       DEVELOPER    COMMENTS                                           
+//*  -------   -------- ---------- -----------------------------------*         
+//*  2013/09/09 S. DOI       TL195226 1>DIRECT OUTPUT TO PRT303 IN HFX          
+//*                          2> ADD EMAIL TO MAILROOM                           
+//*********************************************************************         
+//*******************************************************************           
+//* PRODUCE THE ENG REPORT                                                      
+//*******************************************************************           
+//*                                                                             
+//STEP020 EXEC PGM=GLCHRENG,                                                    
+//             COND=(0,NE)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..CONTROL(CHRYSNOW),                 
+//             DISP=SHR                                                         
+//DLRRPT    DD DSN=&OLVL1..TEMP.DLRRPT,                                         
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=WORK,                                                       
+//             SPACE=(TRK,(10,10),RLSE),                                        
+//             DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930)                          
+//FILEB     DD UNIT=WORK,                                                       
+//             SPACE=(CYL,(5,3),RLSE)                                           
+//**********************************************************************        
+//* PRINT BILLS                                                                 
+//**********************************************************************        
+//*                                                                             
+//STEP022 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,NE)                                                      
+//SYSUT1    DD DSN=&OLVL1..TEMP.DLRRPT,                                         
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=&RENPOUT                                                  
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=*                                                         
+//**********************************************************************        
+//* SEND BILLS TO RDS                                                           
+//**********************************************************************        
+//*                                                                             
+//STEP024 EXEC PGM=IEBGENER,                                                    
+//             COND=(0,NE)                                                      
+//SYSUT1    DD DSN=&OLVL1..TEMP.DLRRPT,                                         
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=&RPTID                                                    
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=*                                                         
+//**********************************************************************        
+//* SEND AN E-MAIL TO NOTIFY COMPLETION.                                        
+//**********************************************************************        
+//                                                                              
+//STEP030 EXEC PGM=SMTPMAIL,                                                    
+//             COND=(0,NE)                                                      
+//SMTPOUT   DD SYSOUT=&OUTMAIL                                                  
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&CTLLOC.(GLCHRMAI),                                          
+//             DISP=SHR                                                         
+//          DD DSN=&CBACCNT..&NODE2..&NODE3..ENGMAIL,                           
+//             DISP=SHR                                                         
+//**********************************************************************        
+//* SEND AN E-MAIL TO MAILROOM RE: RECIPIENT AND DEL STN                        
+//**********************************************************************        
+//*                                                                             
+//STEP040 EXEC PGM=SMTPMAIL,                                                    
+//             COND=(0,NE)                                                      
+//SMTPOUT   DD SYSOUT=&OUTMAIL                                                  
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&CTLLOC.(GLCHRMA2),                                          
+//             DISP=SHR                                                         

@@ -1,0 +1,79 @@
+//GLCHRAGP PROC CBACCNT=PGL,                                                    
+//             CTLLOC=PEN.GROUP.PROD.STANDARD.CTLCARDS,                         
+//             NODE2=CHRYSLER,                                                  
+//             NODE3=PROD,                                                      
+//*            OUTMAIL='(B,SMTP)',                                              
+//             RPTID1='(5,PGLPR039)',                                           
+//             RPTID2='(5,PGLPR040)',                                           
+//             UNIT='PROD'                                                      
+//*******************************************************************           
+//* SORT THE INPUT FILE TO ONLY PROCESS RECORDS WITH TYPE 2                     
+//*******************************************************************           
+//*                                                                             
+//STEP010 EXEC PGM=SORT,                                                        
+//             COND=(0,NE)                                                      
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSSNAP   DD SYSOUT=*                                                         
+//SYSIN     DD DSN=&CTLLOC.(GLCHRSRT),                                          
+//             DISP=SHR                                                         
+//SORTIN    DD DSN=&CBACCNT..&NODE2..&NODE3..CONTROL(CHRYSNOW),                 
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&CBACCNT..&NODE2..&NODE3..AGESORT,                           
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(10,2),RLSE),                                         
+//             DCB=(RECFM=FB,LRECL=80)                                          
+//SORTWK01  DD UNIT=WORK,                                                       
+//             SPACE=(TRK,(25,5),RLSE)                                          
+//SORTWK02  DD UNIT=WORK,                                                       
+//             SPACE=(TRK,(25,5),RLSE)                                          
+//SORTWK03  DD UNIT=WORK,                                                       
+//             SPACE=(TRK,(25,5),RLSE)                                          
+//*******************************************************************           
+//* PRODUCE THE AGE REPORT                                                      
+//*******************************************************************           
+//*                                                                             
+//STEP020 EXEC PGM=GLCHRAGE,                                                    
+//             COND=(0,NE)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..AGESORT,                           
+//             DISP=SHR                                                         
+//FILEC     DD SYSOUT=&RPTID1                                                   
+//*******************************************************************           
+//* PRODUCE THE ACTV REPORT                                                     
+//*******************************************************************           
+//*                                                                             
+//STEP030 EXEC PGM=GLCHRACT,                                                    
+//             COND=(0,NE)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//FILEA     DD DSN=&CBACCNT..&NODE2..&NODE3..AGESORT,                           
+//             DISP=SHR                                                         
+//FILEC     DD SYSOUT=&RPTID2                                                   
+//**********************************************************************        
+//* SEND AN E-MAIL TO NOTIFY COMPLETION.                                        
+//**********************************************************************        
+//                                                                              
+//STEP040 EXEC PGM=SMTPMAIL,                                                    
+//             COND=(0,NE)                                                      
+//SMTPOUT   DD SYSOUT=&OUTMAIL                                                  
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&CTLLOC.(GLCHRMAI),                                          
+//             DISP=SHR                                                         
+//          DD DSN=&CBACCNT..&NODE2..&NODE3..AGEMAIL,                           
+//             DISP=SHR                                                         
+//*********************************************************                     
+//*   DELETE SORTED FILE AFTER SUCESSFUL RUN              *                     
+//*********************************************************                     
+//*                                                                             
+//STEP50  EXEC PGM=IEFBR14,                                                     
+//             COND=(0,NE)                                                      
+//DD1       DD DSN=&CBACCNT..&NODE2..&NODE3..AGESORT,                           
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(0))                                                  
