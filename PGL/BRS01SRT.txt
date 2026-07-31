@@ -1,6 +1,0 @@
-* SORT ON: 1-3   FILE TYPE                                                      
-*          4-3   SOURCE CODE                                                    
-*          15-5  ACCOUNT NUMBER                                                 
-*          20-10 CHEQUE NUMBER                                                  
- SORT FIELDS=(1,3,A,4,3,A,15,5,A,20,10,A),FORMAT=CH                             
- END                                                                            
