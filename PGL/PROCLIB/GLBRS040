@@ -1,0 +1,162 @@
+//GLBRS040 PROC APLID='XXX',                                                    
+//             CNTLDSN='PEN.GROUP.PROD.STANDARD.CTLCARDS',                      
+//             COND1='(0,NE)',                                                  
+//             DSLVL=PROD,                     <== GAEDATSR                     
+//             DSSTAT='PEN.GLHNEW',            <== GAEDATSR                     
+//             FDTYPE='.XXX',                  <== FEED TYPE                    
+//             GEN1='(+1)',                                                     
+//             ILVL1='PGL',                                                     
+//             MODEL='',                                                        
+//             NDMPARM='BRSNDMXX',                                              
+//             OLVL1='PGL',                                                     
+//             OUTA='*',                                                        
+//             PARMX='  ',                                                      
+//             RPTC='(5,PGLPRNNN)',                                             
+//             RPTR='(5,PGLPRNNN)',                                             
+//             SRCE='XXX',                                                      
+//             UNIT1='PROD'                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* THIS PROC:                                              *         *         
+//*     - CREATES BACKUP COPY OF RECEIVED EFT FILE FROM LHC *         *         
+//*     - CREATES DIRECT DEPOSIT PAYMENT REGISTER           *         *         
+//*     - CREATES DIRECT DEPOSIT CONTROL REPORT             *         *         
+//*     - CHECKS IF THE EFT FILE HAS PAYMENT RECORDS        *         *         
+//*     - TRANSMITS THE FILE TO ROYAL BANK (CONNECT:DIRECT) *         *         
+//*       (IF THERE ARE PAYMENT RECORDS IN THE EFT FILE)    *         *         
+//*---------------------------------------------------------*         *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*       C H A N G E   L O G                                   *     *         
+//*-------------------------------------------------------------*     *         
+//*  PROGRAMMER  º  DATE  º   DESCRIPTION                       *     *         
+//*     NAME     ºDD/MM/YYº   OF CHANGE                         *     *         
+//*--------------+--------+-------------------------------------*     *         
+//* T. NOOR      º15/10/04| CREATED THIS PROC                   *     *         
+//*--------------+--------+-------------------------------------*     *         
+//* IBM GR       +29/10/08+ ENTERPRISE COMPILER UPGRADE         *     *         
+//* JUN2012      IDMSDB2    GAEDATSR REPLACEMENT                                
+//*--------------+--------+-------------------------------------*     *         
+//*-------------------------------------------------------------*               
+//*                                                                   *         
+//*-------------------------------------------------------------------**        
+//* PS0010   : COPY/BACKUP EFT FILE RECEIVED FROM LH CLAIMS (UNISYS)  *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0010  EXEC PGM=IEBGENER                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTA                                                     
+//SYSUT1    DD DSN=&ILVL1..&SRCE..&APLID..EFT.RECEIVED&FDTYPE.,                 
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&OLVL1..&APLID..BRS.EFT.RECEVD&FDTYPE.&GEN1,                 
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(TRK,(50,50),RLSE),                                        
+//             DCB=(&MODEL.RECFM=FB,LRECL=152,BLKSIZE=0)                        
+//SYSIN     DD DUMMY                                                            
+//*********************************************************************         
+//*                                                                   *         
+//* PS0020   : CREATE THE EFT FILE AND DIRECT DEPOSIT PAYMENT REGISTER*         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0020  EXEC PGM=BRSI0400,                                                    
+//             COND=&COND1,                                                     
+//             PARM='&PARMX'                                                    
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..STANDARD.TABLE(GAEDATSR),                   
+//             DISP=SHR                                                         
+//SYSOUT    DD DCB=RECFM=FB,                                                    
+//             SYSOUT=Z                                                         
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSABOUT  DD SYSOUT=&OUTA                                                     
+//SYSOUTU   DD SYSOUT=&OUTA                                                     
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//*                                                                   *         
+//*******************                                                 *         
+//* INPUT FILES                                                       *         
+//*******************                                                 *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSI10    DD DSN=&ILVL1..&SRCE..&APLID..EFT.RECEIVED&FDTYPE.,                 
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*                                                                   *         
+//*******************                                                 *         
+//* OUTPUT FILES                                                      *         
+//*******************                                                 *         
+//*                                                                   *         
+//*********************************************************************         
+//DLSO22    DD DSN=&OLVL1..&APLID..BRS.EFT.CTLREPT&GEN1,                        
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(TRK,(50,10),RLSE),                                        
+//             DCB=(&MODEL.RECFM=FBA,LRECL=133,BLKSIZE=27930)                   
+//DLSO23    DD DSN=&OLVL1..&APLID..BRS.EFT.PAYREGTR&GEN1,                       
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(TRK,(5,5),RLSE),                                          
+//             DCB=(&MODEL.RECFM=FBA,LRECL=133,BLKSIZE=27930)                   
+//*********************************************************************         
+//*                                                                   *         
+//* PS0030   : COPY EFT PAYMENT REGISTER REPORT TO RDS                *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0030  EXEC PGM=IEBGENER,                                                    
+//             COND=&COND1                                                      
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTA                                                     
+//SYSUT1    DD DSN=&ILVL1..&APLID..BRS.EFT.PAYREGTR&GEN1,                       
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=&RPTR                                                     
+//SYSIN     DD DUMMY                                                            
+//*********************************************************************         
+//*                                                                   *         
+//* PS0040   : COPY EFT CONTROL REPORT TO RDS                         *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0040  EXEC PGM=IEBGENER,                                                    
+//             COND=&COND1                                                      
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=0),                             
+//             SYSOUT=&OUTA                                                     
+//SYSUT1    DD DSN=&OLVL1..&APLID..BRS.EFT.CTLREPT&GEN1,                        
+//             DISP=SHR                                                         
+//SYSUT2    DD SYSOUT=&RPTC                                                     
+//SYSIN     DD DUMMY                                                            
+//*********************************************************************         
+//*                                                                   *         
+//* PS0050   : STEP WILL SET A CONDITION CODE BASED ON THE NUMBER     *         
+//*          : OF RECORDS IN THE EFT FILE TO BE TRANSMITTED.          *         
+//*          : IF THE CONDITION CODE IS NON-ZERO, THE EFT FILE WILL   *         
+//*          : NOT BE TRANSMITTED TO THE ROYAL BANK                   *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0050  EXEC PGM=NAVPPRCC,                                                    
+//             COND=&COND1,                                                     
+//             PARM='/00000002'                                                 
+//INFILE    DD DSN=&ILVL1..&SRCE..&APLID..EFT.RECEIVED&FDTYPE.,                 
+//             DISP=SHR                                                         
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//PLIDUMP   DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//*                                                                   *         
+//* PS0060   : FILE TRANSFER VIA CONNECT:DIRECT TO ROYAL BANK         *         
+//*          : THIS STEP WILL TRASMIT THE EFT FILE TO ROYAL BANK      *         
+//*          : EFT FILE TRANSMITTED IS "PGL.UNISYS.LHC.EFT.RECEIVED"  *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//PS0060  EXEC NDMPROC,                                                         
+//             COND=&COND1                                                      
+//NDMCMDS   DD SYSOUT=&OUTA                                                     
+//NDMCNTL   DD DSN=&CNTLDSN(&NDMPARM),                                          
+//             DISP=SHR                                                         
