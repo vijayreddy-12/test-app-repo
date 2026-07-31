@@ -1,0 +1,70 @@
+CURRLR   DS    CL16           LR CURRENTLY IN USE THROUGH CONTROL BLOCK 00000300
+THISSUBS DS    CL27           SUBSCHEMA IN USE THROUGH CONTROL BLOCK    00000416
+*                             INCREASED FROM 8 TO 27 FOR VSAM INFO      00000516
+         SPACE 3                                                        00000600
+********W*************************************************************  00000700
+*     **W*     THE FOLLOWING DESCRIBES THE STORAGE USED FOR SEQUENTIAL  00000800
+*     **W*     PROCESSING.                                              00000900
+********W*************************************************************  00001000
+         SPACE                                                          00001100
+DLSPARMS DS    0A                                                       00001200
+         DS    A(SYSNN)       SYS NUMBER (DDNAME IN MVS)                00001300
+         DS    A(RTRNCODE)    RETURN CODE                               00001400
+         DS    A              LOGICAL RECORD BUFFER                     00001500
+         DS    A(DUMRSIZ)     RECORD SIZE (UNUSED IN MVS)               00001600
+         DS    A(DUMBSIZ)     BLOCK SIZE (UNUSED IN MVS)                00001700
+         DS    A(RECFRMT)     RECORD FORMAT                             00001800
+         DS    A(RECCOUNT)    RECORD COUNT                              00001900
+         SPACE 2                                                        00002000
+SYSNN    DS    0CL6                                                     00002100
+SYS      DS    CL3'SYS'                                                 00002200
+NNN      DS    CL3                                                      00002300
+RTRNCODE DS    PL1'+0'                                                  00002400
+RECFRMT  DS    CL2                                                      00002500
+RECCOUNT DS    PL4'+0'                                                  00002600
+DUMRSIZ  DS    CL5'00010'                                               00002700
+DUMBSIZ  DS    CL5'00010'                                               00002800
+         EJECT                                                          00002900
+********W************************************************************   00003000
+*     **W*    THE FOLLOWING DESCRIBES THE STORAGE USED FOR VSAM         00003100
+*     **W*    PROCESSING.                                               00003200
+********W************************************************************   00003300
+ZACCPARM DS    0F                                                       00003400
+         DS    A              MAIN PARAMTER AREA                        00003500
+         DS    A              RECORD ID AKA KEY                         00003618
+         DS    A              COPY BOOK DEFINITION                      00003700
+ZDDNAME  DS    CL7            DD NAME ------------+                     00004414
+ZACCESS  DS    CL5            ACCESS TYPE         º                     00004514
+ZRECTYPE DS    C              RECORD TYPE         º                     00004614
+ZFUNC    DS    CL6            FUNCTION CODE       º                     00004714
+ZERRCODE DS    CL5            ERROR CODE          º== KEEP CONTIGUOUS   00004814
+ZREADCT  DS    PL4            RECORDS READ        º                     00004914
+ZWRITCT  DS    PL4            RECORDS WRITTEN     º                     00005014
+ZUPDTCT  DS    PL4            RECORDS UPDATED     º                     00005114
+ZDELECT  DS    PL4            RECORDS DELETED     º                     00005214
+ZRECLEN  DS    XL2            RECORD LENGTH ------+                     00005314
+ZKEYADR  DS    A              ADDRESS OF SAVED KEY                      00005518
+ZKEYLEN  DS    A              LENGTH OF KEY                             00005618
+ZKEYOFF  DS    A              OFFSET OF KEY                             00005718
+ZFLAG    DS    C              GENERAL FLAG                              00005815
+ZNULL    EQU   X'00'               GOING NOWHERE (NO SETLIM OR SETBWD)  00005914
+ZFWD     EQU   X'01'               GOING FORWARD                        00006014
+ZBWD     EQU   X'02'               GOING BACKWARD                       00006114
+ZWRITE   EQU   X'04'               WRITE TYPE FUNCTION                  00006215
+ZEOF     EQU   X'08'               IGNORE EOF                           00006317
+ZLRCODE  DS    CL4            LOGICAL RECORD ERROR CODES                00006414
+         EJECT                                                          00006501
+********W************************************************************   00006601
+*     **W*    THE FOLLOWING DESCRIBES THE STORAGE USED FOR              00006701
+*     **W*    DATSRVC CALLS                                             00006801
+********W************************************************************   00006901
+         SPACE                                                          00007001
+SRVCREQ  DS    X              DATSRVC REQUEST CODE                      00007101
+SRVCACT  EQU   X'01'              ACTION REQUIRED                       00007211
+SRVCCLO  EQU   X'02'              SEQUENTIAL CLOSE REQUIRED             00007302
+SRVCBND  EQU   X'03'              BIND REQUIRED                         00007404
+SRVCCLN  EQU   X'04'              FREE STORAGE                          00007505
+SRVCRC   DS    X              DATSRVC RETURN CODE                       00007606
+SRVCRC0  EQU   X'00'              CLEAN CALL                            00007706
+SRVCERR  EQU   X'01'              ERROR OF SOME SORT                    00007806
+SUBSCBLN EQU   *-SUBSCB       LENGTH OF THE BLOCK                       00008001

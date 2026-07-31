@@ -1,0 +1,45 @@
+********W**************************************************************         
+*     **W*            DATA SERVICES VERBS                             *         
+*     **W*                                                            *         
+*     **WH     AS OF 30MAR93, THE COBOL COPYBOOK VERSION OF THIS      *         
+*     **WH     LIST IS CALLED GARDSVRB.  AT THAT TIME IT WAS ALSO     *         
+*     **WH     UPDATED TO INCLUDE VERBS SPECIFICALLY USED FOR         *         
+*     **WH     ACCESSING VSAM AND BTRIEVE FILES (TO BE CONSISTENT     *         
+*     **WH     WITH THE PC DATA SERVER).                              *         
+********W**************************************************************         
+OBTFIRST DS    0CL16                                                            
+         DC    CL8'OBTAIN'                                                      
+         DC    CL8'FIRST'                                                       
+OBTNEXT  DS    0CL16                                                            
+         DC    CL8'OBTAIN'                                                      
+         DC    CL8'NEXT'                                                        
+OBTPRIOR DS    0CL16                                                            
+         DC    CL8'OBTAIN'                                                      
+         DC    CL8'PRIOR'                                                       
+OBTKEYED DS    0CL16                                                            
+         DC    CL8'OBTAIN'                                                      
+         DC    CL8'KEYED'                                                       
+OBTGE    DS    0CL16                                                            
+         DC    CL8'OBTAIN'                                                      
+         DC    CL8'GE'                                                          
+OBTLE    DS    0CL16                                                            
+         DC    CL8'OBTAIN'                                                      
+         DC    CL8'LE'                                                          
+STORE    DS    0CL16                                                            
+         DC    CL8'STORE'                                                       
+         DC    CL8' '                                                           
+MODIFY   DS    0CL16                                                            
+         DC    CL8'MODIFY'                                                      
+         DC    CL8' '                                                           
+ERASE    DS    0CL16                                                            
+         DC    CL8'ERASE'                                                       
+         DC    CL8' '                                                           
+FINISH   DS    0CL16                                                            
+         DC    CL8'FINISH'                                                      
+         DC    CL8' '                                                           
+CLOSEALL DS    0CL16                                                            
+         DC    CL8'CLOSE'                                                       
+         DC    CL8'ALL'                                                         
+COMMIT   DS    0CL16                                                            
+         DC    CL8'COMMIT'                                                      
+         DC    CL8' '                                                           

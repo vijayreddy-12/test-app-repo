@@ -1,0 +1,173 @@
+         MACRO                                                                  
+&NAM     TMMOVE &T,&L,&RLINK=RLINK,&USE=                                        
+.*--------------------------------------------------------------------*         
+.*    *G** TMMOVE moves a specified length of storage from a source   *         
+.*    *G** address to a destination address, and also to sucessively  *         
+.*    *G** higher positions.  The source and destinations may overlap.*         
+.*    *G**                                                            *         
+.*    *G** FORMAT(S):                                                 *         
+.*    *G** (NAME)  TMMOVE  (DESTINATION ADDR),                        *         
+.*    *G**               (   REGISTER     ),                          *         
+.*    *G**                                                            *         
+.*    *G**                     (  EXPRESSION,  )                      *         
+.*    *G**                     (    L'LABEL,   )                      *         
+.*    *G**                     (*(+EXPRESSION),)                      *         
+.*    *G**                     (    NNNNNNNN,  )                      *         
+.*    *G**                     (    REGISTER,  )                      *         
+.*    *G**                     (      ,        )                      *         
+.*    *G**                                                            *         
+.*    *G**                          (SOURCE-ADDR)                     *         
+.*    *G**                          (  REGISTER )                     *         
+.*    *G**                                                            *         
+.*    *G**                               (,RLINK=N)                   *         
+.*    *G**                                                            *         
+.*    *G**                                    (,USE=ADDCON)           *         
+.*    *G** **NOTE**:  where REGISTER occurs in the format, any regis- *         
+.*    *G**            ter between 2 and 12 can be coded instead.      *         
+.*    *G**                                                            *         
+.*    *G**                                    (,USE=ADDCON)           *         
+.*    *G**                                                            *         
+.*    *G** OPERAND DEFINITIONS:                                       *         
+.*    *G**    DESTINATION ADDR    This is the starting address in sto-*         
+.*    *G**    REGISTER            rage where the data is moved to. The*         
+.*    *G**                        data is moved into successively     *         
+.*    *G**                        higher positions on the left.       *         
+.*    *G**                                                            *         
+.*    *G**    EXPRESSION,         If chosen, this must be a string    *         
+.*    *G**    L'LABEL,            acceptable as the second operand in *         
+.*    *G**    *(+EXPRESSION),     a load address (LA) instruction.    *         
+.*    *G**    NNNNNNNN,           This operand represents the length. *         
+.*    *G**    (0),                                                    *         
+.*    *G**       ,                                                    *         
+.*    *G**                                                            *         
+.*    *G**    SOURCE ADDRESS      This is the starting address of the *         
+.*    *G**     (14)               storage block to be moved to the    *         
+.*    *G**                        destination address.                *         
+.*    *G**                                                            *         
+.*    *G**    ,RLINK=N            If the TMBLANK macro is used to call*         
+.*    *G**                        TMMOVE, specify a register value of *         
+.*    *G**                        2 through 12 for 'N'. This specifies*         
+.*    *G**                        a substitute for the TMMOVE link re-*         
+.*    *G**                        gister.                             *         
+.*    *G**                                                            *         
+.*    *G**    ,USE=ADDCON         This should be coded if the value of*         
+.*    *G**                        EXPRESSION or L'LABEL can exceed    *         
+.*    *G**                        4095.                               *         
+.*--------------------------------------------------------------------*         
+         GBLB  &XREGS,&LONGMUV,&MUVBLNK                                         
+         GBLC  &MOVE                                                            
+         LCLA  &D,&E                                                            
+         LCLC  &N,&R,&X                                                         
+&N       SETC  '&NAM'                                                           
+&D       SETA  N'&SYSLIST                                                       
+         AIF   (NOT &XREGS).M                                                   
+&R       SETC  'R'                                                              
+.M       AIF   (&MUVBLNK).M05                                                   
+&MUVBLNK SETB  1                                                                
+&MOVE    SETC  '&RLINK'                                                         
+.M05     AIF   (&D GE 2 AND &D LE 3).M10                                        
+         MNOTE '*** MOVE MACRO NEEDS 2 OR 3 OPERANDS ***'                       
+         MEXIT                                                                  
+.M10     AIF   (N'&T NE 1 OR '&T'(1,1)NE'('OR'&T'(K'&T,1)NE')').M12             
+         AIF   (T'&T(1) NE'N').M11                                              
+         AIF   (&T(1) LT 0 OR &T(1) GT 15).M12                                  
+         AIF   (&T(1) EQ 15).M14                                                
+.M105    AIF   ('&T'EQ'(R15)').M14                                              
+&N       LR    &R.15,&T(1) ..       R15 POINT TO DESTINATION FIELD              
+&N       SETC  ''                                                               
+         AGO   .M14                                                             
+.M11     AIF   (&XREGS AND ('&T'GE'(R0)'AND'&T'LE'(R9)'OR'&T'GE'(R10)'AX        
+               ND'&T'LE'(R15)')).M105                                           
+.M12     AIF   (&D GT 2 AND'&L'NE'').M13                                        
+&E       SETA  1                                                                
+&X       SETC  'L'''                                                            
+.M13     ANOP                                                                   
+&N       LA    &R.15,&T ..        R15 POINT TO DESTINATION FIELD                
+&N       SETC  ''                                                               
+.M14     AIF   (N'&SYSLIST(&D) NE 1 OR'&SYSLIST(&D)'(1,1)NE'('OR'&SYSLIX        
+               ST(&D)'(K'&SYSLIST(&D),1)NE')').M16                              
+         AIF   (T'&SYSLIST(&D,1) NE'N').M15                                     
+         AIF   (&SYSLIST(&D,1) LT 0 OR &SYSLIST(&D,1) GT 15).M16                
+         AIF   (&SYSLIST(&D,1) EQ 15).M148                                      
+         AIF   (&SYSLIST(&D,1) EQ 14).M18                                       
+.M145    AIF   ('&SYSLIST(&D)'EQ'(R15)').M148                                   
+         AIF   ('&SYSLIST(&D)'EQ'(R14)').M18                                    
+         AIF   ('&SYSLIST(&D)'EQ'(R14)').M18                                    
+&N       LR    &R.14,&SYSLIST(&D,1) ..       R14 POINT TO SOURCE FIELD          
+&N       SETC  ''                                                               
+         AGO   .M18                                                             
+.M148    MNOTE '*** SOURCE MAY NOT BE REG 15 ***'                               
+         MEXIT                                                                  
+.M15     AIF   (&XREGS AND ('&SYSLIST(&D)'GE'(R0)'AND'&SYSLIST(&D)'LE'(X        
+               R9)'OR'&SYSLIST(&D)'GE'(R10)'AND'&SYSLIST(&D)'LE'(R15)')X        
+               ).M145                                                           
+.M16     AIF   (&E EQ 1 OR &D GT 2 AND'&L'NE'').M17                             
+&E       SETA  &D                                                               
+&X       SETC  'L'''                                                            
+.M17     ANOP                                                                   
+&N       LA    &R.14,&SYSLIST(&D) ..        R14 POINT TO SOURCE FIELD           
+&N       SETC  ''                                                               
+.M18     AIF   ((&D EQ 2 OR'&L'EQ'')AND &E EQ 0 OR &D EQ 3 AND('&L'EQ'*X        
+               'OR'&L  '(1,2)EQ'*+')).M29                                       
+         AIF   (&E NE 0).M20                                                    
+&E       SETA  2                                                                
+         AIF   (N'&L NE 1 OR'&L'(1,1)NE'('OR'&L'(K'&L,1)NE')').M20              
+         AIF   (T'&L(1) NE'N').M19                                              
+         AIF   (&L(1) LT 0 OR &L(1) GT 15).M20                                  
+         AIF   (&L(1) GE 14).M188                                               
+         AIF   (&L(1) EQ 0).M30                                                 
+.M185    AIF   ('&L'GE'(R14)').M188                                             
+         AIF   ('&L'EQ'(R0)').M30                                               
+&N       LR    &R.0,&L(1) ..        R0  LENGTH TO BE MOVED                      
+&N       SETC  ''                                                               
+         AGO   .M30                                                             
+.M188    MNOTE '*** LENGTH MAY NOT BE REG 14 OR REG 15 ***'                     
+         MEXIT                                                                  
+.M19     AIF   (&XREGS AND ('&L'GE'(R0)'AND'&L'LE'(R9)'OR'&L'GE'(R10)'AX        
+               ND'&L'LE'(R15)')).M185                                           
+.M20     AIF   ('&USE'EQ'ADDCON').M28                                           
+         AIF   (T'&L NE'N'OR'&X'NE'').M22                                       
+         AIF   (&L GT 4095).M25                                                 
+.M22     ANOP                                                                   
+&N       LA    &R.0,&X&SYSLIST(&E) ..    R0  LENGTH TO BE MOVED                 
+&N       SETC  ''                                                               
+         AGO   .M30                                                             
+.M25     AIF   (&L GT 32767).M28                                                
+&N       LH    &R.0,=AL2(&L) R0  LENGTH TO BE MOVED                             
+&N       SETC  ''                                                               
+         AGO   .M30                                                             
+.M28     ANOP                                                                   
+&N       L     &R.0,=A(&X&SYSLIST(&E)) ..R0  LENGTH TO BE MOVED                 
+&N       SETC  ''                                                               
+         AGO   .M30                                                             
+.M29     ANOP                                                                   
+&N       SR    &R.0,&R.0 ..        R0  LENGTH TO BE MOVED                       
+         IC    &R.0,0(&R.14) ..         *                                       
+         SLL   &R.0,8 ..              *                                         
+         IC    &R.0,1(&R.14) ..         *                                       
+&N       SETC  ''                                                               
+         AIF   (&D NE 3 OR'&L  '(1,2)NE'*+').M30                                
+         AIF   ('&USE'EQ'ADDCON').M295                                          
+         LA    &R.1,*-&L ..          *                                          
+         AR    &R.0,&R.1 ..             *                                       
+         AGO   .M30                                                             
+.M295    A     &R.0,=A(*-&L) ..        *                                        
+.M30     AIF   (&LONGMUV).M40                                                   
+&LONGMUV SETB  1                                                                
+&N       LA    &MOVE,*+38 ..          EXIT TO FIRST FOLLOWING INSTR             
+         SPACE                                                                  
+LONGMOVE BCTR  &R.0,0 ..         R0  REMAINING LENGTH, - 1                      
+         LA    &R.1,255 ..       R1  X'000000FF'                                
+         NR    &R.1,&R.0 ..        R1  LENGTH - 1, MODULO 256                   
+         SR    &R.0,&R.1 ..        R0  LENGTH LEFT AFTER COMING MOVE            
+         BCR   4,&MOVE ..             IF NEGATIVE, EXIT NOW                     
+         EX    &R.1,*+16 ..          PERFORM THE MOVE                           
+         LA    &R.14,1(&R.1,&R.14) ..R14 BUMP SOURCE POINTER                    
+         LA    &R.15,1(&R.1,&R.15) ..R15 BUMP DESTINATION POINTER               
+         B     *-24 ..             LOOP                                         
+         MVC   0(0,&R.15),0(&R.14) ..  EXECUTED MOVE                            
+         SPACE                                                                  
+         MEXIT                                                                  
+.M40     ANOP                                                                   
+&N       BAL   &MOVE,LONGMOVE ..      PERFORM LONGMOVE                          
+         MEND                                                                   

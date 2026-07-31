@@ -1,0 +1,221 @@
+         MACRO                                                                  
+&NAM     TMBLANK &F,&K,&L=,&FILL=C' ',&RLINK=RLINK,&USE=                        
+.*--------------------------------------------------------------------*         
+.*    *G** TMBLANK allows you to move blanks or any other specified   *         
+.*    *G** fill character to a specified storage area.                *         
+.*    *G**                                                            *         
+.*    *G** Registers 0, 1, 14, and 15 may be altered by this macro.   *         
+.*    *G** TMMOVE is also used by this macro.  If XREGS or TMENTER is *         
+.*    *G** is use, an 'R' may be prefixed to all register notations.  *         
+.*    *G**                                                            *         
+.*    *G** FORMAT #1:  (NAME)  TMBLANK ( ADDRESS 1   ) ,              *         
+.*    *G**                             (  REGISTER   )                *         
+.*    *G**                                                            *         
+.*    *G**                             ( ADDRESS 2   ) ,              *         
+.*    *G**                             (  REGISTER   )                *         
+.*    *G**                                                            *         
+.*    *G**                             (FILL=VALUE   )   ,            *         
+.*    *G**                                                            *         
+.*    *G**                             (RLINK=N      )                *         
+.*    *G**                                                            *         
+.*    *G**   OPERANDS:                                                *         
+.*    *G**                                                            *         
+.*    *G**   NAME        THE NAME FIELD IS THE LABEL ATTACHED TO THE  *         
+.*    *G**   (OPTIONAL)  FIRST LINE OF CODE GENERATED.                *         
+.*    *G**   ADDRESS 1   THIS IS THE ADDRESS OF THE STORAGE AT WHICH  *         
+.*    *G**   (MANDATORY) BLANK IS TO BEGIN TO MOVE THE FILL CHARACTER *         
+.*    *G**               THE ADDRESSES MAY BE ANY STRINGS ACCEPTABLE  *         
+.*    *G**               AS THE SECOND OPERAND OF AN LA INSTRUCTION   *         
+.*    *G**               OR REGISTER NOTATION.                        *         
+.*    *G**   ADDRESS 2   THIS IS THE ADDRESS OF THE STORAGE AT WHICH  *         
+.*    *G**   (MANDATORY) BLANK IS TO TERMINATE THE MOVE OPERATION     *         
+.*    *G**               (INCLUSIVE). THE ADDRESSES MAY BE ANY STRINGS*         
+.*    *G**               ACCEPTABLE AS THE SECOND OPERAND OF AN LA    *         
+.*    *G**               INSTRUCTION OR REGISTER NOTATION.            *         
+.*    *G**  FILL=VALUE   THIS IS ANY STRING ACCEPTABLE AS THE SECOND  *         
+.*    *G**  (OPTIONAL)   OPERAND OF AN MVI INSTRUCTION.  IF NOT CODED,*         
+.*    *G**               BLANK (X'40') IS ASSUMED.                    *         
+.*    *G**  RLINK=N      N  SPECIFIES A REGISTER TO BE USED AS A SUB- *         
+.*    *G**  (OPTIONAL)   STITUTE TMMOVE LINK REGISTER.  RLINK SHOULD  *         
+.*    *G**               BE EQUATED TO ONE OF THE REGISTERS 2 THROUGH *         
+.*    *G**               12 OR SPECIFY THE SUBSTITUTE IN THE FIRST USE*         
+.*    *G**               OF TMMOVE OR TMBLANK IN YOUR PROGRAM.        *         
+.*    *G**                                                            *         
+.*    *G**                                                            *         
+.*    *G** FORMAT #2:  (NAME)  TMBLANK  ( ADDRESS    )                *         
+.*    *G**                              (   (14)     )                *         
+.*    *G**                                                            *         
+.*    *G**                              (,EXPRESSION  ) ,             *         
+.*    *G**                              (, L'LABEL    )               *         
+.*    *G**                              (, L=LABEL    )               *         
+.*    *G**                              (, NNNNNNNN   )               *         
+.*    *G**                              (, (0)        )               *         
+.*    *G**                                                            *         
+.*    *G**                              (,FILL=VALUE  )               *         
+.*    *G**                                                            *         
+.*    *G**                              (,RLINK=N     )               *         
+.*    *G**                                                            *         
+.*    *G**                              (,USE=ADCON   )               *         
+.*    *G**                                                            *         
+.*    *G**   OPERANDS:                                                *         
+.*    *G**                                                            *         
+.*    *G**   NAME        THE NAME FIELD IS THE LABEL ATTACHED TO THE  *         
+.*    *G**   (OPTIONAL)  FIRST LINE OF CODE GENERATED.                *         
+.*    *G**   ADDRESS     THIS IS THE ADDRESS OF THE STORAGE AT WHICH  *         
+.*    *G**   (MANDATORY) BLANK IS TO BEGIN TO MOVE THE FILL CHARACTER.*         
+.*    *G**               THE ADDRESSES MAY BE ANY STRINGS ACCEPTABLE  *         
+.*    *G**               AS THE SECOND OPERAND OF AN LA INSTRUCTION   *         
+.*    *G**               OR REGISTER NOTATION.                        *         
+.*    *G**  EXPRESSION   THIS IS THE LENGTH OF THE MOVE TO BE PER-    *         
+.*    *G**  (OPTIONAL)   FORMED.  IF THE VALUE OF THE EXPRESSION OR   *         
+.*    *G**  L'LABEL      L'LABEL IS NOT KNOWN TO BE LESS THAN 4096    *         
+.*    *G**  L=LABEL      (THE LIMIT OF AN LA INSTRUCTION),CODE L=LABEL*         
+.*    *G**  NNNNNNN      IN PLACE OF L'LABEL OR USE=ADCON IN ADDITION *         
+.*    *G**  (0)          TO THE EXPRESSION.                           *         
+.*    *G**               NNNNNNNN REPRESENTS ANY SELF-DEFINING TERM   *         
+.*    *G**               WHETHER  DECIMAL, HEX, BINARY, OR CHARACTER. *         
+.*    *G**               IF THIS OPERAND IS OMITTED, THE LENGTH ATTRI-*         
+.*    *G**               BUTE OF THE FIRST OPERAND IS USED.           *         
+.*    *G**  FILL=VALUE   THIS IS ANY STRING ACCEPTABLE AS THE SECOND  *         
+.*    *G**  (OPTIONAL)   OPERAND OF AN MVI INSTRUCTION.  IF NOT CODED,*         
+.*    *G**               BLANK (X'40') IS ASSSUMED.                   *         
+.*    *G**  RLINK=N      N  SPECIFIES A REGISTER TO BE USED AS A SUB- *         
+.*    *G**  (OPTIONAL)   STITUTE TMMOVE LINK REGISTER.  RLINK SHOULD  *         
+.*    *G**               BE EQUATED TO ONE OF THE REGISTERS 2 THROUGH *         
+.*    *G**               12 OR SPECIFY THE SUBSTITUTE IN THE FIRST USE*         
+.*    *G**               OF TMMOVE OR TMBLANK IN YOUR PROGRAM.        *         
+.*    *G**  USE=ADCON    THE LABEL 'LONGMOVE' MAY BE GENERATED ONCE   *         
+.*    *G**  (OPTIONAL)   IN AN ASSEMBLY.  YOU ARE RESPONSIBLE FOR ANY *         
+.*    *G**               REQUIRED ADDRESSABILITY OF OPERANDS.  A LIT- *         
+.*    *G**               ERAL WILL BE GENERATED IF THIS OPERAND IS    *         
+.*    *G**               CODED.                                       *         
+.*--------------------------------------------------------------------*         
+         GBLB  &XREGS,&LONGMUV,&MUVBLNK                                         
+         GBLC  &MOVE                                                            
+         LCLA  &A,&B,&C,&D,&E,&LR,&WA                                           
+         LCLB  &BR                                                              
+         LCLC  &N,&R,&W,&S,&LP,&RP,&X                                           
+&N       SETC  '&NAM'                                                           
+&D       SETA  N'&SYSLIST                                                       
+&E       SETA  N'&F                                                             
+         AIF   (NOT &XREGS).B                                                   
+&R       SETC  'R'                                                              
+.B       AIF   (&MUVBLNK).B0                                                    
+&MUVBLNK SETB  1                                                                
+&MOVE    SETC  '&RLINK'                                                         
+.B0      AIF   ('&K'NE''AND'&L'NE''OR'&K'EQ''AND &D EQ 2).B000                  
+         AIF   (&D GE 1 AND &E GE 1 AND &D*&E LE 2).B001                        
+.B000    MNOTE '*** BLANK NEEDS 1 OR 2 OPERANDS ***'                            
+         MEXIT                                                                  
+.B001    AIF   ('&F'(&E,1)NE'('OR'&F  '(K'&F(1)+3-&E,1)NE')').B004              
+&LP      SETC  '('(1,2-&E)                                                      
+&RP      SETC  ')'(1,2-&E)                                                      
+&WA      SETA  K'&F(1)+2-2*&E                                                   
+         AIF   (&WA GT 3).B004                                                  
+&W       SETC  '&F'(&E+1,&WA)                                                   
+         AIF   (('&W'LT'0'OR'&W'GT'9')AND('&W'LT'10'OR'&W'GT'15')AND(NOX        
+               T &XREGS OR ('&W'LT'R0'OR'&W'GT'R9')AND('&W'LT'R10'OR'&WX        
+               'GT'R15'))).B004                                                 
+&S       SETC  '&W'                                                             
+         AIF   ('&W'NE'0'AND'&W'NE'R0').B002                                    
+&N       LR    &R.14,&W ..        R14 TO ADDRESS FIELD                          
+&N       SETC  ''                                                               
+&S       SETC  '&R.14'                                                          
+.B002    ANOP                                                                   
+&N       MVI   0(&S),&FILL ..       FIELD FILL CHARACTER                        
+         AGO   .B010                                                            
+.B004    ANOP                                                                   
+&N       MVI   &LP&F(1)&RP,&FILL ..        FIELD FILL CHARACTER                 
+.B010    AIF   (&E EQ 2).B080                                                   
+         AIF   ('&L'NE'').B025                                                  
+         AIF   ('&K'EQ'').B020                                                  
+         AIF   (N'&K NE 1 OR'&K'(1,1)NE'('OR'&K'(K'&K,1)NE')').B015             
+         AIF   (T'&K(1) NE'N').B012                                             
+         AIF   (&K(1) LT 0 OR &K(1) GT 15).B015                                 
+&LR      SETA  &K(1)                                                            
+         AGO   .B088                                                            
+.B012    AIF   (NOT &XREGS OR('&K'LT'(R0)'OR'&K'GT'(R9)')AND('&K'LT'(R1X        
+               0)'OR'&K'GT'(R15)')).B015                                        
+&W       SETC  '&K'(3,K'&K-3)                                                   
+         AGO   .B084                                                            
+.B015    AIF   (T'&K NE'N').B100                                                
+&A       SETA  &K                                                               
+         AGO   .B030                                                            
+.B020    AIF   (T'&F EQ'U').B100                                                
+&A       SETA  L'&F                                                             
+         AGO   .B030                                                            
+.B025    ANOP                                                                   
+&A       SETA  L'&L                                                             
+.B030    AIF   (&A GT 0).B040                                                   
+         MNOTE '*** INVALID OR MISSING LENGTH ***'                              
+         MEXIT                                                                  
+.B040    AIF   (&A GT 2049 OR &A GT 513 AND &LONGMUV).B100                      
+&B       SETA  1                                                                
+&C       SETA  256                                                              
+         AGO   .B070                                                            
+.B045    AIF   (&A GT 256).B050                                                 
+&C       SETA  &A-1                                                             
+.B050    AIF   ('&S'NE'').B060                                                  
+         MVC   &F+&B.(&C),&F                                                    
+         AGO   .B065                                                            
+.B060    MVC   &B.(&C,&S),0(&S)                                                 
+.B065    ANOP                                                                   
+&B       SETA  &B+&C                                                            
+&A       SETA  &A-&C                                                            
+.B070    AIF   (&A GT 2).B045                                                   
+         AIF   (&A LE 1).B072                                                   
+         AIF   ('&S'NE'').B075                                                  
+         MVI   &F+&B,&FILL                                                      
+.B072    MEXIT                                                                  
+.B075    MVI   &B.(&S),&FILL                                                    
+         MEXIT                                                                  
+.B080    AIF   ('&F(2)'(1,1)NE'('OR'&F(2)'(K'&F(2),1)NE')').B100                
+&WA      SETA  K'&F(2)-2                                                        
+         AIF   (&WA GT 3).B100                                                  
+&W       SETC  '&F(2)'(2,&WA)                                                   
+         AIF   ('&W'GE'0'AND'&W'LE'9'OR'&W'GE'10'AND'&W'LE'15').B084            
+         AIF   (NOT &XREGS OR ('&W'LT'R0'OR'&W'GT'R9')AND('&W'LT'R10'ORX        
+               '&W'GT'R15')).B100                                               
+&W       SETC  '&W'(2,&WA-1)                                                    
+.B084    ANOP                                                                   
+&LR      SETA  &W                                                               
+.B088    ANOP                                                                   
+&BR      SETB  (1)                                                              
+.B100    AIF   ('&S'EQ'').B110                                                  
+         AIF   ('&S'EQ'14'OR'&S'EQ'R14').B120                                   
+         LR    &R.14,&S                                                         
+         AGO   .B120                                                            
+.B110    LA    &R.14,&LP&F(1)&RP                                                
+.B120    AIF   (&BR).B170                                                       
+         AIF   (&E EQ 2).B160                                                   
+         AIF   (&A EQ 0).B150                                                   
+&A       SETA  &A-1                                                             
+         AIF   (&A GT 4095).B130                                                
+         LA    &R.0,&A                                                          
+         AGO   .B200                                                            
+.B130    AIF   (&A GT 32767).B140                                               
+         LH    &R.0,=AL2(&A)                                                    
+         AGO   .B200                                                            
+.B140    L     &R.0,=A(&A)                                                      
+         AGO   .B200                                                            
+.B150    AIF   (&D EQ 2).B152                                                   
+&X       SETC  'L'''                                                            
+.B152    AIF   ('&USE'EQ'ADDCON').B155                                          
+         LA    &R.0,0-1+&X&SYSLIST(&D)                                          
+         AGO   .B200                                                            
+.B155    L     &R.0,=A(&X&SYSLIST(&D)-1)                                        
+         AGO   .B200                                                            
+.B160    LA    &R.0,&F(2)                                                       
+.B165    LA    &R.15,1(&R.14)                                                   
+         SR    &R.0,&R.15                                                       
+         AGO   .B210                                                            
+.B170    AIF   (&LR EQ 0).B175                                                  
+         AIF   (&LR NE 14).B172                                                 
+         MNOTE 'SECOND OPERAND IS REG 14 - RESULT OF EXPANSION PROBABLYX        
+                IN ERROR'                                                       
+.B172    LR    &R.0,&R&LR                                                       
+.B175    AIF   (&E EQ 2).B165                                                   
+         BCTR  &R.0,0                                                           
+.B200    LA    &R.15,1(&R.14)                                                   
+.B210    TMMOVE (15),(0),(14)                                                   
+         MEND                                                                   

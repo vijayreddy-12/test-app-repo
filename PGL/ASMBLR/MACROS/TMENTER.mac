@@ -1,0 +1,361 @@
+         MACRO
+&NAME    TMENTER &LEVEL,&PATCH=0,&CSECT=,&BASE=,&IDMSXT=NO,            X
+               &SPTIME=,&PCIENT=NO,&AMODE=24,&RMODE=24,&MODESW=NO
+.*--------------------------------------------------------------------*
+.*    *G** TMENTER carries out all housekeeping chores associated with*
+.*    *G** setting up a non-reentrant module, be it mainline or sub-  *
+.*    *G** routine.  TMENTER:                                         *
+.*    *G**   - invokes TMXREGS to equate registers 0-15 to R0-R15 (no *
+.*    *G**     more than once per assembly),                          *
+.*    *G**   - establishes the desired CSECT and/or entry,            *
+.*    *G**   - sets an MPMODE signal for IDMS exit modules (optional) *
+.*    *G**   - provides a base register (default is R12),             *
+.*    *G**   - defines a save area,                                   *
+.*    *G**   - performs the pointer exchange for standard OS subrou-  *
+.*    *G**     tine linkage,                                          *
+.*    *G**   - defines a patch area (optional),                       *
+.*    *G**   - defines constants for program identification in a dump *
+.*    *G**     (I.E.: NAME, COMPILE-DATE, COMPILE-TIME)               *
+.*    *G**   - issues a CALL to TRSPIE in the case of a mainline pro- *
+.*    *G**     gram.                                                  *
+.*    *G**   - sets the addressing mode for the module (optional)     *
+.*    *G**   - sets the residency mode for the module (optional)      *
+.*    *G**   - sets up standard linkage convention return code that   *
+.*    *G**     may or may not use addressing mode switching.          *
+.*    *G**                                                            *
+.*    *G** FORMAT:  (NAME)  TMENTER  MAIN  (,PATCH=NNN)               *
+.*    *G**                           SUB                              *
+.*    *G**                                 (,CSECT=NAME)              *
+.*    *G**                                         SAME)              *
+.*    *G**                                 (,BASE=NAME)               *
+.*    *G**                                        SAME)               *
+.*    *G**                                 (,IDMSXT=NO)               *
+.*    *G**                                          YES)              *
+.*    *G**                                 (,SPTIME=NAME)             *
+.*    *G**                                 (,PCIENT=SAME)             *
+.*    *G**                                          OTHER)            *
+.*    *G**                                          NO)               *
+.*    *G**                                 (,AMODE=24)                *
+.*    *G**                                         31)                *
+.*    *G**                                         ANY)               *
+.*    *G**                                 (,RMODE=24)                *
+.*    *G**                                         ANY)               *
+.*    *G**                                 (,MODESW=NO)               *
+.*    *G**                                          YES)              *
+.*    *G**                                                            *
+.*    *G** OPERANDS:                                                  *
+.*    *G**                                                            *
+.*    *G**   NAME        BEFORE GENERATING ANY CODE, THE MACRO ESTA-  *
+.*    *G**   CSECT NAME  BLISHES TWO(2) NAMES:  THE NAME OF THE CSECT *
+.*    *G**               IN WHICH TO GENERATE CODE, AND THE NAME OF   *
+.*    *G**               THE ENTRY POINT FOR WHICH THE CODE IS BEING  *
+.*    *G**               GENERATED.  IF THE NAME OF THE CSECT DIFFERS *
+.*    *G**               FROM THE NAME OF THE CSECT LAST ESTABLISHED  *
+.*    *G**               BEFORE THIS TMENTER USE, A CSECT STATEMENT   *
+.*    *G**               WITH THE CORRECT NAME IS GENERATED.          *
+.*    *G**                                                            *
+.*    *G**               IF THE NAME OF THE ENTRY POINT DIFFERS FROM  *
+.*    *G**               THE NAME OF THE CSECT, IT IS ATTACHED TO THE *
+.*    *G**               FIRST SIGNIFICANT LINE OF GENERATED CODE AND *
+.*    *G**               AN ENTRY STATEMENT IS GENERATED; OTHERWISE,  *
+.*    *G**               IT IS ASSUMED THAT THIS ENTRY POINT IS AT THE*
+.*    *G**               BEGINNING OF THE CSECT AND THAT NEITHER AN   *
+.*    *G**               ENTRY STATEMENT NOR A LABEL IS NEEDED.  THE  *
+.*    *G**               ENTRY NAME APPEARS ALONG WITH THE COMPILE    *
+.*    *G**               DATE AND TIME IN THE EXPANSION OF THE        *
+.*    *G**               THE MACRO TO AID DUMP IDENTIFICATION.  IT IS *
+.*    *G**               ASSEMBLED AT X'24' PAST THE MACRO ENTRY POINT*
+.*    *G**                                                            *
+.*    *G**               IF CSECT=NAME IS SPECIFIED, THE NAME IS USED *
+.*    *G**               AS THE NAME OF THE CSECT IN WHICH TO GENERATE*
+.*    *G**               CODE; IF CSECT=(SAME) IS CODED, THE NAME OF  *
+.*    *G**               THE CSECT ESTABLISHED BEFORE THIS TMENTER USE*
+.*    *G**               IS USED TO GENERATE CODE.  THUS, IF CSECT=   *
+.*    *G**               (SAME) IS CODED, NO CSECT STATEMENT WILL BE  *
+.*    *G**               GENERATED.  IF THE CSECT OPERAND IS OMITTED  *
+.*    *G**               AND THE NAME FIELD IS CODED, THE NAME FIELD  *
+.*    *G**               IS TAKEN AS THE NAME OF THE CSECT IN WHICH   *
+.*    *G**               TO GENERATE CODE.  IF BOTH THE CSECT OPERAND *
+.*    *G**               AND THE NAME FIELD ARE OMITTED, THE EFFECT   *
+.*    *G**               IS AS IF CSECT=(SAME) HAD BEEN CODED.        *
+.*    *G**                                                            *
+.*    *G**               IF THE NAME FIELD IS CODED, IT IS USED AS THE*
+.*    *G**               NAME OF THE ENTRY POINT FOR THIS TMENTER USE.*
+.*    *G**               IF IT IS OMITTED, THE ENTRY NAME IS EQUAL TO *
+.*    *G**               THE NAME OF THE CSECT IN WHICH CODE IS GENER-*
+.*    *G**               ATED. NOTE THAT THE ENTRY STATEMENT AND LABEL*
+.*    *G**               WILL NOT BE GENERATED IF THE NAME FIELD,     *
+.*    *G**               CSECT OPERAND, OR BOTH IS (ARE) OMITTED BE-  *
+.*    *G**               CAUSE THE ENTRY NAME AND CSECT NAME ARE THE  *
+.*    *G**               SAME WITH EITHER (OR BOTH) OMITTED.          *
+.*    *G**                                                            *
+.*    *G**   MAIN OR     THIS POSITIONAL OPERAND MUST APPEAR BEFORE   *
+.*    *G**   SUB         ANY OTHER.  'MAIN' MEANS THAT THIS IS A MAIN *
+.*    *G**               PROGRAM AND WILL CAUSE A CALL TO TRSPIE TO BE*
+.*    *G**               GENERATED.  'SUB' MEANS THAT THIS IS A SUB-  *
+.*    *G**               ROUTINE (THIS IS THE DEFAULT).  IN BOTH CASES*
+.*    *G**               THE FOLLOWING APPLIES:  R13 POINTS TO A SAVE *
+.*    *G**               AREA, R14 POINTS TO THE RETURN ADDRESS, R15  *
+.*    *G**               POINTS TO THE ENTRY POINT.                   *
+.*    *G**                                                            *
+.*    *G**   PATCH       THIS OPERAND PROVIDES AN AREA IN WHICH YOU   *
+.*    *G**   (OPTIONAL)  CAN ZAP CODE INTO THE LOAD MODULE (IN CASE OF*
+.*    *G**               EMERGENCY, SAVING RE-COMPILING AND RE-LINKING*
+.*    *G**               THE MODULE).  THE DEFAULT SPACE RESERVED IS  *
+.*    *G**               ZERO (0) FULLWORDS.  IF A LARGER AREA IS RE- *
+.*    *G**               QUIRED, CODE PATCH=NNN WHERE NN IS FROM ZERO *
+.*    *G**               TO 990(DEC). THIS IS THE SIZE (IN FULLWORDS) *
+.*    *G**               OF THE DESIRED PATCH AREA ASSEMBLED AT X'78' *
+.*    *G**               PAST THE ENTRY POINT OF THE MACRO AND IS     *
+.*    *G**               FULLWORD ALIGNED.                            *
+.*    *G**                                                            *
+.*    *G**  BASE         THE TMENTER MACRO NORMALLY GENERATES EXIT    *
+.*    *G**  (OPTIONAL)   CODE.  WITH THIS CODE, THE USER MAY RETURN   *
+.*    *G**               CONTROL TO THE CALLING PROGRAM.  IT IS INDI- *
+.*    *G**               CATED BY REGISTER 12 WHICH IS USED AS THE    *
+.*    *G**               BASE REGISTER.  IF BASE=NAME IS CODED, THE   *
+.*    *G**               NAME IS ATTACHED AS A LABEL TO THE EXIT CODE *
+.*    *G**               AND, THUS, HAS A VALUE EQUAL TO THE CONTENT  *
+.*    *G**               OF REGISTER 12 AT EXECUTION TIME WITHIN THE  *
+.*    *G**               CODE FOLLOWING THIS USE OF TMENTER. IF       *
+.*    *G**               BASE=(SAME) IS CODED, NO EXIT CODE IS GENER- *
+.*    *G**               ATED BY THIS USE OF TMENTER; R12 WILL BE SET *
+.*    *G**               UP TO POINT, INSTEAD, TO THE EXIT CODE GENER-*
+.*    *G**               ATED BY THE LAST USE OF TMENTER FOR THIS     *
+.*    *G**               CSECT WITH BASE NOT = (SAME).  IF A 'USING   *
+.*    *G**               ADDRESS,R12' IS IN EFFECT WHEN THE 'TMENTER  *
+.*    *G**               BASE=(SAME)' IS ENCOUNTERED, AND IF THE ASS- *
+.*    *G**               EMBLER WOULD PREFER R12 TO ANY OTHER REGISTER*
+.*    *G**               FOR WHICH A USING IS ALSO IN EFFECT AS A BASE*
+.*    *G**               FOR AN INSTRUCTION ATTEMPTING TO ADDRESS THE *
+.*    *G**               ENTRY BEING SET UP,THEN 'TMENTER BASE=(SAME)'*
+.*    *G**               WILL SET UP USING R12 WITH THE VALUE INDI-   *
+.*    *G**               CATED BY THAT USING. OTHERWISE, AN ASSEMBLY  *
+.*    *G**               OR EXECUTION ERROR IS LIKELY TO OCCUR. THUS, *
+.*    *G**               THE USING GENERATED BY THE LAST USE OF       *
+.*    *G**               TMENTER FOR THIS CSECT WITH BASE NOT = (SAME)*
+.*    *G**               MUST STILL BE IN EFFECT, OR MUST BE RE-ESTA- *
+.*    *G**               BLISHED BEFORE ISSUING THE TMENTER WITH BASE=*
+.*    *G**               (SAME). THE EFFECT OF THIS IS TO KEEP THE    *
+.*    *G**               SAME BASE REGISTER REGARDLESS OF ENTRY POINT *
+.*    *G**               USED IN ENTERING THE PGM AT EXECUTION.       *
+.*    *G**                                                            *
+.*    *G**               SITUATIONS WHERE ONE WISHES TO RE-ESTABLISH  *
+.*    *G**               A USING REQUIRE THE USE OF THIS OPERAND. THIS*
+.*    *G**               WOULD OCCUR ANYWHERE THAT CODE FOR TWO OR    *
+.*    *G**               MORE CSECTS IS INTERSPERSED. IF THIS IS THE  *
+.*    *G**               SITUATION, THE USER MUST CODE BASE=(SAME)    *
+.*    *G**               WITH A UNIQUE NAME IN THE FIRST TMENTER FOR  *
+.*    *G**               EACH CSECT WITH NON-CONTIGUOUS CODE, AND EACH*
+.*    *G**               TIME HE RETURNS TO THAT CSECT, MUST ISSUE A  *
+.*    *G**               'USING NAME,R12' WITH THAT UNIQUE NAME.      *
+.*    *G**                                                            *
+.*    *G**  IDMSXT       IDMS USER OR SYSTEM EXIT MODULES MAY BE      *
+.*    *G**               WRITTEN USING IBM LINKAGE CONVENTIONS.  IF   *
+.*    *G**               THIS MACRO IS TO USED FOR SUCH PROGRAMS,     *
+.*    *G**               IT IS NECESSARY THAT THE FIRST STATEMENT     *
+.*    *G**               AFTER THE ENTRY POINT BE A NOP INSTRUCTION   *
+.*    *G**               AS A SIGNAL TO IDMS THAT THE MPMODE THE      *
+.*    *G**               MODULE IS TO BE RUN IN IS THAT OF THE CALLER.*
+.*    *G**                                                            *
+.*    *G**  SPTIME       IT SHOULD ONLY BE CODED FOR 'TMENTER MAIN'   *
+.*    *G**               AND IS OTHERWISE IGNORED.  IF SPTIME=NAME IS *
+.*    *G**               CODED, THE NAME MUST BE THE LABEL OF A FIELD *
+.*    *G**               OF 24 BYTES.  IT IS USED BY THE LOOP DETECT- *
+.*    *G**               TION LOGIC IN TRSPIE.                        *
+.*    *G**                                                            *
+.*    *G**  PCIENT       IT SHOULD ONLY BE CODED FOR 'TMENTER MAIN'   *
+.*    *G**               AND IS OTHERWISE IGNORED.  IF NOT CODED OR IF*
+.*    *G**               PCIENT=NO IS CODED, TRSPIE WILL ASSUME THAT  *
+.*    *G**               PCIENT IS NOT PRESENT.  IF PCIENT=SAME IS    *
+.*    *G**               CODED, TRSPIE ASSUMES THAT A PCIENT LABEL IS *
+.*    *G**               PRESENT IN THAT ASSEMBLY.  IF PCIENT=OTHER IS*
+.*    *G**               CODED, TRSPIE ASSUMES THAT A PCIENT LABEL IS *
+.*    *G**               NOT PRESENT IN THIS ASSEMBLY, BUT IT WILL BE *
+.*    *G**               IN THE FINAL LOAD MODULE.                    *
+.*    *G**                                                            *
+.*    *G**  AMODE        THIS OPERAND SETS THE ADDRESSING MODE FOR THE*
+.*    *G**               MODULE.  VALID CONSTANT VALUES ARE '31'-BIT  *
+.*    *G**               OR '24'-BIT ADDRESSING. 'ANY' MEANS THAT THIS*
+.*    *G**               MODULE IS NOT SENSITIVE TO ADDRESSING MODE.  *
+.*    *G**               DEFAULT = 24.                                *
+.*    *G**                                                            *
+.*    *G**  RMODE        THIS OPERAND SETS THE RESIDENCY MODE FOR THE *
+.*    *G**               MODULE.  VALID VALUES ARE 24, MEANING THAT   *
+.*    *G**               THE MODULE MUST RESIDE BELOW THE 16M LINE    *
+.*    *G**               AND 'ANY' WHICH MEANS THAT IT DOES NOT MATTER*
+.*    *G**               WHERE IT RESIDES.                            *
+.*    *G**               DEFAULT = 24.                                *
+.*    *G**                                                            *
+.*    *G**               NOTE: IF AMODE=ANY OR 24, RMODE MUST BE 24.  *
+.*    *G**                     IF AMODE=31, RMODE MAY BE 24 OR ANY.   *
+.*    *G**                                                            *
+.*    *G**  MODESW       THIS OPERAND DEFINES HOW THE PROGRAM WILL    *
+.*    *G**               RETURN TO THE CALLER. VALID VALUES ARE 'YES' *
+.*    *G**               WHICH MEANS THAT THE CALLER USED A BASSM     *
+.*    *G**               INSTRUCTION TO BRANCH HERE (CHANGING THE     *
+.*    *G**               ADDRESSING MODE IN THE PROCESS) AND EXPECTS  *
+.*    *G**               THIS PROGRAM TO RETURN USING A BSM INSTR     *
+.*    *G**               TO RESET THE AMODE IN THE PSW. ANY OTHER     *
+.*    *G**               VALUE MEANS THAT THE AMODE IS NOT CHANGING   *
+.*    *G**               (A BALR WAS USED TO GET HERE), SO A SIMPLE   *
+.*    *G**               'BR R14' TO RETURN IS SUFFICIENT.            *
+.*--------------------------------------------------------------------*
+.*  PROVIDES INITIALIZING LOGIC AND CHAINED SAVE AREAS FOR ALL MODULES
+.*       PRESET AND REC OPERANDS ARE DEFUNCT, ALL PROGRAMS ARE
+.*       CONSIDERED CALLED PROGRAMS
+         GBLB  &ENTER
+         LCLC  &C,&ENT,&M
+&C       SETC  '&SYSECT'
+         AIF   ('&CSECT'EQ''OR'&CSECT'EQ'(SAME)').X1
+&C       SETC  '&CSECT'
+.X1      ANOP
+&M       SETC  '&C'
+         AIF   ('&NAME'EQ'').X2
+&M       SETC  '&NAME'
+         AIF   ('&CSECT'NE'').X2
+&C       SETC  '&M'
+.X2      AIF   ('&C'NE'').X25
+         MNOTE 4,'*** IF NAMED CSECT NOT PREVIOUSLY ESTABLISHED BY USERX
+               , NAME MUST BE SUPPLIED IN NAME FIELD AND/OR CSECT OPERAX
+               ND - GENERATION SUPPRESSED ***'
+         MEXIT
+.X25     AIF   ('&C'EQ'&SYSECT').X3
+&C       CSECT
+.X3      AIF   ('&M'EQ'&C').A1
+         ENTRY &M
+&ENT     SETC  '&M'
+.A1      AIF   (&ENTER).A2
+         TMXREGS
+&ENTER   SETB  1
+.A2      ANOP
+         AIF   ('&IDMSXT'EQ'NO').A21
+&ENT     NOP   X'FFF'(,15)         MPMODE=CALLER FOR IDMS EXITS
+         STM   14,12,12(13)        SAVE ALL REGISTERS
+         AGO   .A22
+.A21     ANOP
+&ENT     STM   14,12,12(13)        SAVE ALL REGISTERS
+.A22     ANOP
+.*  SINCE SLACK BYTES CAN BE ADDED TO ALIGN SAVE AREA ON FULL WORD
+.*       BOUNDARY, WE MUST USE THIS METHOD OF ADDRESSING TO FIND THE
+.*       EXACT ADDRESS OF SAVE AREA
+         AIF   ('&IDMSXT'EQ'NO').A23
+         LA    12,64+(*-&C+2)/4*4-(*-&C)(15) A(SAVEAREA)
+         AGO   .A24
+.A23     ANOP
+         LA    12,60+(*-&C+2)/4*4-(*-&C)(15) A(SAVEAREA)
+.A24     ANOP
+         ST    12,8(13)            CHAIN DOWN FROM CALLING PROG SA
+         ST    13,4(12)            CHAIN UP FROM NEW SA
+         LR    13,12               R13 NOW INDICATES (NEW) CURRENT SA
+         AIF   ('&BASE'EQ'(SAME)').A3
+.*  SAME TECHNIQUE AS PREVIOUSLY SHOWN
+         AIF   ('&IDMSXT'EQ'NO').A25
+         BAL   12,138+4*(&PATCH+(*-&C)/4)-(*-&C)(15)
+         AGO   .A26
+.A25     ANOP
+         BAL   12,134+4*(&PATCH+(*-&C)/4)-(*-&C)(15)
+.A26     ANOP
+         USING *,R12
+&BASE    L     13,4(13)            FOLLOW CHAIN TO CALLING PROG SA
+         L     14,12(13)           RELOAD RETURN ADDRESS
+         LM    0,12,20(13)         RESTORE CALLING PROGRAM REGISTERS
+         AIF   ('&MODESW'EQ'YES').A2X
+         BR    14                  RETURN (LEAVING AMODE AS IS)
+         AGO   .A4
+.A2X     ANOP
+         BSM   0,14                RETURN (RESETTING AMODE FOR CALLER)
+         AGO   .A4
+.*  SINCE WE KNOW THE ENTRY POINT AND THE DISPLACEMENT RELATIVE TO R12
+.*       WE ARE AT, WE CAN REESTABLISH THE CONTENT OF BASE R12
+.A3      LCR   12,15               A(0-ENTRY)
+         AIF   ('&IDMSXT'EQ'NO').A30
+         LA    12,*-24             AL1(0),AL3(0-BASE)
+         AGO   .A301
+.A30     ANOP
+         LA    12,*-20             AL1(0),AL3(0-BASE)
+.A301    ANOP
+         LCR   12,12               AL1(0-1),AL3(BASE)
+.*  SAME TECHNIQUE AS PREVIOUSLY SHOWN
+         AIF   ('&IDMSXT'EQ'NO').A31
+         B     138+4*(&PATCH+(*-&C)/4)-(*-&C)(15)
+         AGO   .A32
+.A31     ANOP
+         B     134+4*(&PATCH+(*-&C)/4)-(*-&C)(15)
+.A32     ANOP
+         NOP   0
+         NOPR  0
+.A4      ANOP                  ENTRY IDENTIFICATION
+*
+         DC    CL8'&M'             MODULE AND/OR ENTRY NAME
+         DC    CL1'*'
+         DC    CL8'&SYSDATE'       COMPILE DATE (MM/DD/YY)
+         DC    CL1'*'
+         DC    CL5'&SYSTIME'       COMPILE TIME (HH.MM)
+*
+         DC    18F'0'              SAVE AREA
+*
+         AIF   (&PATCH EQ 0).A5
+         DC    &PATCH.F'0'         PATCH AREA
+.A5      ANOP
+         AIF   ('&LEVEL'EQ''OR'&LEVEL'EQ'MAIN'OR'&LEVEL'EQ'SUB').W1
+         MNOTE '*** INCORRECT TYPE, ''&LEVEL'', IGNORED -- IF CODED, MUX
+               ST BE ''MAIN'' OR ''SUB'' ***'
+         AGO   .A6
+.W1      AIF   ('&LEVEL'EQ'MAIN'OR'&SPTIME'EQ'').W2
+         MNOTE '*** SPTIME IS INVALID WITH LEVEL OTHER THAN ''MAIN'', IX
+               GNORED ***'
+         AGO   .A6
+.W2      AIF   ('&LEVEL'NE'MAIN').A6
+         LR    2,1
+         LOAD  EP=TRSPIE
+         LR    15,0
+         AIF   ('&SPTIME'EQ'').W3
+         L     1,0(2)
+         LA    1,0(1)
+         CNOP  0,4
+         ST    1,*+8
+         BAL   1,*+16
+         DS    A
+         DC    A(&SPTIME)
+         AGO   .W4
+.W3      ANOP
+         CNOP  0,4
+         BAL   1,*+8
+.W4      ANOP
+         DC    X'80'
+         AIF   ('&PCIENT'NE'OTHER').W5
+         DC    VL3(PCIENT)
+         AGO   .W8
+.W5      ANOP
+         AIF   ('&PCIENT'NE'SAME').W6
+         DC    AL3(PCIENT)
+         AGO   .W8
+.W6      ANOP
+         AIF   ('&PCIENT'EQ'NO').W7
+         MNOTE '***IF PCIENT CODED MUST BE ''SAME'', ''OTHER'' OR ''NO'X
+               ', ''NO'' IS ASSUMED***'
+.W7      ANOP
+         DC    AL3(0)
+.W8      ANOP
+         BALR  14,15
+         DELETE EP=TRSPIE
+         LR    1,2
+.A6      ANOP
+         AIF   ('&CSECT'EQ'(SAME)').NOMODE
+&NAME    AMODE &AMODE
+&NAME    RMODE &RMODE
+.NOMODE  ANOP
+***      ENTER      ***************************************************
+*                                                                     *
+*    MODULE AND/OR ENTRY NAME, COMPILE DATE AND TIME AT ENTRY + X'24' *
+*    MODULE SAVE AREA AT ENTRY + X'3C', FULLWORD ALIGNED              *
+         AIF   (&PATCH EQ 0).A7
+*    MODULE PATCH AREA AT ENTRY + X'84', FULLWORD ALIGNED             *
+.A7      ANOP
+*    MODULE EXIT ADDRESS AND BASE FOR YOUR CODE IN REG 12             *
+*                                                                     *
+***************************************************      ENTER      ***
+         LA    12,0(12)            CLEAR TOP ORDER BIT(S) OF BASE REG
+         EJECT
+         MEND

@@ -1,0 +1,42 @@
+********W*************************************************************          
+*     **W*     THE FOLLOWING DESCRIBES THE CENTRAL CONTROL BLOCK,               
+*     **W*     ANCHORED TO THE ICBM, WHICH POINTS TO ALL OTHER                  
+*     **W*     VARIABLE STORAGE AREAS.                                          
+********W*************************************************************          
+         SPACE                                                                  
+CCB      DSECT                                                                  
+CCBID    DS    CL4            CCB EYE-CATCH ('CCB*')                            
+         SPACE                                                                  
+PREVLR   DS    CL16           NAME OF LAST LR TO GO THROUGH HERE                
+PREVRSTG DS    A              ADDRESS OF PREVIOUS VARIABLE STORAGE USED         
+         SPACE                                                                  
+CURRSAVE DS    18F            SAVE AREA FOR CALL TO MTABRTN(R)                  
+         SPACE                                                                  
+MTABPARM DS    0A                                                               
+         DS    A              A(TABLE TO BE BUILT IN 'MTABRTN(R)' FRMT)         
+         DS    A(LGRCNAME)    A(ENTRY TO BE LOOKED UP)                          
+         DS    A(SRCHSPEC)    A(CONTROL BLOCK FOR MTABRTN(R))                   
+SRCHSPEC DS    0F                                                               
+SRRTNCD  DS    H              RETURN CODE FROM MTABRTN(R)                       
+SRTYPE   DS    C'C'           TYPE OF SEARCH (CHARACTER ASSUMED)                
+SRTABOPN DS    C'L'           TABLE OPERATION (LOOKUP)                          
+         SPACE 2                                                                
+MTABSBPM DS    A(SBTABL)      A(TABLE TO BE BUILT IN 'MTABRTN(R)' FRMT)         
+         DS    A              A(ENTRY TO BE PROCESSED)                          
+         DS    A(SBSRCH)      A(CONTROL BLOCK FOR MTABRTN(R))                   
+         SPACE                                                                  
+SBSRCH   DS    0F                                                               
+SBSRTNCD DS    H              RETURN CODE FROM MTABRTN(R)                       
+SBSRTYPE DS    C'C'           TYPE OF SEARCH (CHARACTER-KEY)                    
+SBSTBOPN DS    C              TABLE OPERATION                                   
+SBTABL   DS    0F                                                               
+SBNENT   DS    H'0'           NUMBER OF ENTRIES                                 
+SBESIZ   DS    H'12'          ENTRY SIZE                                        
+SBASIZ   DS    H'8'           ARGUMENT SIZE                                     
+SBADSP   DS    H'0'           ARGUMENT DISPLACEMENT                             
+SBTABDAT DS    50CL12         TABLE DATA AREA                                   
+*                             ENTRY IS:                                         
+*                                      SUBSCHEMA-NAME        DS CL8             
+*                                      STORAGE-BLOCK-ADDRESS DS A               
+         SPACE 2                                                                
+CCBLN    EQU   *-CCB          LENGTH OF THE BLOCK                               

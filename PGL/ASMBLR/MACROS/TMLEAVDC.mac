@@ -1,0 +1,24 @@
+         MACRO
+&N       TMLEAVDC
+.*--------------------------------------------------------------------*
+.*    *G** TMLEAVDC is used in conjunction with the TMENTDC macro. Its*
+.*    *G** purpose is to return from the program to DC after restoring*
+.*    *G** registers saved in the latter.                             *
+.*    *G**                                                            *
+.*    *G** PARAMETERS:  none                                          *
+.*--------------------------------------------------------------------*
+.*--------------------------------------------------------------------*
+.*******H*************************************************************
+.*   ***H  DATE   - 09MAR85                                          *
+.*   ***H  AUTHOR - D. EMBURY                                        *
+.*   ***H  C/R    - N/A                                              *
+.*   ***H  ACTION - CREATION                                         *
+.*******H*************************************************************
+.*                                                                   *
+         GBLB  &ENTDC
+         AIF   (&ENTDC).GO
+         MNOTE 0,'TMENTDC MACRO NOT IN USE'
+.GO      ANOP
+         LM    R2,R11,28(R13)      RESTORE REGISTERS SAVED AT ENTRY
+         #RETURN                   LEAVE THROUGH DC
+         MEND

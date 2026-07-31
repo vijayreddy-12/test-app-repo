@@ -1,0 +1,120 @@
+         MACRO
+&NAME    TMENTDC &BASE=,&AMODE=31,&RMODE=ANY
+.*--------------------------------------------------------------------*
+.*    *G** TMENTDC carries out housekeeping chores associated with    *
+.*    *G** setting up module #LINK'd or #XCTL'd to in a DC task:      *
+.*    *G**   - invokes TMXREGS to equate registers 0-15 to R0-R15 (no *
+.*    *G**     more than once per assembly),                          *
+.*    *G**   - establishs the CSECT                                   *
+.*    *G**   - provides a base register (register 12)                 *
+.*    *G**   - saves the registers in the savearea passed from DC     *
+.*    *G**     (but does not define a save area of its own)           *
+.*    *G**   - defines constants for program identification in a dump * 00016
+.*    *G**     (i.e.: NAME, COMPILE-DATE, COMPILE-TIME)               * 00017
+.*    *G**   - sets the addressing mode for the module (optional)     * 00018
+.*    *G**   - sets the residency mode for the module (optional)      * 00018
+.*    *G**                                                            *
+.*    *G** TMLEAVDC is a companion macro to TMENTDC and it is         *
+.*    *G** recommended that it be used in the exit-logic.             *
+.*    *G**                                                            *
+.*    *G** FORMAT:  (NAME)  TMENTDC  (BASE=name)                      *
+.*    *G**                                 (,AMODE=31)                * 00030
+.*    *G**                                         24)                * 00030
+.*    *G**                                         ANY)               * 00030
+.*    *G**                                 (,RMODE=24)                * 00030
+.*    *G**                                         ANY)               * 00030
+.*    *G**                                                            *
+.*    *G** OPERANDS:                                                  *
+.*    *G**                                                            *
+.*    *G**   NAME        IS ATTACHED TO THE CSECT STATEMENT AS A      *
+.*    *G**               LABEL.  IT IS ASSUMED THAT THE INITIAL ENTRY *
+.*    *G**               POINT FOR THIS MODULE IS AT LOCATION 0000    *
+.*    *G**               (IE. THE BEGINNING OF THE CSECT) AND THAT AN *
+.*    *G**               'ENTRY' STATEMENT IS NOT REQUIRED.           *
+.*    *G**               'NAME' APPEARS AS A CONSTANT IN THE EXPANSION*
+.*    *G**               OF THE MACRO TO AID DUMP IDENTIFICATION.     *
+.*    *G**                                                            *
+.*    *G**  BASE         IF PROVIDED, 'BASE' IS USED AS A LABEL FOR   *
+.*    *G**  (OPTIONAL)   THE STATEMENT WHICH IS AT DISPLACEMENT ZERO  *
+.*    *G**               FROM THE FIRST BASE REGISTER.  THIS LABEL    *
+.*    *G**               CAN THEN BE USED TO SET UP ADDITIONAL BASE   *
+.*    *G**               REGISTERS.                                   *
+.*    *G**                                                            * 00153
+.*    *G**  AMODE        THIS OPERAND SETS THE ADDRESSING MODE FOR THE* 00154
+.*    *G**               MODULE.  VALID CONSTANT VALUES ARE '31'-BIT  * 00155
+.*    *G**               OR '24'-BIT ADDRESSING. 'ANY' MEANS THAT THIS* 00156
+.*    *G**               MODULE IS NOT SENSITIVE TO ADDRESSING MODE.  * 00157
+.*    *G**               DEFAULT = 31.                                * 00158
+.*    *G**                                                            * 00153
+.*    *G**  RMODE        THIS OPERAND SETS THE RESIDENCY MODE FOR THE * 00154
+.*    *G**               MODULE.  VALID VALUES ARE 24, MEANING THAT   * 00155
+.*    *G**               THE MODULE MUST RESIDE BELOW THE 16M LINE    * 00156
+.*    *G**               AND 'ANY' WHICH MEANS THAT IT DOES NOT MATTER* 00157
+.*    *G**               WHERE IT RESIDES.                            * 00158
+.*    *G**               DEFAULT = ANY.                               * 00158
+.*    *G**                                                            * 00153
+.*    *G**               NOTE: IF AMODE=ANY OR 24, RMODE MUST BE 24.  * 00153
+.*    *G**                     IF AMODE=31, RMODE MAY BE 24 OR ANY.   * 00153
+.*--------------------------------------------------------------------*
+.*
+.*******H*************************************************************
+.*   ***H  DATE   - 08MAR85                                          *
+.*   ***H  AUTHOR - D. EMBURY                                        *
+.*   ***H  ACTION - CREATION                                         *
+.*******H*************************************************************
+.*
+.*******H*************************************************************
+.*   ***H  DATE   - 06APR94                                          *
+.*   ***H  AUTHOR - D. EMBURY                                        *
+.*   ***H  ACTION - ADDED AMODE AND RMODE SETTINGS AND UPDATED       *
+.*   ***H           IDENTIFICATION SECTION TO INCLUDE COMPILE DATE   *
+.*   ***H           AND TIME.                                        *
+.*******H*************************************************************
+.*                                                                   *
+         GBLB  &ENTDC
+         AIF   ('&NAME' EQ '').ERR
+&ENTDC   SETB  1
+&NAME    CSECT
+         TMXREGS
+&BASE    STM   R2,R11,28(R13)      SAVE REGISTERS AVAILABLE TO USERS
+         LA    R12,8(R15)          SET BETTER BASE WITH ENTRY ADDRESS
+*                                  (AND CLEAR TOP ORDER BITS AS WELL)   00218
+         USING *,R12
+         B     *+28                GO DO PROGRAM LOGIC
+*                                                                       00266
+         DC    CL8'&NAME'          PROGRAM NAME                         00218
+         DC    CL1'*'                                                   00218
+         DC    CL8'&SYSDATE'       COMPILE DATE (MM/DD/YY)              00218
+         DC    CL1'*'                                                   00218
+         DC    CL5'&SYSTIME'       COMPILE TIME (HH.MM)                 00218
+         DC    CL1'*'                                                   00218
+&NAME    AMODE &AMODE                                                   00266
+&NAME    RMODE &RMODE                                                   00266
+***    TMENTDC      ***                                               *
+*                                                                     *
+*              BASE FOR YOUR CODE IN REGISTER 12                      *
+*              EYE-CATCH FOR DUMP AT ENTRY POINT + X'0C'              *
+*                                                                     *
+*       NOTE:                                                         *
+*              THIS MACRO ASSUMES THAT A SAVEAREA IS PROVIDED BY      *
+*              DC (POINTED TO BY R13) WHEN THIS MODULE IS LINK'D OR   *
+*              XCTL'D TO.  ANY MODULE USING THIS MACRO MUST BE        *
+*              IDENTIFIED TO THE DC SYSGEN AS 'ASSEMBLER,SAVEAREA'.   *
+*              THE MACRO PRESERVES REENTRABILITY; HOWEVER, THE        *
+*              MODULE MAY OR MAY NOT BE REENTRANT DEPENDING ON THE    *
+*              USER CODE FOLLOWING.                                   *
+*              IF THE USER WISHS TO 'CALL' ANOTHER MODULE FROM THIS   *
+*              ONE AND NEEDS TO PASS A SAVEAREA TO IT, STORAGE MUST   *
+*              BE OBTAINED FOR THAT AND INITIALIZED IN THE USUAL      *
+*              'TMENTER' MANNER.                                      *
+*              THE MACRO 'TMLEAVDC' SHOULD BE USED AS THE EXIT LOGIC, *
+*              AS IT RESTORES THE REGISTERS SAVED HERE AND DOES A     *
+*              DC #RETURN. (BE SURE THAT REG 12 IS THE BASE REGISTER  *
+*              FOR THE LITERAL POOL TO GUARANTEE CORRECT ADDRESSING   *
+*              BY THE TMLEAVDC MACRO.)                                *
+*                                               ***    TMENTDC      ***
+         EJECT
+         MEXIT
+.ERR     ANOP
+         MNOTE 4,'*** NAME FOR CSECT MUST BE PROVIDED.'
+         MEND

@@ -1,0 +1,30 @@
+         MACRO                                                          00001   
+&NAME    TMXREGS                                                        00002   
+         GBLB  &XREGS                                                   00003   
+.*--------------------------------------------------------------------* 00004   
+.*    *G** TMXREGS equates registers for program use, e.g. registers  * 00005   
+.*    *G** 0 to 15 are equated to R0 to R15.                          * 00006   
+.*--------------------------------------------------------------------* 00007   
+         AIF   ('&NAME' EQ '').NONAME                                   00008   
+&NAME    EQU   *                                                        00009   
+.NONAME  ANOP                                                           00010   
+         AIF   (&XREGS).NOGEN                                           00011   
+&XREGS   SETB  1                                                        00012   
+R0       EQU   0                                                        00013   
+R1       EQU   1                                                        00014   
+R2       EQU   2                                                        00015   
+R3       EQU   3                                                        00016   
+R4       EQU   4                                                        00017   
+R5       EQU   5                                                        00018   
+R6       EQU   6                                                        00019   
+R7       EQU   7                                                        00020   
+R8       EQU   8                                                        00021   
+R9       EQU   9                                                        00022   
+R10      EQU   10                                                       00023   
+R11      EQU   11                                                       00024   
+R12      EQU   12                                                       00025   
+R13      EQU   13                                                       00026   
+R14      EQU   14                                                       00027   
+R15      EQU   15                                                       00028   
+.NOGEN   ANOP                                                           00029   
+         MEND                                                           00030   

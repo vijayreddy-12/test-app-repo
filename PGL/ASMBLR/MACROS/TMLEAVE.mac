@@ -1,0 +1,40 @@
+         MACRO                                                          00001
+&N       TMLEAVE &RC=X                                                  00002
+.*--------------------------------------------------------------------* 00003
+.*    *G** TMLEAVE is used in conjunction with the TMENTER macro. Its * 00004
+.*    *G** purpose is to return from the program to the calling pro-  * 00005
+.*    *G** gram or operating system.                                  * 00006
+.*    *G**                                                            * 00007
+.*    *G** PARAMETERS:  RC - A VALUE TO BE USED AS A RETURN CODE (E.G.* 00008
+.*    *G**              TMLEAVE RC=16 WILL GIVE A RETURN CODE OF 16). * 00009
+.*    *G**              RC MUST BE A VALUE AND NOT A FIELD IN THE PRO-* 00010
+.*    *G**              GRAM.                                         * 00011
+.*--------------------------------------------------------------------* 00012
+.*--------------------------------------------------------------------* 00013
+.*******H*************************************************************  00014
+.*   ***H  DATE            ONCE UPON A TIME                          *  00015
+.*   ***H  AUTHOR          ANONYMOUS                                 *  00016
+.*   ***H  C/R             N/A                                       *  00017
+.*   ***H  ACTION          CREATION                                  *  00018
+.*******H*************************************************************  00019
+.*                                                                   *  00020
+.*                                                                   *  00021
+.*******H*************************************************************  00022
+.*   ***H  DATE            SOME TIME LATER                           *  00023
+.*   ***H  PROGRAMMER      A.P.R.EVANS                               *  00024
+.*   ***H  C/R             N/A                                       *  00025
+.*   ***H  ACTION          ADDED THE RC OPTION TO ALLOW THE          *  00026
+.*   ***H                  PROGRAMMER TO PROVIDE A RETURN CODE       *  00027
+.*******H*************************************************************  00028
+.*--------------------------------------------------------------------* 00029
+         GBLB  &ENTER                                                   00030
+         AIF   (&ENTER).GO                                              00031
+         MNOTE 0,'ENTER MACRO NOT IN USE'                               00032
+.GO      ANOP                                                           00033
+         AIF   ('&RC' EQ 'X').NORET                                     00034
+&N       LA    R15,&RC             ..SET RETURN CODE                    00035
+         BR    R12                 ..RETURN                             00036
+         MEXIT                                                          00037
+.NORET   ANOP                                                           00038
+&N       BR    R12                 ..RETURN                             00039
+         MEND                                                           00040

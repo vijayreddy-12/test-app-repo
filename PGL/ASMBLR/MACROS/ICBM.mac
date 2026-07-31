@@ -1,0 +1,40 @@
+**********************************************************************          
+*       INTERFACE CONTROL BLOCK (MANUFACTURERS)                      *          
+**********************************************************************          
+ICBM     DSECT                                                                  
+LGRCNAME DS    CL16           LOGICAL RECORD NAME                               
+PROGNAME DS    CL8            PROGRAM NAME                                      
+*                             LINKAGE CONTROL FIELDS                            
+LNKANCHR DS    CL4                - ANCHOR                                      
+         DS    F                  - FILLER                                      
+*                             LINKAGE STATUS FIELDS                             
+PGMLNKS  DS    0CL4               - PROGRAM LINKAGE STATUS                      
+PGMLNKSP DS    CL2                   - PRIMARY                                  
+PGMLNKSS DS    CL2                   - SECONDARY                                
+*                                                                               
+*    SOME CODES APPLY TO THE PC PLATFORM, SOME TO THE                           
+*    MAINFRAME, AND SOME TO BOTH PLATFORMS                                      
+*                                                                               
+* LR-STATUS-OK          VALUE '0000'                                            
+* PARTIAL-LR-FOUND      VALUE '03  '                                            
+* PARTIAL-LR-FOUND-04   VALUE '04  '                                            
+* PARTIAL-LR-FOUND-05   VALUE '05  '                                            
+* PARTIAL-LR-FOUND-06   VALUE '06  '                                            
+* LR-NOT-FOUND          VALUE '0307'                                            
+* KEYED-LR-NOT-FOUND    VALUE '0326'                                            
+* LR-NOT-STORED         VALUE '1205'                                            
+*                             '1299'                                            
+* LR-DUP-NOT-STORED     VALUE '1205'                                            
+* LR-NOT-MODIFIED       VALUE '0826'                                            
+*                             '0899'                                            
+* LR-NOT-ERASED         VALUE '0226'                                            
+*                             '0299'                                            
+* VERB-NOT-AVAILABLE    VALUE '9900'                                            
+* PROGRAM-NAME-NOT-SET  VALUE '9900'                                            
+* LR-UNKNOWN            VALUE '9902'                                            
+* VERB-NOT-RECOGNIZED   VALUE '9903'                                            
+* MAXIMUM-FILES-OPEN    VALUE '9910'                                            
+* NO-DATABASE-ACCESSED  VALUE '9914'                                            
+ENVLNKS  DS    0CL4               - ENVIRONMENT LINKAGE STATUS                  
+ENVLNKSP DS    CL2                   - PRIMARY                                  
+ENVLNKSS DS    CL2                   - SECONDARY                                
