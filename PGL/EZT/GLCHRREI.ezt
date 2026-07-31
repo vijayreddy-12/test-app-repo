@@ -1,0 +1,320 @@
+PARM LINK(GLCHRREI R)                                                           
+                                                                                
+LIST OFF                                                                        
+FILE FILEA                                                                      
+DEALNO 2 5 N MASK 'Z9999' HEADING ('DEAL', 'NO')                                
+CERTIF 7 6 A HEADING ('CERT.', 'NO.')                                           
+NAME 13 20 A                                                                    
+BDAYMO 41 4 N                                                                   
+BDAY   41 2 N                                                                   
+BMONTH 43 2 N                                                                   
+BYEAR 45 4 N                                                                    
+BIRTHDAY 41 8 N HEADING ('DATE OF', 'BIRTH')                                    
+LIFEVOL 58 6 N 0                                                                
+ADDVOL 64 6 N 0                                                                 
+SMOKER 71 1 A                                                                   
+AGE W 2 N                                                                       
+LRATE W 4 N 2                                                                   
+LPREM W 7 N 2 HEADING ('LIFE', 'PREMIUM')                                       
+ADDPREM W 7 N 2 HEADING ('AD&D', 'PREMIUM')                                     
+TOTPREM W 7 N 2 HEADING ('TOTAL', 'PREMIUM')                                    
+TOTAL W 7 N 0                                                                   
+REINS W 7 N 0                                                                   
+RADD W 6 N 0 HEADING ('REINS.', 'AD&D AMT')                                     
+RLIFE W 6 N 0 HEADING ('REINS.', 'LIFE AMT')                                    
+BAND W 2 N                                                                      
+**                                                                              
+FILE FILEC PRINTER                                                              
+**                                                                              
+                                                                                
+WS-CURR-DATE   W   8  A                                                         
+  WS-CURR-DD  WS-CURR-DATE   2  N                                               
+  WS-CURR-MM  WS-CURR-DATE  +3  2  N                                            
+  WS-CURR-YY  WS-CURR-DATE  +6  2  N                                            
+                                                                                
+WS-Y2K-CURR-CCYY  W  4  N                                                       
+   WS-Y2K-CURR-CC  WS-Y2K-CURR-CCYY   2  N                                      
+   WS-Y2K-CURR-YY  WS-Y2K-CURR-CCYY  +2  2  N                                   
+                                                                                
+   WS-Y2K-CURR-DDMM  W  4  N                                                    
+      WS-Y2K-CURR-DD  WS-Y2K-CURR-DDMM   2  N                                   
+      WS-Y2K-CURR-MM  WS-Y2K-CURR-DDMM  +2  2  N                                
+                                                                                
+MTHFR    W  7 A                                                                 
+   FRMTH    MTHFR  3  A                                                         
+   FRYEAR   MTHFR +3 4 N                                                        
+                                                                                
+MTHTO    W  7 A                                                                 
+   TOMTH  MTHTO  3 A                                                            
+   TOYEAR MTHTO +3 4 N                                                          
+                                                                                
+**                                                                              
+JOB                                                                             
+**                                                                              
+                                                                                
+WS-CURR-DATE = SYSDATE                                                          
+WS-Y2K-CURR-YY = WS-CURR-YY                                                     
+WS-Y2K-CURR-MM = WS-CURR-MM                                                     
+WS-Y2K-CURR-DD = WS-CURR-DD                                                     
+IF WS-CURR-YY < 90                                                              
+   WS-Y2K-CURR-CC = 20                                                          
+ELSE                                                                            
+   WS-Y2K-CURR-CC = 19                                                          
+END-IF                                                                          
+                                                                                
+***************                                                                 
+* BUILD THE FROM AND TO YEARS BASED ON SYSTEM DATE                              
+***************                                                                 
+FRYEAR = WS-Y2K-CURR-CCYY                                                       
+TOYEAR = WS-Y2K-CURR-CCYY                                                       
+                                                                                
+***************                                                                 
+* THIS REPORT RUNS FOR THE PREVIOUS QUARTER                                     
+***************                                                                 
+IF WS-CURR-MM = 01, 02, 03                                                      
+   FRMTH = 'OCT'                                                                
+   TOMTH = 'DEC'                                                                
+   FRYEAR = WS-Y2K-CURR-CCYY - 1                                                
+   TOYEAR = WS-Y2K-CURR-CCYY - 1                                                
+END-IF                                                                          
+IF WS-CURR-MM = 04, 05, 06                                                      
+   FRMTH = 'JAN'                                                                
+   TOMTH = 'MAR'                                                                
+END-IF                                                                          
+IF WS-CURR-MM = 07, 08, 09                                                      
+   FRMTH = 'APR'                                                                
+   TOMTH = 'JUN'                                                                
+END-IF                                                                          
+IF WS-CURR-MM = 10, 11, 12                                                      
+   FRMTH = 'JUL'                                                                
+   TOMTH = 'SEP'                                                                
+END-IF                                                                          
+                                                                                
+*                                                                               
+*STEP 1:  CALCULATE THE AGES AT THE CLOSED BIRTHDAY TO JANUARY 1, 2004          
+*         CHANGE THE YEARS IN THE CALCULATION EVERY JANUARY 1 !!!!!             
+*                                                                               
+IF BDAYMO = 0101                                                                
+*Y2KMAN   AGE = 98 - BYEAR                                                      
+   AGE = WS-Y2K-CURR-CCYY - BYEAR                                               
+ELSE                                                                            
+*Y2KMAN   AGE = 97 - BYEAR                                                      
+   AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                         
+END-IF                                                                          
+*                                                                               
+*STEP 2:  CALCULATE THE TOTAL AMOUNT OF LIFE AND AD&D TO BE REINSURED           
+*         THE AMOUNT TO BE REINSURED IS 25% OF THE TOTAL LIFE AND AD&D          
+*         PLUS ALL EXCESS OVER $400,000.                                        
+*                                                                               
+TOTAL = LIFEVOL + ADDVOL                                                        
+IF TOTAL GT 400000                                                              
+REINS = TOTAL - 300000                                                          
+ELSE                                                                            
+REINS = .25 * TOTAL + .5                                                        
+END-IF                                                                          
+*                                                                               
+*STEP 3:  SEPARATE THE TOTAL AMOUNT TO BE REINSURED BETWEEN LIFE & AD&D         
+*         THE REINSURED AMOUNT IS TO BE APPLIED TO THE AD&D VOLUME              
+*         FIRST AND THEN TO THE LIFE VOLUME                                     
+*                                                                               
+IF REINS LQ ADDVOL                                                              
+RADD = REINS                                                                    
+RLIFE = 0                                                                       
+ELSE                                                                            
+RADD = ADDVOL                                                                   
+RLIFE = REINS - ADDVOL                                                          
+END-IF                                                                          
+*                                                                               
+*STEP 4:  ASSIGN NUMBERS TO THE AGE BANDS SO THAT THE REQUIRED AGE BAND         
+*         TOTALS CAN BE PRODUCED                                                
+*                                                                               
+IF AGE LQ 29                                                                    
+BAND = 1                                                                        
+END-IF                                                                          
+IF AGE = 30, 31, 32, 33, 34                                                     
+BAND = 2                                                                        
+END-IF                                                                          
+IF AGE = 35, 36, 37, 38, 39                                                     
+BAND = 3                                                                        
+END-IF                                                                          
+IF AGE = 40, 41, 42, 43, 44                                                     
+BAND = 4                                                                        
+END-IF                                                                          
+IF AGE = 45, 46, 47, 48, 49                                                     
+BAND = 5                                                                        
+END-IF                                                                          
+IF AGE = 50, 51, 52, 53, 54                                                     
+BAND = 6                                                                        
+END-IF                                                                          
+IF AGE = 55, 56, 57, 58, 59                                                     
+BAND = 7                                                                        
+END-IF                                                                          
+IF AGE = 60, 61, 62, 63, 64                                                     
+BAND = 8                                                                        
+END-IF                                                                          
+IF AGE = 65, 66, 67, 68, 69                                                     
+BAND = 9                                                                        
+END-IF                                                                          
+IF AGE = 70, 71, 72, 73, 74                                                     
+BAND = 10                                                                       
+END-IF                                                                          
+IF AGE = 75, 76, 77, 78, 79                                                     
+BAND = 11                                                                       
+END-IF                                                                          
+IF AGE GQ 80                                                                    
+BAND = 12                                                                       
+END-IF                                                                          
+*                                                                               
+*STEP 5:  ASSIGN QUARTERLY RATES ACCORDING TO THE INSURED'S AGE                 
+*                                                                               
+IF SMOKER = 'N'                                                                 
+GO TO NONSMOKER                                                                 
+END-IF                                                                          
+*                                                                               
+*THE FOLLOWING ARE THE QUARTERLY LIFE RATES FOR SMOKERS                         
+*                                                                               
+IF AGE LQ 29                                                                    
+  **LRATE = .42                                                                 
+  LRATE = .50                                                                   
+END-IF                                                                          
+IF AGE = 30, 31, 32, 33, 34                                                     
+  **LRATE = .48                                                                 
+  LRATE = .57                                                                   
+END-IF                                                                          
+IF AGE = 35, 36, 37, 38, 39                                                     
+  **LRATE = .73                                                                 
+  LRATE = .88                                                                   
+END-IF                                                                          
+IF AGE = 40, 41, 42, 43, 44                                                     
+  **LRATE = .90                                                                 
+  LRATE = 1.08                                                                  
+END-IF                                                                          
+IF AGE = 45, 46, 47, 48, 49                                                     
+  **LRATE = 1.29                                                                
+  LRATE = 1.55                                                                  
+END-IF                                                                          
+IF AGE = 50, 51, 52, 53, 54                                                     
+  **LRATE = 2.10                                                                
+  LRATE = 2.52                                                                  
+END-IF                                                                          
+IF AGE = 55, 56, 57, 58, 59                                                     
+  **LRATE = 3.23                                                                
+  LRATE = 3.87                                                                  
+END-IF                                                                          
+IF AGE = 60, 61, 62, 63, 64                                                     
+  **LRATE = 4.91                                                                
+  LRATE = 5.89                                                                  
+END-IF                                                                          
+IF AGE = 65, 66, 67, 68, 69                                                     
+  **LRATE = 5.61                                                                
+  LRATE = 6.73                                                                  
+END-IF                                                                          
+IF AGE = 70, 71, 72, 73, 74                                                     
+  **LRATE = 14.03                                                               
+  LRATE = 16.83                                                                 
+END-IF                                                                          
+IF AGE = 75, 76, 77, 78, 79                                                     
+  **LRATE = 22.72                                                               
+  LRATE = 27.26                                                                 
+END-IF                                                                          
+IF AGE GQ 80                                                                    
+  **LRATE = 39.97                                                               
+  LRATE = 47.97                                                                 
+END-IF                                                                          
+GO TO LIFECALC                                                                  
+NONSMOKER                                                                       
+*                                                                               
+*THE FOLLOWING ARE THE QUARTERLY LIFE RATES FOR NON-SMOKERS                     
+*                                                                               
+IF AGE LQ 29                                                                    
+  **LRATE = .25                                                                 
+  LRATE = .30                                                                   
+END-IF                                                                          
+IF AGE = 30, 31, 32, 33, 34                                                     
+  **LRATE = .31                                                                 
+  LRATE = .37                                                                   
+END-IF                                                                          
+IF AGE = 35, 36, 37, 38, 39                                                     
+  **LRATE = .45                                                                 
+  LRATE = .54                                                                   
+END-IF                                                                          
+IF AGE = 40, 41, 42, 43, 44                                                     
+  **LRATE = .56                                                                 
+  LRATE = .67                                                                   
+END-IF                                                                          
+IF AGE = 45, 46, 47, 48, 49                                                     
+  **LRATE = .93                                                                 
+  LRATE = 1.11                                                                  
+END-IF                                                                          
+IF AGE = 50, 51, 52, 53, 54                                                     
+  **LRATE = 1.54                                                                
+  LRATE = 1.85                                                                  
+END-IF                                                                          
+IF AGE = 55, 56, 57, 58, 59                                                     
+  **LRATE = 2.10                                                                
+  LRATE = 2.52                                                                  
+END-IF                                                                          
+IF AGE = 60, 61, 62, 63, 64                                                     
+  **LRATE = 3.79                                                                
+  LRATE = 4.54                                                                  
+END-IF                                                                          
+IF AGE = 65, 66, 67, 68, 69                                                     
+  **LRATE = 5.05                                                                
+  LRATE = 6.06                                                                  
+END-IF                                                                          
+IF AGE = 70, 71, 72, 73, 74                                                     
+  **LRATE = 10.52                                                               
+  LRATE = 12.62                                                                 
+END-IF                                                                          
+IF AGE = 75, 76, 77, 78, 79                                                     
+  **LRATE = 17.53                                                               
+  LRATE = 21.04                                                                 
+END-IF                                                                          
+IF AGE GQ 80                                                                    
+  **LRATE = 32.26                                                               
+  LRATE = 38.71                                                                 
+END-IF                                                                          
+*                                                                               
+*STEP 6:  CALCULATE THE TOTAL QUARTERLY REINSURANCE PREMIUMS                    
+*         NOTE THAT THE 24% LIFE DISCOUNT WHICH IS APPLIED TO THE               
+*         DEALERS IS NOT APPLIED TO THE REINSURANCE PREMIUMS.                   
+*                                                                               
+LIFECALC                                                                        
+LPREM = RLIFE / 1000 * LRATE + .005                                             
+ADDPREM = RADD / 1000 * .135 + .005                                             
+TOTPREM = LPREM + ADDPREM                                                       
+PRINT                                                                           
+*                                                                               
+*STEP 7:  SORT THE DATA AND LIST THE OUTPUT                                     
+*                                                                               
+**                                                                              
+REPORT SPACE 1 SKIP 1 TITLESKIP 2 +                                             
+                PRINTER FILEC                                                   
+**                                                                              
+SEQUENCE BYEAR D BMONTH D BDAY NAME                                             
+CONTROL FINAL NOPRINT BAND NOPRINT NEWPAGE                                      
+TITLE 1 'DAIMLERCHRYSLER CANADA LTD. DEALER-OWNER GROUP LIFE PLAN +             
+REINSURANCE LISTING'                                                            
+TITLE 3 'QUARTERLY REINSURANCE PREMIUMS @ ' MTHFR ' TO ' MTHTO                  
+LINE DEALNO CERTIF NAME BIRTHDAY AGE RLIFE SMOKER RADD LPREM ADDPREM +          
+TOTPREM                                                                         
+BEFORE-BREAK. PROC                                                              
+IF LEVEL = 1                                                                    
+DISPLAY SKIP 1 POS 1 'AGE BAND TOTAL' POS 6 RLIFE POS 8 RADD +                  
+POS 9 LPREM POS 10 ADDPREM POS 11 TOTPREM                                       
+END-IF                                                                          
+IF LEVEL = 2                                                                    
+DISPLAY NEWPAGE COL 33 'DAIMLERCHRYSLER CANADA LTD. DEALER-OWNER GROUP +        
+LIFE PLAN REINSURANCE LISTING'                                                  
+DISPLAY SKIP 1 COL 43 'QUARTERLY REINSURANCE PREMIUMS @ ' MTHFR +               
+' TO ' MTHTO                                                                    
+DISPLAY SKIP 2 COL 7 'DEAL' COL 13 'CERT' COL 41 'DATE OF' +                    
+COL 56 'REINS.' COL 75 'REINS.' COL 89 'LIFE' COL 103 'AD&D' +                  
+COL 117 'TOTAL'                                                                 
+DISPLAY COL 8 'NO' COL 14 'NO.' COL 28 'NAME' COL 42 'BIRTH' +                  
+COL 50 'AGE' COL 55 'LIFE AMT' COL 66 'SMOKER' COL 74 'AD&D AMT' +              
+COL 88 'PREMIUM' COL 102 'PREMIUM' COL 116 'PREMIUM'                            
+DISPLAY SKIP 1 POS 1 'FINAL TOTALS' POS 6 RLIFE POS 8 RADD POS 9 +              
+LPREM POS 10 ADDPREM POS 11 TOTPREM                                             
+END-IF                                                                          
+END-PROC                                                                        

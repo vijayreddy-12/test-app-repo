@@ -1,0 +1,37 @@
+PARM LINK(GLCHRTR  R)                                                           
+                                                                                
+ LIST OFF                                                                       
+ FILE FILEA                                                                     
+*EE-ID        1   6  N      HEADING 'EE ID' MASK 'Z99999'                       
+ EE-ID        1   6  A      HEADING 'EE ID'                                     
+ EE-NAME      9  15  A      HEADING ' EE NAME'                                  
+ BRANCH      30   5  A      HEADING 'BRANCH'                                    
+ INST-NO     36   3  A      HEADING 'INSTITUTION'                               
+ ACCOUNT     40  12  A      HEADING 'ACCOUNT NO'                                
+ AMOUNT      59   7  A      HEADING 'AMOUNT'                                    
+ TRANS-CODE  67   1  A      HEADING 'TRANS CODE'                                
+*****                                                                           
+ WS-DATE        W     10    A                                                   
+ WS-DD  WS-DATE       2   A                                                     
+ WS-SL1 WS-DATE   +2  1   A                                                     
+ WS-MM  WS-DATE   +3  2   A                                                     
+ WS-SL2 WS-DATE   +5  1   A                                                     
+ WS-YY  WS-DATE   +6  4   A                                                     
+ WS-CNT         W     1   A   VALUE '0'                                         
+****                                                                            
+JOB                                                                             
+ IF WS-CNT = '0'                                                                
+    DISPLAY NEWPAGE                                                             
+    WS-CNT = '1'                                                                
+ END-IF                                                                         
+ WS-DATE = SYSDATE-LONG                                                         
+                                                                                
+ PRINT CHETRNRP                                                                 
+                                                                                
+REPORT CHETRNRP                                                                 
+TITLE 1 ' BANK WITHDRAWAL FOR RETIREES IBM OPTIONAL'                            
+TITLE 2 '    LIST OF TRANSACTION FOR UPDATING      '                            
+TITLE 3 '         CHEQUES TRANSMISSION             '                            
+TITLE 4 'DATE:' WS-MM '/' WS-DD '/' WS-YY                                       
+TITLE 5 ' -----------------------------------------'                            
+LINE EE-ID EE-NAME BRANCH INST-NO ACCOUNT AMOUNT TRANS-CODE                     

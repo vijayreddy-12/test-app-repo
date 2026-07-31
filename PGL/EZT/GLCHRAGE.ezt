@@ -1,0 +1,85 @@
+PARM LINK(GLCHRAGE R)                                                           
+LIST ON                                                                         
+                                                                                
+FILE FILEA                                                                      
+CARD 1 1 N                                                                      
+DNO 2 5 N MASK 'Z9999' HEADING ('DEALER', 'NUMBER')                             
+CERT 7 6 A HEADING ('CERTIFICATE', 'NUMBER')                                    
+NAME 13 20 A                                                                    
+AGE W 2 N                                                                       
+REDUC 49 1 N                                                                    
+COV 58 6 N 0 HEADING ('AMOUNT OF', 'LIFE')                                      
+DOB 41 8 N                                                                      
+BMONTH 43 2 N                                                                   
+BYEAR 45 4 N                                                                    
+BDAYMO 41 4 N                                                                   
+BDAY   41 2 N                                                                   
+ADD 64 6 N 0 HEADING ('AMOUNT OF', 'AD&D')                                      
+DEP 70 1 A                                                                      
+SMOK 71 1 A                                                                     
+**                                                                              
+FILE FILEC PRINTER                                                              
+**                                                                              
+                                                                                
+WS-CURR-DATE   W   8  A                                                         
+  WS-CURR-DD  WS-CURR-DATE   2  N                                               
+  WS-CURR-MM  WS-CURR-DATE  +3  2  N                                            
+  WS-CURR-YY  WS-CURR-DATE  +6  2  N                                            
+                                                                                
+WS-Y2K-CURR-CCYY  W  4  N                                                       
+   WS-Y2K-CURR-CC  WS-Y2K-CURR-CCYY   2  N                                      
+   WS-Y2K-CURR-YY  WS-Y2K-CURR-CCYY  +2  2  N                                   
+                                                                                
+WS-Y2K-CURR-DDMM  W  4  N                                                       
+   WS-Y2K-CURR-DD  WS-Y2K-CURR-DDMM   2  N                                      
+   WS-Y2K-CURR-MM  WS-Y2K-CURR-DDMM  +2  2  N                                   
+                                                                                
+WS-DEP          W  1  A HEADING ('DEP')                                         
+**                                                                              
+JOB                                                                             
+**                                                                              
+                                                                                
+WS-CURR-DATE = SYSDATE                                                          
+WS-Y2K-CURR-YY = WS-CURR-YY                                                     
+WS-Y2K-CURR-MM = WS-CURR-MM                                                     
+WS-Y2K-CURR-DD = WS-CURR-DD                                                     
+IF WS-CURR-YY < 90                                                              
+   WS-Y2K-CURR-CC = 20                                                          
+ELSE                                                                            
+   WS-Y2K-CURR-CC = 19                                                          
+END-IF                                                                          
+                                                                                
+IF BMONTH = 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12                      
+***Y2K AGE = 98 - BYEAR                                                         
+*  AGE = WS-Y2K-CURR-CCYY - BYEAR                                               
+IF WS-Y2K-CURR-MM > BMONTH                                                      
+   AGE = WS-Y2K-CURR-CCYY - BYEAR                                               
+ELSE                                                                            
+   IF WS-Y2K-CURR-MM = BMONTH                                                   
+      IF WS-Y2K-CURR-DD >= BDAY                                                 
+         AGE = WS-Y2K-CURR-CCYY - BYEAR                                         
+      ELSE                                                                      
+         AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                   
+      END-IF                                                                    
+   ELSE                                                                         
+      AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                      
+   END-IF                                                                       
+END-IF                                                                          
+ELSE                                                                            
+***Y2K AGE = 97 - BYEAR                                                         
+AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                            
+END-IF                                                                          
+IF AGE >= 65                                                                    
+  WS-DEP = 'N'                                                                  
+ELSE                                                                            
+  WS-DEP = DEP                                                                  
+END-IF                                                                          
+PRINT                                                                           
+**                                                                              
+REPORT PAGESIZE 60 SKIP 1 TITLESKIP 2 +                                         
+                PRINTER FILEC                                                   
+**                                                                              
+SEQUENCE BYEAR BMONTH CERT                                                      
+TITLE 1 'CHRYSLER CANADA LTD. DEALER-OWNER GROUP INSURANCE PLAN'                
+TITLE 2 'CALCULATION OF AGES AT JAN 1, ' WS-Y2K-CURR-CCYY                       
+LINE DNO CERT NAME DOB AGE COV ADD WS-DEP SMOK                                  

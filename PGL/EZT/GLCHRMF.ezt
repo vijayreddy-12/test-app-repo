@@ -1,0 +1,56 @@
+PARM LINK(GLCHRMF  R)                                                           
+                                                                                
+ LIST OFF                                                                       
+ FILE FILEA                                                                     
+ REC-TYPE         1   1  A                                                      
+ PAYOR-NAME       2  24  A                                                      
+ DUE-DATE        25   6  A                                                      
+ CUST-REF-NO     31  19  A                                                      
+ INST-ID-ZER     50   1  A                                                      
+ INST-INST-ID    51   3  A                                                      
+ INST-TRANSIT    54   5  A                                                      
+ PAYOR-ACCT-NO   59  12  A                                                      
+ AMOUNT-A        71   5  A                                                      
+ AMOUNT          71  10  N                                                      
+ TRAILER          1  80  A                                                      
+*                                                                               
+ FILE FILEB FB(80 23440)                                                        
+ B-TRAILER         1  80   A                                                    
+*                                                                               
+ WS-FIRST                W    1  A  VALUE '0'                                   
+ WS-CNT                  W    8  N                                              
+ WS-TOTAL-AMT            W   14  N                                              
+ WS-TRAIL                W   80  A                                              
+ WS-T-REC-TYP  WS-TRAIL       1  A                                              
+ WS-T-NUM-PAY  WS-TRAIL  +1   8  N                                              
+ WS-T-TOT-AMT  WS-TRAIL  +9  14  N                                              
+*                                                                               
+ JOB INPUT(NULL)                                                                
+ GET FILEA                                                                      
+ IF WS-FIRST = '0'                                                              
+    IF REC-TYPE = '$'                                                           
+       PUT FILEB FROM FILEA                                                     
+    END-IF                                                                      
+    IF REC-TYPE = 'H'                                                           
+       PUT FILEB FROM FILEA                                                     
+       WS-FIRST = '1'                                                           
+    END-IF                                                                      
+ END-IF                                                                         
+                                                                                
+ IF NOT EOF FILEA                                                               
+    IF REC-TYPE = 'D'                                                           
+       IF AMOUNT-A NE '     '                                                   
+          WS-CNT = WS-CNT + 1                                                   
+          WS-TOTAL-AMT = WS-TOTAL-AMT + AMOUNT                                  
+          PUT FILEB FROM FILEA                                                  
+       END-IF                                                                   
+    END-IF                                                                      
+ ELSE                                                                           
+    WS-T-REC-TYP = 'T'                                                          
+    WS-T-NUM-PAY = WS-CNT                                                       
+    WS-T-TOT-AMT = WS-TOTAL-AMT                                                 
+    B-TRAILER = WS-TRAIL                                                        
+    PUT FILEB                                                                   
+    STOP EXECUTE                                                                
+ END-IF                                                                         
+                                                                                

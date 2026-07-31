@@ -1,0 +1,75 @@
+PARM LINK(GLCHRFU R)                                                            
+LIST ON                                                                         
+                                                                                
+ FILE FILEA VS                                                                  
+ ID           1   6  A                                                          
+ NAME         9  21  A                                                          
+ TRANSIT     30   5  A                                                          
+ INST-ID     36   3  A                                                          
+ ACCOUNT-NO  40  12  A                                                          
+ PREMAMT-A   59   7  A                                                          
+ PREMAMT     59   7  N                                                          
+ SIGN        66   1  A                                                          
+****                                                                            
+ *Y2K FILE FILEB FB(80 23440)                                                   
+ FILE FILEB FB(82 24026)                                                        
+ REC-TYPE         1   1  A                                                      
+ PAYOR-NAME       2  24  A                                                      
+**Y2K DUE-DATE        25   6  A                                                 
+ DUE-DATE        25   8  A                                                      
+**Y2K CUST-REF-NO     31  19  A                                                 
+ CUST-REF-NO     33  19  A                                                      
+**Y2K INST-ID-ZER     50   1  A                                                 
+ INST-ID-ZER     52   1  A                                                      
+**Y2K INST-INST-ID    51   3  A                                                 
+ INST-INST-ID    53   3  A                                                      
+**Y2K INST-TRANSIT    54   5  A                                                 
+ INST-TRANSIT    56   5  A                                                      
+**Y2K PAYOR-ACCT-NO   59  12  A                                                 
+ PAYOR-ACCT-NO   61  12  A                                                      
+**Y2K AMOUNT-LD-ZER   71   3  A                                                 
+ AMOUNT-LD-ZER   73   3  A                                                      
+**Y2K AMOUNT          74   7  A                                                 
+ AMOUNT          76   7  A                                                      
+*Y2K  TRAILER          1  80  A                                                 
+ TRAILER          1  82  A                                                      
+*                                                                               
+ WS-CNT                  W    8  N                                              
+ WS-TOTAL-AMT            W   14  N                                              
+ WS-TRAIL                W   80  A                                              
+ WS-T-REC-TYP  WS-TRAIL       1  A                                              
+ WS-T-NUM-PAY  WS-TRAIL  +1   8  N                                              
+ WS-T-TOT-AMT  WS-TRAIL  +9  14  N                                              
+*                                                                               
+ JOB INPUT(NULL)                                                                
+ GET FILEA                                                                      
+ IF NOT EOF FILEA                                                               
+    IF PREMAMT-A NE '       '                                                   
+       WS-CNT = WS-CNT + 1                                                      
+       WS-TOTAL-AMT = WS-TOTAL-AMT + PREMAMT                                    
+       PERFORM MOVE-TO-PRINT                                                    
+    END-IF                                                                      
+ ELSE                                                                           
+    WS-T-REC-TYP = 'T'                                                          
+    WS-T-NUM-PAY = WS-CNT                                                       
+    WS-T-TOT-AMT = WS-TOTAL-AMT                                                 
+    TRAILER = WS-TRAIL                                                          
+    PUT FILEB                                                                   
+    STOP EXECUTE                                                                
+ END-IF                                                                         
+                                                                                
+ MOVE-TO-PRINT.  PROC                                                           
+  REC-TYPE = 'D'                                                                
+  PAYOR-NAME = NAME                                                             
+*Y2K DUE-DATE = '      '                                                        
+  DUE-DATE = '        '                                                         
+  CUST-REF-NO = ID                                                              
+  INST-ID-ZER = '0'                                                             
+  INST-TRANSIT = TRANSIT                                                        
+  INST-INST-ID = INST-ID                                                        
+  PAYOR-ACCT-NO = ACCOUNT-NO                                                    
+  AMOUNT-LD-ZER = '000'                                                         
+  AMOUNT = PREMAMT                                                              
+                                                                                
+  PUT FILEB                                                                     
+END-PROC                                                                        

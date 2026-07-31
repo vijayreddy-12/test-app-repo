@@ -1,0 +1,55 @@
+PARM LINK(GLCHRCF R)                                                            
+LIST ON                                                                         
+                                                                                
+ FILE FILEA FB(82 24026)                                                        
+ REC-TYPE         1   1  A                                                      
+ PAYOR-NAME       2  24  A                                                      
+ DUE-DATE        25   8  A                                                      
+ DUE-DATE-DD     25   2  A                                                      
+ DUE-DATE-MM     27   2  A                                                      
+ DUE-DATE-CC     29   2  A                                                      
+ DUE-DATE-YY     31   2  A                                                      
+ CUST-REF-NO     33  19  A                                                      
+ INST-ID-ZER     52   1  A                                                      
+ INST-INST-ID    53   3  A                                                      
+ INST-TRANSIT    56   5  A                                                      
+ PAYOR-ACCT-NO   61  12  A                                                      
+ AMOUNT-LD-ZER   73   3  A                                                      
+ AMOUNT          76   7  A                                                      
+ TRAILER          1  82  A                                                      
+*                                                                               
+ FILE FILEB FB(80 23440)                                                        
+ OREC-TYPE         1   1  A                                                     
+ OPAYOR-NAME       2  24  A                                                     
+ ODUE-DATE        25   6  A                                                     
+ ODUE-DATE-DD     25   2  A                                                     
+ ODUE-DATE-MM     27   2  A                                                     
+ ODUE-DATE-YY     29   2  A                                                     
+ OCUST-REF-NO     31  19  A                                                     
+ OINST-ID-ZER     50   1  A                                                     
+ OINST-INST-ID    51   3  A                                                     
+ OINST-TRANSIT    54   5  A                                                     
+ OPAYOR-ACCT-NO   59  12  A                                                     
+ OAMOUNT-LD-ZER   71   3  A                                                     
+ OAMOUNT          74   7  A                                                     
+ OTRAILER          1  80  A                                                     
+*                                                                               
+*                                                                               
+ JOB INPUT FILEA                                                                
+ IF REC-TYPE = 'D'                                                              
+     OREC-TYPE = REC-TYPE                                                       
+     OPAYOR-NAME = PAYOR-NAME                                                   
+     ODUE-DATE-DD = DUE-DATE-DD                                                 
+     ODUE-DATE-MM = DUE-DATE-MM                                                 
+     ODUE-DATE-YY = DUE-DATE-YY                                                 
+     OCUST-REF-NO = CUST-REF-NO                                                 
+     OINST-ID-ZER = INST-ID-ZER                                                 
+     OINST-INST-ID = INST-INST-ID                                               
+     OINST-TRANSIT = INST-TRANSIT                                               
+     OPAYOR-ACCT-NO = PAYOR-ACCT-NO                                             
+     OAMOUNT-LD-ZER = AMOUNT-LD-ZER                                             
+     OAMOUNT = AMOUNT                                                           
+ ELSE                                                                           
+   OTRAILER = TRAILER                                                           
+ END-IF                                                                         
+ PUT FILEB                                                                      

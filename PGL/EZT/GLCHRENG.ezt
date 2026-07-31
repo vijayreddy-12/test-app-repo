@@ -1,0 +1,565 @@
+PARM LINK(GLCHRENG R)                                                   00001000
+LIST ON                                                                 00002000
+                                                                        00003000
+FILE FILEA                                                              00010000
+CARD 1 1 N                                                              00020000
+DEALNO 2 5 N                                                            00030000
+CERT 10 3 A                                                             00040000
+RESTREC 13 68 A                                                         00050000
+FILE FILEB, FB(82 24026)                                                00070000
+CARD 1 1 N                                                              00080000
+DEALNO 2 5 N MASK 'Z9999'                                               00090000
+ZONE 8 3 A                                                              00100000
+DEALNAME 13 32 A                                                        00110000
+ADDRESS 13 25 A                                                         00120000
+CERT 10 3 A                                                             00130000
+NAME 13 20 A                                                            00140000
+EFF 33 8 N                                                              00190000
+BDAYMO 41 4 N                                                           00200000
+BDAY   41 2 N                                                           00210000
+BMONTH 43 2 N                                                           00220000
+BYEAR 45 4 N                                                            00230000
+PROV  56 2 N                                                            00250000
+LIFEVOL 58 6 N 0                                                        00270000
+ADDVOL 64 6 N 0                                                         00290000
+DEPLIFE 70 1 A                                                          00310000
+SMOKER 71 1 A                                                           00330000
+*                                                                       00340000
+FILE DLRRPT PRINTER                                                     00350000
+DATE W 10 A                                                             00370000
+COUNT W 2 N                                                             00380000
+LVT W 7 N 0                                                             00390000
+LPT W 7 N 2                                                             00400000
+AVT W 7 N 0                                                             00410000
+APT W 7 N 2                                                             00420000
+DPT W 4 N 2                                                             00430000
+TPT W 7 N 2                                                             00440000
+AGE W 2 N                                                               00450000
+DISC W 7 N 2                                                            00460000
+ACTPREM W 7 N 2                                                         00470000
+LRATE W 4 N 2                                                           00480000
+LPREM W 7 N 2                                                           00490000
+ADDPREM W 7 N 2                                                         00500000
+DEPRATE W 4 N 2                                                         00510000
+TOTPREM W 7 N 2                                                         00520000
+TAX W 7 N 2                                                             00530000
+TOTAL W 7 N 2                                                           00540000
+COMMENT1 W 10 A                                                         00550000
+COMMENT2 W 22 A                                                         00560000
+COMMENT3 W 24 A                                                         00570000
+WDNAME W 32 A                                                           00580000
+WZONE W 3 A                                                             00590000
+ONTAX W 7 N 2                                                           00600000
+PQTAX W 7 N 2                                                           00610000
+TAXRATE W 7 N 2                                                         00620000
+SALESTAXMSG W 44 A                                                      00630000
+                                                                        00640000
+WSTAT-FROM   W  10  A                                                   00650000
+WSTAT-TO     W  10  A                                                   00660000
+                                                                        00670000
+WCOUNTER     W   1  N VALUE 1                                           00680000
+                                                                        00690000
+WS-CURR-DATE   W   8  A                                                 00700000
+  WS-CURR-DD  WS-CURR-DATE   2  N                                       00710000
+  WS-CURR-MM  WS-CURR-DATE  +3  2  N                                    00720000
+  WS-CURR-YY  WS-CURR-DATE  +6  2  N                                    00730000
+                                                                        00740000
+WS-Y2K-CURR-CCYY  W  4  N                                               00750000
+   WS-Y2K-CURR-CC  WS-Y2K-CURR-CCYY   2  N                              00760000
+   WS-Y2K-CURR-YY  WS-Y2K-CURR-CCYY  +2  2  N                           00770000
+                                                                        00780000
+WS-Y2K-CURR-DDMM  W  4  N                                               00790000
+   WS-Y2K-CURR-DD  WS-Y2K-CURR-DDMM   2  N                              00800000
+   WS-Y2K-CURR-MM  WS-Y2K-CURR-DDMM  +2  2  N                           00810000
+                                                                        00820000
+MTHFR    W  10 A                                                        00820100
+   FRDAY    MTHFR    2 A                                                00820200
+   FRSLASH1 MTHFR +2 1 A                                                00820300
+   FRMTH    MTHFR +3 2 N                                                00820400
+   FRSLASH2 MTHFR +5 1 A                                                00820500
+   FRYEAR   MTHFR +6 4 A                                                00820600
+                                                                        00820700
+MTHTO    W  10 A                                                        00820800
+   TODAY    MTHTO    2 A                                                00820900
+   TOSLASH1 MTHTO +2 1 A                                                00821000
+   TOMTH    MTHTO +3 2 N                                                00821100
+   TOSLASH2 MTHTO +5 1 A                                                00821200
+   TOYEAR   MTHTO +6 4 A                                                00821300
+                                                                        00821400
+DAYS-TAB              W        24  A VALUE +                            00822000
+           '312831303130313130313031'                                   00823000
+DAYS-ENTRIES      DAYS-TAB      2  N  OCCURS 12                         00824000
+END-OF-MTH        DAYS-ENTRIES  2  N                                    00825000
+                                                                        00826000
+SORT FILEA TO FILEB USING(DEALNO, CARD, CERT)                           00830000
+**                                                                      00840000
+JOB INPUT(FILEB)                                                        00850000
+**                                                                      00860000
+WS-CURR-DATE = SYSDATE                                                  00870000
+WS-Y2K-CURR-YY = WS-CURR-YY                                             00880000
+WS-Y2K-CURR-MM = WS-CURR-MM                                             00890000
+WS-Y2K-CURR-DD = WS-CURR-DD                                             00900000
+IF WS-CURR-YY < 90                                                      00910000
+   WS-Y2K-CURR-CC = 20                                                  00920000
+ELSE                                                                    00930000
+   WS-Y2K-CURR-CC = 19                                                  00940000
+END-IF                                                                  00950000
+                                                                        00960000
+***************                                                         00961000
+* BUILD THE FROM AND TO YEARS BASED ON SYSTEM DATE                      00962000
+***************                                                         00963000
+FRYEAR = WS-Y2K-CURR-CCYY                                               00964000
+TOYEAR = WS-Y2K-CURR-CCYY                                               00965000
+                                                                        00966000
+IF WS-CURR-MM = 01, 02, 03                                              00967000
+   FRMTH = 01                                                           00968000
+   FRDAY = '01'                                                         00968100
+   FRSLASH1 = '/'                                                       00968200
+   FRSLASH2 = '/'                                                       00968300
+   TOMTH = 03                                                           00969000
+   TODAY = END-OF-MTH(TOMTH)                                            00969100
+   TOSLASH1 = '/'                                                       00969200
+   TOSLASH2 = '/'                                                       00969300
+END-IF                                                                  00969500
+IF WS-CURR-MM = 04, 05, 06                                              00969600
+   FRMTH = 04                                                           00969700
+   FRDAY = '01'                                                         00969800
+   FRSLASH1 = '/'                                                       00969900
+   FRSLASH2 = '/'                                                       00970000
+   TOMTH = 06                                                           00970100
+   TODAY = END-OF-MTH(TOMTH)                                            00970200
+   TOSLASH1 = '/'                                                       00970300
+   TOSLASH2 = '/'                                                       00970400
+END-IF                                                                  00970500
+IF WS-CURR-MM = 07, 08, 09                                              00970600
+   FRMTH = 07                                                           00970700
+   FRDAY = '01'                                                         00970800
+   FRSLASH1 = '/'                                                       00970900
+   FRSLASH2 = '/'                                                       00971000
+   TOMTH = 09                                                           00971100
+   TODAY = END-OF-MTH(TOMTH)                                            00971200
+   TOSLASH1 = '/'                                                       00971300
+   TOSLASH2 = '/'                                                       00971400
+END-IF                                                                  00971500
+IF WS-CURR-MM = 10, 11, 12                                              00971600
+   FRMTH = 10                                                           00971700
+   FRDAY = '01'                                                         00971800
+   FRSLASH1 = '/'                                                       00971900
+   FRSLASH2 = '/'                                                       00972000
+   TOMTH = 12                                                           00972100
+   TODAY = END-OF-MTH(TOMTH)                                            00972200
+   TOSLASH1 = '/'                                                       00972300
+   TOSLASH2 = '/'                                                       00972400
+END-IF                                                                  00972500
+                                                                        00972600
+IF WCOUNTER = 1                                                         00973000
+   DISPLAY DLRRPT '$DJDE$ FORMS=G8011A,FORMAT=FMT5,TOF=10,' +           00980000
+   'DUPLEX=NO,BOF=80,SHIFT=NO,PMODE=LANDSCAPE,END;'                     00990000
+   WCOUNTER = 9                                                         01020000
+END-IF                                                                  01030000
+                                                                        01040000
+**WSTAT-FROM = '01/10/2008'                                             01050000
+**WSTAT-TO = '31/12/2008'                                               01060000
+**DATE = '31 12 2008'                                                   01061000
+WSTAT-FROM = MTHFR                                                      01070000
+WSTAT-TO = MTHTO                                                        01071000
+TOSLASH1 = ' '                                                          01072000
+TOSLASH2 = ' '                                                          01073000
+DATE = MTHTO                                                            01080000
+                                                                        01081000
+COMMENT1 = 'LIFE RATE:'                                                 01090000
+COMMENT2 = '*THE LIFE PREMIUM OF $'                                     01100000
+COMMENT3 = 'HAS BEEN DISCOUNTED BY $'                                   01110000
+IF CARD = 1                                                             01120000
+   COUNT = 0                                                            01130000
+   LVT = 0                                                              01140000
+   LPT = 0                                                              01150000
+   AVT = 0                                                              01160000
+   APT = 0                                                              01170000
+   DPT = 0                                                              01180000
+   TPT = 0                                                              01190000
+   WDNAME = DEALNAME                                                    01200000
+   WZONE = ZONE                                                         01210000
+                                                                        01220000
+   DISPLAY DLRRPT NEWPAGE                                               01230000
+   DISPLAY DLRRPT SKIP 6 ' '                                            01240000
+                                                                        01250000
+   DISPLAY DLRRPT COL 2 DEALNO COL 11 WDNAME COL 46 DATE  +             01260000
+    COL 65 WZONE   COL 73 WSTAT-FROM COL 89 WSTAT-TO                    01270000
+   DISPLAY DLRRPT SKIP 9 ' '                                            01300000
+   GOTO FLUNK                                                           01310000
+END-IF                                                                  01320000
+IF CARD NQ 2                                                            01330000
+   GO TO CARD4                                                          01340000
+END-IF                                                                  01350000
+IF COUNT = 05, 10, 15                                                   01360000
+   GO TO SUB                                                            01370000
+END-IF                                                                  01380000
+IF COUNT NQ 05, 10, 15                                                  01390000
+   GO TO CARD2                                                          01400000
+END-IF                                                                  01410000
+SUB                                                                     01420000
+DISPLAY DLRRPT SKIP 5 COL 2 'SUBTOTAL' COL 38 LVT COL 50 LPT       +    01430000
+COL 61 AVT       COL 73 APT COL 84 DPT COL 91 TPT                       01440000
+                                                                        01450000
+  DISPLAY DLRRPT NEWPAGE                                                01460000
+  DISPLAY DLRRPT SKIP 6 ' '                                             01470000
+                                                                        01480000
+DISPLAY DLRRPT COL 2 DEALNO COL 11 WDNAME COL 47 DATE   +               01510000
+COL 59 WZONE                                                            01520000
+                                                                        01530000
+DISPLAY DLRRPT SKIP 9 ' '                                               01540000
+CARD2                                                                   01550000
+COUNT = COUNT + 1                                                       01560000
+IF BMONTH = 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12              01570000
+*Y2KMAN    AGE = 98 - BYEAR                                             01580000
+   *  AGE = WS-Y2K-CURR-CCYY - BYEAR                                    01590000
+   IF WS-Y2K-CURR-MM > BMONTH                                           01600000
+      AGE = WS-Y2K-CURR-CCYY - BYEAR                                    01610000
+   ELSE                                                                 01620000
+      IF WS-Y2K-CURR-MM = BMONTH                                        01630000
+         IF WS-Y2K-CURR-DD >= BDAY                                      01640000
+            AGE = WS-Y2K-CURR-CCYY - BYEAR                              01650000
+         ELSE                                                           01660000
+            AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                        01670000
+         END-IF                                                         01680000
+      ELSE                                                              01690000
+         AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                           01700000
+      END-IF                                                            01710000
+   END-IF                                                               01720000
+ELSE                                                                    01730000
+*Y2KMAN    AGE = 97 - BYEAR                                             01740000
+   AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                 01750000
+END-IF                                                                  01760000
+IF SMOKER = 'N'                                                         01770000
+   GO TO NONSMOKER                                                      01780000
+END-IF                                                                  01790000
+*THE FOLLOWING ARE THE QUARTERLY LIFE RATES FOR SMOKERS                 01800000
+IF AGE LQ 29                                                            01810000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .45        01820000
+   LRATE = .50                                                          01830000
+END-IF                                                                  01840000
+IF AGE = 30, 31, 32, 33, 34                                             01850000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW *  LRATE = .51       01860000
+   LRATE = .57                                                          01870000
+END-IF                                                                  01880000
+IF AGE = 35, 36, 37, 38, 39                                             01890000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .78       01900000
+   LRATE = .88                                                          01910000
+END-IF                                                                  01920000
+IF AGE = 40, 41, 42, 43, 44                                             01930000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .96       01940000
+   LRATE = 1.08                                                         01950000
+END-IF                                                                  01960000
+IF AGE = 45, 46, 47, 48, 49                                             01970000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 1.38      01980000
+   LRATE = 1.55                                                         01990000
+END-IF                                                                  02000000
+IF AGE = 50, 51, 52, 53, 54                                             02010000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 2.25      02020000
+   LRATE = 2.52                                                         02030000
+END-IF                                                                  02040000
+IF AGE = 55, 56, 57, 58, 59                                             02050000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 3.45      02060000
+   LRATE = 3.87                                                         02070000
+END-IF                                                                  02080000
+IF AGE = 60, 61, 62, 63, 64                                             02090000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 5.25      02100000
+   LRATE = 5.89                                                         02110000
+END-IF                                                                  02120000
+IF AGE = 65, 66, 67, 68, 69                                             02130000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 6.00      02140000
+   LRATE = 6.73                                                         02150000
+END-IF                                                                  02160000
+IF AGE = 70, 71, 72, 73, 74                                             02170000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 15.00     02180000
+   LRATE = 16.83                                                        02190000
+END-IF                                                                  02200000
+IF AGE = 75, 76, 77, 78, 79                                             02210000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 24.30     02220000
+   LRATE = 27.26                                                        02230000
+END-IF                                                                  02240000
+IF AGE GQ 80                                                            02250000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 42.75     02260000
+   LRATE = 47.97                                                        02270000
+END-IF                                                                  02280000
+GO TO LIFECALC                                                          02290000
+NONSMOKER                                                               02300000
+*THE FOLLOWING ARE THE QUARTERLY LIFE RATES FOR NON-SMOKERS             02310000
+IF AGE LQ 29                                                            02320000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .27       02330000
+   LRATE = .30                                                          02340000
+END-IF                                                                  02350000
+IF AGE = 30, 31, 32, 33, 34                                             02360000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .33       02370000
+   LRATE = .37                                                          02380000
+END-IF                                                                  02390000
+IF AGE = 35, 36, 37, 38, 39                                             02400000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .48       02410000
+   LRATE = .54                                                          02420000
+END-IF                                                                  02430000
+IF AGE = 40, 41, 42, 43, 44                                             02440000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .60       02450000
+   LRATE = .67                                                          02460000
+END-IF                                                                  02470000
+IF AGE = 45, 46, 47, 48, 49                                             02480000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = .99       02490000
+   LRATE = 1.11                                                         02500000
+END-IF                                                                  02510000
+IF AGE = 50, 51, 52, 53, 54                                             02520000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 1.65      02530000
+   LRATE = 1.85                                                         02540000
+END-IF                                                                  02550000
+IF AGE = 55, 56, 57, 58, 59                                             02560000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 2.25      02570000
+   LRATE = 2.52                                                         02580000
+END-IF                                                                  02590000
+IF AGE = 60, 61, 62, 63, 64                                             02600000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 4.05      02610000
+   LRATE = 4.54                                                         02620000
+END-IF                                                                  02630000
+IF AGE = 65, 66, 67, 68, 69                                             02640000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 5.40      02650000
+   LRATE = 6.06                                                         02660000
+END-IF                                                                  02670000
+IF AGE = 70, 71, 72, 73, 74                                             02680000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 11.25     02690000
+   LRATE = 12.62                                                        02700000
+END-IF                                                                  02710000
+IF AGE = 75, 76, 77, 78, 79                                             02720000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 18.75     02730000
+   LRATE = 21.04                                                        02740000
+END-IF                                                                  02750000
+IF AGE GQ 80                                                            02760000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW    LRATE = 34.50     02770000
+   LRATE = 38.71                                                        02780000
+END-IF                                                                  02790000
+LIFECALC                                                                02800000
+ACTPREM = LIFEVOL / 1000 * LRATE + .005                                 02810000
+DISC = ACTPREM * .15 + .005                                             02820000
+* JAN 2007. AS PER TASK LOG NO. 69943, NO MORE DISCOUNT IS ALLOWED.     02830000
+*LPREM = ACTPREM - DISC                                                 02840000
+LPREM = ACTPREM                                                         02850000
+LVT = LVT + LIFEVOL                                                     02860000
+LPT = LPT + LPREM                                                       02870000
+*AD&D CALCULATION                                                       02880000
+IF AGE = 70                                                             02890000
+   ADDPREM = 0                                                          02900000
+ELSE                                                                    02910000
+   ADDPREM = ADDVOL / 1000 * .15 + .005                                 02920000
+END-IF                                                                  02930000
+AVT = AVT + ADDVOL                                                      02940000
+APT = APT + ADDPREM                                                     02950000
+*THE FOLLOWING ARE THE CALCULATIONS FOR THE QUARTERLY DEPENDENT RATE    02960000
+IF DEPLIFE = 'N'                                                        02970000
+   DEPRATE = 0                                                          02980000
+   GO TO CALC                                                           02990000
+END-IF                                                                  03000000
+*****CHANGE STARTS - HARSHA GANDHI - APRIL 8 2003                       03010000
+*****THE FOLLOWING PIECE OF CODE IS TO INCLUDE TWO NEW OPTIONS          03020000
+*****FOR THE DEALER-OWNER PROGRAM.                                      03030000
+*****OPTION 1 IS NEW AND OPTION 2 IS THE SAME AS THE PREVIOUS ONE.      03040000
+IF DEPLIFE = '1'                                                        03050000
+   IF AGE LQ 29                                                         03060000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 5.58 03070000
+      DEPRATE = 6.26                                                    03080000
+   END-IF                                                               03090000
+   IF AGE = 30, 31, 32, 33, 34                                          03100000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 6.18 03110000
+      DEPRATE = 6.93                                                    03120000
+   END-IF                                                               03130000
+   IF AGE = 35, 36, 37, 38, 39                                          03140000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 7.20 03150000
+      DEPRATE = 8.08                                                    03160000
+   END-IF                                                               03170000
+   IF AGE = 40, 41, 42, 43, 44                                          03180000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 9.18 03190000
+      DEPRATE = 10.30                                                   03200000
+   END-IF                                                               03210000
+   IF AGE = 45, 46, 47, 48, 49                                          03220000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 12.6003230000
+      DEPRATE = 14.14                                                   03240000
+   END-IF                                                               03250000
+   IF AGE = 50, 51, 52, 53, 54                                          03260000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 18.1803270000
+      DEPRATE = 20.40                                                   03280000
+   END-IF                                                               03290000
+   IF AGE = 55, 56, 57, 58, 59                                          03300000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 26.4003310000
+      DEPRATE = 29.62                                                   03320000
+   END-IF                                                               03330000
+   IF AGE = 60, 61, 62, 63, 64                                          03340000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 37.0803350000
+      DEPRATE = 41.60                                                   03360000
+   END-IF                                                               03370000
+   IF AGE GQ 65                                                         03380000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 0.00 03390000
+      DEPRATE = 0.00                                                    03400000
+   END-IF                                                               03410000
+END-IF                                                                  03420000
+*****THE OPTION 'Y' WAS CHANGED TO OPTION 2**************               03430000
+IF DEPLIFE = '2'                                                        03440000
+   IF AGE LQ 29                                                         03450000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 2.79 03460000
+      DEPRATE = 3.13                                                    03470000
+   END-IF                                                               03480000
+   IF AGE = 30, 31, 32, 33, 34                                          03490000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 3.09 03500000
+      DEPRATE = 3.47                                                    03510000
+   END-IF                                                               03520000
+   IF AGE = 35, 36, 37, 38, 39                                          03530000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 3.60 03540000
+      DEPRATE = 4.04                                                    03550000
+   END-IF                                                               03560000
+   IF AGE = 40, 41, 42, 43, 44                                          03570000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 4.59 03580000
+      DEPRATE = 5.15                                                    03590000
+   END-IF                                                               03600000
+   IF AGE = 45, 46, 47, 48, 49                                          03610000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 6.30 03620000
+      DEPRATE = 7.07                                                    03630000
+   END-IF                                                               03640000
+   IF AGE = 50, 51, 52, 53, 54                                          03650000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 9.09 03660000
+      DEPRATE = 10.20                                                   03670000
+   END-IF                                                               03680000
+   IF AGE = 55, 56, 57, 58, 59                                          03690000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 13.2003700000
+      DEPRATE = 14.81                                                   03710000
+   END-IF                                                               03720000
+   IF AGE = 60, 61, 62, 63, 64                                          03730000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 18.5403740000
+      DEPRATE = 20.80                                                   03750000
+   END-IF                                                               03760000
+   IF AGE GQ 65                                                         03770000
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW       DEPRATE = 0.00 03780000
+      DEPRATE = 0.00                                                    03790000
+   END-IF                                                               03800000
+END-IF                                                                  03810000
+*****CHANGE ENDS   - HARSHA GANDHI - APRIL 8 2003                       03820000
+CALC                                                                    03830000
+DPT = DPT + DEPRATE                                                     03840000
+TOTPREM = LPREM + ADDPREM + DEPRATE                                     03850000
+TPT = TPT + TOTPREM                                                     03860000
+                                                                        03870000
+IF PROV = 01                                                            03880000
+   TAXRATE  = 0.00                                                      03890000
+ELSE                                                                    03900000
+IF PROV = 02                                                            03910000
+   TAXRATE  = 0.00                                                      03920000
+ELSE                                                                    03930000
+IF PROV = 03                                                            03940000
+   TAXRATE  = 0.00                                                      03950000
+ELSE                                                                    03960000
+IF PROV = 04                                                            03970000
+   TAXRATE  = 0.00                                                      03980000
+ELSE                                                                    03990000
+IF PROV = 05                                                            04000000
+   TAXRATE  = 0.08                                                      04010000
+ELSE                                                                    04020000
+IF PROV = 06                                                            04030000
+   TAXRATE  = 0.09                                                      04040000
+ELSE                                                                    04050000
+IF PROV = 07                                                            04060000
+   TAXRATE  = 0.00                                                      04070000
+ELSE                                                                    04080000
+IF PROV = 08                                                            04090000
+   TAXRATE  = 0.00                                                      04100000
+ELSE                                                                    04110000
+IF PROV = 09                                                            04120000
+   TAXRATE  = 0.00                                                      04130000
+ELSE                                                                    04140000
+IF PROV = 10                                                            04150000
+   TAXRATE  = 0.00                                                      04160000
+ELSE                                                                    04170000
+IF PROV = 11                                                            04180000
+   TAXRATE  = 0.00                                                      04190000
+ELSE                                                                    04200000
+IF PROV = 12                                                            04210000
+   TAXRATE  = 0.00                                                      04220000
+ELSE                                                                    04230000
+IF PROV = 13                                                            04240000
+   TAXRATE  = 0.00                                                      04250000
+ELSE                                                                    04260000
+IF PROV = 14                                                            04270000
+   TAXRATE  = 0.00                                                      04280000
+ELSE                                                                    04290000
+   TAXRATE  = 0.00                                                      04300000
+END-IF                                                                  04310000
+END-IF                                                                  04320000
+END-IF                                                                  04330000
+END-IF                                                                  04340000
+END-IF                                                                  04350000
+END-IF                                                                  04360000
+END-IF                                                                  04370000
+END-IF                                                                  04380000
+END-IF                                                                  04390000
+END-IF                                                                  04400000
+END-IF                                                                  04410000
+END-IF                                                                  04420000
+END-IF                                                                  04430000
+END-IF                                                                  04440000
+                                                                        04450000
+TAX = (TPT * TAXRATE) + 0.005                                           04460000
+TOTAL = TPT + TAX                                                       04470000
+IF PROV = 05                                                            04480000
+   ONTAX = TAX                                                          04490000
+   PQTAX = 0.00                                                         04500000
+   SALESTAXMSG = 'ONTARIO SALES TAX/TAX DE VENTE DE L''ONTARIO'         04510000
+ELSE                                                                    04520000
+IF PROV = 06                                                            04530000
+   PQTAX = TAX                                                          04540000
+   ONTAX = 0.00                                                         04550000
+   SALESTAXMSG = 'QUEBEC SALES TAX /TAX DE VENTE DU QUEBEC   '          04560000
+ELSE                                                                    04570000
+   SALESTAXMSG = '                SALES TAX / TAX DE VENTE   '          04580000
+END-IF                                                                  04590000
+END-IF                                                                  04600000
+                                                                        04610000
+                                                                        04620000
+DISPLAY DLRRPT COL 2 CERT COL 7 NAME COL 28 EFF COL 40 LIFEVOL COL 50 + 04640000
+LPREM   COL 63 ADDVOL COL 73 ADDPREM COL 84 DEPRATE COL 91 TOTPREM      04650000
+ DISPLAY DLRRPT COL 10 '     '                                          04700000
+GOTO FLUNK                                                              04710000
+CARD4                                                                   04720000
+IF CARD NQ 4                                                            04730000
+   GO TO ADDRESS                                                        04740000
+END-IF                                                                  04750000
+IF COUNT = 01, 06, 11, 16                                               04760000
+DISPLAY DLRRPT SKIP 9 ' ' COL 38 LVT COL 50 LPT COL 61 AVT COL 73 APT + 04770000
+   COL 84 DPT COL 91 TPT                                                04780000
+END-IF                                                                  04790000
+IF COUNT = 02, 07, 12, 17                                               04800000
+DISPLAY DLRRPT SKIP 7 ' ' COL 38 LVT COL 50 LPT COL 61 AVT COL 73 APT + 04810000
+   COL 84 DPT COL 91 TPT                                                04820000
+END-IF                                                                  04830000
+IF COUNT = 03, 08, 13, 18                                               04840000
+DISPLAY DLRRPT SKIP 5 ' ' COL 38 LVT COL 50 LPT COL 61 AVT COL 73 APT + 04850000
+   COL 84 DPT COL 91 TPT                                                04860000
+END-IF                                                                  04870000
+IF COUNT = 04, 09, 14, 19                                               04880000
+DISPLAY DLRRPT SKIP 3 ' ' COL 38 LVT COL 50 LPT COL 61 AVT COL 73 APT + 04890000
+   COL 84 DPT COL 91 TPT                                                04900000
+END-IF                                                                  04910000
+IF COUNT = 05, 10, 15, 20                                               04920000
+DISPLAY DLRRPT SKIP 1 ' ' COL 38 LVT COL 50 LPT COL 61 AVT COL 73 APT + 04930000
+   COL 84 DPT COL 91 TPT                                                04940000
+END-IF                                                                  04950000
+                                                                        04960000
+DISPLAY DLRRPT COL 21 SALESTAXMSG +                                     04970000
+        COL 91 TAX                                                      04980000
+DISPLAY DLRRPT COL 21 '                     TOTAL DUE /TOTAL DU' +      04990000
+        COL 91 TOTAL                                                    05000000
+                                                                        05010000
+DISPLAY DLRRPT SKIP 1 ' *THE PREMIUMS ABOVE ARE BASED ON THE ' +        05020000
+WS-Y2K-CURR-CCYY ' AGE BANDED RATES.'                                   05030000
+DISPLAY DLRRPT 'Les primes ci-dessus sont basees sur l''age des +       05040000
+individus.  Veuillez vous referrer au tableau qui suit.'                05050000
+DISPLAY DLRRPT COL 9 '1-877-877-4692'                                   05160000
+DISPLAY DLRRPT SKIP 2 ' ' COL 9 WDNAME                                  05180000
+DISPLAY DLRRPT COL 9 ADDRESS                                            05190000
+ADDRESS                                                                 05200000
+IF CARD = 5, 6, 7                                                       05210000
+   DISPLAY DLRRPT COL 9 ADDRESS                                         05220000
+   END-IF                                                               05230000
+FLUNK                                                                   05240000

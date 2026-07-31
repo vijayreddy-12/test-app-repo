@@ -1,0 +1,50 @@
+PARM LINK(GLCHRHE R)                                                            
+                                                                                
+ LIST OFF                                                                       
+ FILE FILEA                                                                     
+ HEADER2      1  80  A                                                          
+****                                                                            
+ FILE FILEB FB(80 23440)                                                        
+ HEADERB      1  80  A                                                          
+*                                                                               
+ WS-CNT                  W    2  N                                              
+                                                                                
+ WS-HD2                  W   80  A                                              
+ WS-H2-H       WS-HD2         1  A                                              
+ WS-H2-ORID    WS-HD2    +1  10  A                                              
+ WS-H2-TYPAYM  WS-HD2   +11   4  A                                              
+ WS-H2-DUEDD   WS-HD2   +15   2  A                                              
+ WS-H2-DUEMM   WS-HD2   +17   2  N                                              
+ WS-H2-DUEYY   WS-HD2   +19   2  N                                              
+ WS-H2-CUSTNM  WS-HD2   +21  15  A                                              
+ WS-H2-INSTRT  WS-HD2   +36   9  A                                              
+ WS-H2-ACCTRT  WS-HD2   +45  12  A                                              
+ WS-H2-FILENO  WS-HD2   +57   4  N                                              
+                                                                                
+ WS-DATE        W     8    A                                                    
+ WS-DD  WS-DATE       2   N                                                     
+ WS-SL1 WS-DATE   +2  1   A                                                     
+ WS-MM  WS-DATE   +3  2   N                                                     
+ WS-SL2 WS-DATE   +5  1   A                                                     
+ WS-YY  WS-DATE   +6  2   N                                                     
+*                                                                               
+ JOB                                                                            
+  WS-DATE = SYSDATE                                                             
+  WS-HD2 = HEADER2                                                              
+  WS-H2-H = 'H'                                                                 
+  WS-H2-ORID = 'TWAET10225'                                                     
+  WS-H2-TYPAYM = 'D330'                                                         
+  WS-H2-DUEDD = '01'                                                            
+  WS-H2-DUEMM = WS-MM + 1                                                       
+  WS-H2-DUEYY = WS-YY                                                           
+  IF WS-H2-DUEMM GT 12                                                          
+     WS-H2-DUEMM = 1                                                            
+     WS-H2-DUEYY = WS-YY + 1                                                    
+  END-IF                                                                        
+  WS-H2-CUSTNM = 'MFC TWAET10225'                                               
+  WS-H2-INSTRT = '000411682'                                                    
+  WS-H2-ACCTRT = '05190689127 '                                                 
+  WS-H2-FILENO = WS-H2-FILENO + 1                                               
+  HEADERB = WS-HD2                                                              
+  PUT FILEB                                                                     
+  STOP EXECUTE                                                                  

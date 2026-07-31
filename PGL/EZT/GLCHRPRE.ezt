@@ -1,0 +1,566 @@
+PARM LINK(GLCHRPRE R)                                                           
+LIST ON                                                                         
+                                                                                
+FILE FILEA                                                                      
+DEALNO 2 5 N HEADING ('DEAL.', ' NO.') MASK 'Z9999'                             
+ZONE 7 3 A                                                                      
+CERT 7 6 A HEADING ('CERT', 'NO.')                                              
+NAME 13 20 A                                                                    
+EFF 33 8 N HEADING ('EFFECT', ' DATE')                                          
+BIRTHDAY 41 8 N                                                                 
+BDAYMO 41 4 N                                                                   
+BDAY   41 2 N                                                                   
+BMONTH 43 2 N                                                                   
+BYEAR 45 4 N                                                                    
+PROV 56 2 N                                                                     
+LIFEVOL 58 6 N 0 HEADING (' LIFE', ' VOLUME')                                   
+ADDVOL 64 6 N 0 HEADING (' AD&D', ' VOLUME')                                    
+DEPLIFE 70 1 A                                                                  
+SMOKER 71 1 A                                                                   
+**                                                                              
+FILE FILEC PRINTER                                                              
+**                                                                              
+*                                                                               
+FILE REPTFILE                                                                   
+*                                                                               
+REP-TITLE    1 124  A                                                           
+RH1            1 50  A                                                          
+RH2          51  44  A                                                          
+RH3          94  32  A                                                          
+RH4          126 25  A                                                          
+RH5          151 11  A                                                          
+*                                                                               
+DEALNO-O   1    5  A                                                            
+FILL1-O    6    1  A                                                            
+CERT-O     7    6  A                                                            
+FILL2-O   13    1  A                                                            
+NAME-O    14   20  A                                                            
+FILL3-O   34    1  A                                                            
+DOB-O     35    8  A                                                            
+FILL4-O   43    1  A                                                            
+LIFEVOL-O 44    6  A                                                            
+FILL5-O   50    1  A                                                            
+LPREM-O   51    7  N 2                                                          
+FILL5A-O  58    1  A                                                            
+ADDVOL-O  59    6  N                                                            
+FILL6-O   65    1  A                                                            
+ADDPREM-O 66    7  N 2                                                          
+FILL7-O   73    1  A                                                            
+DEPRATE-O 74    4  N 2                                                          
+FILL8-O   78    1  A                                                            
+TOTPREM-O 79    7  N 2                                                          
+FILL9-O   86    1  A                                                            
+ONTAX-O   87    5  N 2                                                          
+FILL10-O  92    1  A                                                            
+PQTAX-O   93    5  N 2                                                          
+FILL11-O  98    1  A                                                            
+AMD-O     99    7  N 2                                                          
+FILL12-O  106   1  A                                                            
+PROV-O    107   2  A                                                            
+*                                                                               
+*WORKING STORAGE BEGINS                                                         
+*                                                                               
+AGE     W 2 N                                                                   
+LRATE   W 4 N 2                                                                 
+WLRATE  W 4 N 2                                                                 
+ACTPREM W 7 N 2                                                                 
+LPREM   W 7 N 2 HEADING ('   LIFE', '  PREMIUM')                                
+ADDPREM W 7 N 2 HEADING ('   AD&D', '  PREMIUM')                                
+DEPRATE W 4 N 2 HEADING ('   DEPS', '   PREM')                                  
+TOTPREM W 7 N 2 HEADING ('  TOTAL', '  PREMIUM')                                
+TAX     W 5 N 2 HEADING (' SALES', ' TAX')                                      
+AMD     W 7 N 2 HEADING ('   AMOUNT', '  DUE')                                  
+TAXRATE W 5 N 2                                                                 
+ONTAX   W 5 N 2 HEADING ('ONT', 'TAX')                                          
+PQTAX   W 5 N 2 HEADING ('QUE', 'TAX')                                          
+                                                                                
+WS-HDR-CREATED W    1 A VALUE 'N'                                               
+                                                                                
+WS-CURR-DATE   W   8  A                                                         
+  WS-CURR-DD  WS-CURR-DATE   2  N                                               
+  WS-CURR-MM  WS-CURR-DATE  +3  2  N                                            
+  WS-CURR-YY  WS-CURR-DATE  +6  2  N                                            
+                                                                                
+WS-Y2K-CURR-CCYY  W  4  N                                                       
+   WS-Y2K-CURR-CC  WS-Y2K-CURR-CCYY   2  N                                      
+   WS-Y2K-CURR-YY  WS-Y2K-CURR-CCYY  +2  2  N                                   
+                                                                                
+WS-Y2K-CURR-DDMM  W  4  N                                                       
+   WS-Y2K-CURR-DD  WS-Y2K-CURR-DDMM   2  N                                      
+   WS-Y2K-CURR-MM  WS-Y2K-CURR-DDMM  +2  2  N                                   
+                                                                                
+MTHFR    W  7 A                                                                 
+   FRMTH  MTHFR  3 A                                                            
+   FRYEAR MTHFR  +3 4 A                                                         
+MTHTO    W  7 A                                                                 
+   TOMTH  MTHTO  3 A                                                            
+   TOYEAR MTHTO  +3 4 A                                                         
+                                                                                
+**                                                                              
+JOB                                                                             
+                                                                                
+WS-CURR-DATE = SYSDATE                                                          
+WS-Y2K-CURR-YY = WS-CURR-YY                                                     
+WS-Y2K-CURR-MM = WS-CURR-MM                                                     
+WS-Y2K-CURR-DD = WS-CURR-DD                                                     
+                                                                                
+IF WS-CURR-YY < 90                                                              
+   WS-Y2K-CURR-CC = 20                                                          
+ELSE                                                                            
+   WS-Y2K-CURR-CC = 19                                                          
+END-IF                                                                          
+                                                                                
+***************                                                                 
+* BUILD THE FROM AND TO YEARS BASED ON SYSTEM DATE                              
+***************                                                                 
+FRYEAR = WS-Y2K-CURR-CCYY                                                       
+TOYEAR = WS-Y2K-CURR-CCYY                                                       
+                                                                                
+IF WS-CURR-MM = 01, 02, 03                                                      
+   FRMTH = 'JAN'                                                                
+   TOMTH = 'MAR'                                                                
+END-IF                                                                          
+IF WS-CURR-MM = 04, 05, 06                                                      
+   FRMTH = 'APR'                                                                
+   TOMTH = 'JUN'                                                                
+END-IF                                                                          
+IF WS-CURR-MM = 07, 08, 09                                                      
+   FRMTH = 'JUL'                                                                
+   TOMTH = 'SEP'                                                                
+END-IF                                                                          
+IF WS-CURR-MM = 10, 11, 12                                                      
+   FRMTH = 'OCT'                                                                
+   TOMTH = 'DEC'                                                                
+END-IF                                                                          
+                                                                                
+IF WS-HDR-CREATED = 'N'                                                         
+   WS-HDR-CREATED = 'Y'                                                         
+   MOVE 'DEALNO,CERT,NAME,DOB,LIFEVOL,LPREM,ADDVOL,ADDPREM,' TO RH1             
+   MOVE 'DEPRATE,TOTPREM,ONTAX,PQTAX,AMD,'              TO RH2                  
+   MOVE 'PROV                            ' TO RH3                               
+   MOVE '                         ' TO RH4                                      
+   MOVE '           '                             TO RH5                        
+   PUT REPTFILE                                                                 
+   MOVE ' ' TO RH1                                                              
+   MOVE ' ' TO RH2                                                              
+   MOVE ' ' TO RH3                                                              
+   MOVE ' ' TO RH4                                                              
+   MOVE ' ' TO RH5                                                              
+END-IF                                                                          
+**                                                                              
+TAX = 0.00                                                                      
+TAXRATE = 0.00                                                                  
+ONTAX   = 0.00                                                                  
+PQTAX   = 0.00                                                                  
+**                                                                              
+IF BMONTH = 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12                      
+   IF WS-Y2K-CURR-MM > BMONTH                                                   
+      AGE = WS-Y2K-CURR-CCYY - BYEAR                                            
+   ELSE                                                                         
+      IF WS-Y2K-CURR-MM = BMONTH                                                
+         IF WS-Y2K-CURR-DD >= BDAY                                              
+            AGE = WS-Y2K-CURR-CCYY - BYEAR                                      
+         ELSE                                                                   
+            AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                
+         END-IF                                                                 
+      ELSE                                                                      
+         AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                   
+      END-IF                                                                    
+   END-IF                                                                       
+ELSE                                                                            
+   AGE = (WS-Y2K-CURR-CCYY - 1) - BYEAR                                         
+END-IF                                                                          
+                                                                                
+IF SMOKER = 'N'                                                                 
+   GO TO NONSMOKER                                                              
+END-IF                                                                          
+                                                                                
+*THE FOLLOWING ARE THE QUARTERLY LIFE RATES FOR SMOKERS                         
+IF AGE LQ 29                                                                    
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .45                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .42                
+   LRATE = .50                                                                  
+END-IF                                                                          
+IF AGE = 30, 31, 32, 33, 34                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .51                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .48                
+   LRATE = .57                                                                  
+END-IF                                                                          
+IF AGE = 35, 36, 37, 38, 39                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .78                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .73                
+   LRATE = .88                                                                  
+END-IF                                                                          
+IF AGE = 40, 41, 42, 43, 44                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .96                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .90                
+   LRATE = 1.08                                                                 
+END-IF                                                                          
+IF AGE = 45, 46, 47, 48, 49                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 1.38               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 1.29               
+   LRATE = 1.55                                                                 
+END-IF                                                                          
+IF AGE = 50, 51, 52, 53, 54                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 2.25               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 2.10               
+   LRATE = 2.52                                                                 
+END-IF                                                                          
+IF AGE = 55, 56, 57, 58, 59                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 3.45               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 3.23               
+   LRATE = 3.87                                                                 
+END-IF                                                                          
+IF AGE = 60, 61, 62, 63, 64                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 5.25               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 4.91               
+   LRATE = 5.89                                                                 
+END-IF                                                                          
+IF AGE = 65, 66, 67, 68, 69                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 6.00               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 5.61               
+   LRATE = 6.73                                                                 
+END-IF                                                                          
+IF AGE = 70, 71, 72, 73, 74                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 15.00              
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 14.03              
+   LRATE = 16.83                                                                
+END-IF                                                                          
+IF AGE = 75, 76, 77, 78, 79                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 24.30              
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 22.72              
+   LRATE = 27.26                                                                
+END-IF                                                                          
+IF AGE GQ 80                                                                    
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 42.75              
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 39.97              
+   LRATE = 47.97                                                                
+END-IF                                                                          
+GO TO LIFECALC                                                                  
+NONSMOKER                                                                       
+*THE FOLLOWING ARE THE QUARTERLY LIFE RATES FOR NON-SMOKERS                     
+IF AGE LQ 29                                                                    
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .27                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .25                
+   LRATE = .30                                                                  
+END-IF                                                                          
+IF AGE = 30, 31, 32, 33, 34                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .33                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .31                
+   LRATE = .37                                                                  
+END-IF                                                                          
+IF AGE = 35, 36, 37, 38, 39                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .48                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .45                
+   LRATE = .54                                                                  
+END-IF                                                                          
+IF AGE = 40, 41, 42, 43, 44                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .60                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .56                
+   LRATE = .67                                                                  
+END-IF                                                                          
+IF AGE = 45, 46, 47, 48, 49                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = .99                
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = .93                
+   LRATE = 1.11                                                                 
+END-IF                                                                          
+IF AGE = 50, 51, 52, 53, 54                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 1.65               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 1.54               
+   LRATE = 1.85                                                                 
+END-IF                                                                          
+IF AGE = 55, 56, 57, 58, 59                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 2.25               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 2.10               
+   LRATE = 2.52                                                                 
+END-IF                                                                          
+IF AGE = 60, 61, 62, 63, 64                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 4.05               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 3.79               
+   LRATE = 4.54                                                                 
+END-IF                                                                          
+IF AGE = 65, 66, 67, 68, 69                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 5.40               
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 5.05               
+   LRATE = 6.06                                                                 
+END-IF                                                                          
+IF AGE = 70, 71, 72, 73, 74                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 11.25              
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 10.52              
+   LRATE = 12.62                                                                
+END-IF                                                                          
+IF AGE = 75, 76, 77, 78, 79                                                     
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 18.75              
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 17.53              
+   LRATE = 21.04                                                                
+END-IF                                                                          
+IF AGE GQ 80                                                                    
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW   LRATE = 34.50              
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW   LRATE = 32.26              
+   LRATE = 38.71                                                                
+END-IF                                                                          
+                                                                                
+LIFECALC                                                                        
+ACTPREM = LIFEVOL / 1000 * LRATE + .005                                         
+*DO NOT OFFER ANY MORE DISCOUNT OF 15%.                                         
+*LPREM = ACTPREM * .85 + .005                                                   
+LPREM = ACTPREM                                                                 
+*AD&D CALCULATION                                                               
+IF AGE = 70                                                                     
+   ADDPREM = 0                                                                  
+ELSE                                                                            
+   ADDPREM = ADDVOL / 1000 * .15 + .005                                         
+END-IF                                                                          
+*THE FOLLOWING ARE THE CALCULATIONS FOR THE QUARTERLY DEPENDENT RATE            
+IF DEPLIFE = 'N'                                                                
+   DEPRATE = 0                                                                  
+   GO TO CALC                                                                   
+END-IF                                                                          
+*****CHANGE STARTS - HARSHA GANDHI - APRIL 8 2003                               
+*****THE FOLLOWING PIECE OF CODE IS TO INCLUDE TWO NEW OPTIONS                  
+*****FOR THE DEALER-OWNER PROGRAM.                                              
+*****OPTION 1 IS NEW AND OPTION 2 IS THE SAME AS THE PREVIOUS ONE.              
+IF DEPLIFE = '1'                                                                
+   IF AGE LQ 29                                                                 
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 5.58          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 5.22          
+      DEPRATE = 6.26                                                            
+   END-IF                                                                       
+   IF AGE = 30, 31, 32, 33, 34                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 6.18          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 5.78          
+      DEPRATE = 6.93                                                            
+   END-IF                                                                       
+   IF AGE = 35, 36, 37, 38, 39                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 7.20          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 6.73          
+      DEPRATE = 8.08                                                            
+   END-IF                                                                       
+   IF AGE = 40, 41, 42, 43, 44                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 9.18          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 8.58          
+      DEPRATE = 10.30                                                           
+   END-IF                                                                       
+   IF AGE = 45, 46, 47, 48, 49                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 12.60         
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 11.78         
+      DEPRATE = 14.14                                                           
+   END-IF                                                                       
+   IF AGE = 50, 51, 52, 53, 54                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 18.18         
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 17.00         
+      DEPRATE = 20.40                                                           
+   END-IF                                                                       
+   IF AGE = 55, 56, 57, 58, 59                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 26.40         
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 24.68         
+      DEPRATE = 29.62                                                           
+   END-IF                                                                       
+   IF AGE = 60, 61, 62, 63, 64                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 37.08         
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 34.67         
+      DEPRATE = 41.60                                                           
+   END-IF                                                                       
+   IF AGE GQ 65                                                                 
+      DEPRATE = 0.00                                                            
+   END-IF                                                                       
+END-IF                                                                          
+*****THE OPTION 'Y' WAS CHANGED TO OPTION 2**************                       
+IF DEPLIFE = '2'                                                                
+   IF AGE LQ 29                                                                 
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 2.79          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 2.61          
+      DEPRATE = 3.13                                                            
+   END-IF                                                                       
+   IF AGE = 30, 31, 32, 33, 34                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 3.09          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 2.89          
+      DEPRATE = 3.47                                                            
+   END-IF                                                                       
+   IF AGE = 35, 36, 37, 38, 39                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 3.60          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 3.37          
+      DEPRATE = 4.04                                                            
+   END-IF                                                                       
+   IF AGE = 40, 41, 42, 43, 44                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 4.59          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 4.29          
+      DEPRATE = 5.15                                                            
+   END-IF                                                                       
+   IF AGE = 45, 46, 47, 48, 49                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 6.30          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 5.89          
+      DEPRATE = 7.07                                                            
+   END-IF                                                                       
+   IF AGE = 50, 51, 52, 53, 54                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 9.09          
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 8.50          
+      DEPRATE = 10.20                                                           
+   END-IF                                                                       
+   IF AGE = 55, 56, 57, 58, 59                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 13.20         
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 12.34         
+      DEPRATE = 14.81                                                           
+   END-IF                                                                       
+   IF AGE = 60, 61, 62, 63, 64                                                  
+*OLD RATES - NEW RATES EFFECTIVE 2007 LISTED BELOW      DEPRATE = 18.54         
+*OLD RATES - NEW RATES EFFECTIVE 2008 LISTED BELOW      DEPRATE = 17.33         
+      DEPRATE = 20.80                                                           
+   END-IF                                                                       
+   IF AGE GQ 65                                                                 
+      DEPRATE = 0.00                                                            
+   END-IF                                                                       
+END-IF                                                                          
+*****CHANGE ENDS   - HARSHA GANDHI - APRIL 8 2003                               
+CALC                                                                            
+TOTPREM = LPREM + ADDPREM + DEPRATE                                             
+                                                                                
+PERFORM GET-PROVTAX                                                             
+TAX = (TOTPREM * TAXRATE) + 0.005                                               
+AMD = TOTPREM + TAX                                                             
+PERFORM TOTAL-TAX                                                               
+PRINT PREMDUE                                                                   
+PERFORM REPORT-IN-FILE                                                          
+*                                                                               
+GET-PROVTAX. PROC                                                               
+   IF PROV = 01                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 02                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 03                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 04                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 05                                                                 
+      TAXRATE  = 0.08                                                           
+   ELSE                                                                         
+   IF PROV = 06                                                                 
+      TAXRATE  = 0.09                                                           
+   ELSE                                                                         
+   IF PROV = 07                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 08                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 09                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 10                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 11                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 12                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 13                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+   IF PROV = 14                                                                 
+      TAXRATE  = 0.00                                                           
+   ELSE                                                                         
+      TAXRATE  = 0.00                                                           
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+   END-IF                                                                       
+END-PROC                                                                        
+                                                                                
+                                                                                
+TOTAL-TAX. PROC                                                                 
+   IF PROV = 05                                                                 
+      ONTAX = TAX                                                               
+   ELSE                                                                         
+   IF PROV = 06                                                                 
+      PQTAX = TAX                                                               
+   END-IF                                                                       
+   END-IF                                                                       
+END-PROC                                                                        
+                                                                                
+**                                                                              
+REPORT-IN-FILE. PROC                                                            
+    MOVE        DEALNO      TO DEALNO-O                                         
+    MOVE        ','         TO FILL1-O                                          
+    MOVE        CERT        TO CERT-O                                           
+    MOVE        ','         TO FILL2-O                                          
+    MOVE        NAME        TO NAME-O                                           
+    MOVE        ','         TO FILL3-O                                          
+    MOVE        BIRTHDAY    TO DOB-O                                            
+    MOVE        ','         TO FILL4-O                                          
+    MOVE        LIFEVOL     TO LIFEVOL-O                                        
+    MOVE        ','         TO FILL5-O                                          
+    MOVE        LPREM       TO LPREM-O                                          
+    MOVE        ','         TO FILL5A-O                                         
+    MOVE        ADDVOL      TO ADDVOL-O                                         
+    MOVE        ','         TO FILL6-O                                          
+    MOVE        ADDPREM     TO ADDPREM-O                                        
+    MOVE        ','         TO FILL7-O                                          
+    MOVE        DEPRATE     TO DEPRATE-O                                        
+    MOVE        ','         TO FILL8-O                                          
+    MOVE        TOTPREM     TO TOTPREM-O                                        
+    MOVE        ','         TO FILL9-O                                          
+    MOVE        ONTAX       TO ONTAX-O                                          
+    MOVE        ','         TO FILL10-O                                         
+    MOVE        PQTAX       TO PQTAX-O                                          
+    MOVE        ','         TO FILL11-O                                         
+    MOVE        AMD         TO AMD-O                                            
+    MOVE        ','         TO FILL12-O                                         
+    MOVE        PROV        TO PROV-O                                           
+    PUT REPTFILE                                                                
+END-PROC                                                                        
+**                                                                              
+REPORT PREMDUE PAGESIZE 60 NOADJUST SKIP 1 TITLESKIP 2 +                        
+                PRINTER FILEC                                                   
+**                                                                              
+SEQUENCE ZONE CERT                                                              
+CONTROL FINAL NOPRINT ZONE NOPRINT RENUM                                        
+TITLE 1 '                                     DAIMLERCHRYSLER CANADA +          
+LTD. DEALER-OWNER GROUP LIFE PLAN'                                              
+TITLE 3 '                                          QUARTERLY PREMIUM +          
+DUE LISTING @ ' MTHFR ' TO ' MTHTO                                              
+LINE COL 2 DEALNO COL 8 CERT COL 15 NAME COL 36 BIRTHDAY +                      
+     COL 45 LIFEVOL COL 55 LPREM COL 67 ADDVOL COL 75 ADDPREM +                 
+     COL 88 DEPRATE COL 95 TOTPREM COL 105 ONTAX COL 112 PQTAX +                
+     COL 120 AMD                                                                
+BEFORE-BREAK. PROC                                                              
+IF LEVEL = 1                                                                    
+   DISPLAY SKIP 1 POS 5 LIFEVOL POS 7 ADDVOL POS 9 DEPRATE +                    
+   POS 11 ONTAX POS 13 AMD                                                      
+   DISPLAY POS 6 LPREM POS 8 ADDPREM POS 10 TOTPREM POS 12 PQTAX                
+END-IF                                                                          
+IF LEVEL = 2                                                                    
+   DISPLAY NEWPAGE COL 41 'DAIMLERCHRYSLER CANADA LTD. DEALER-OWNER +           
+   GROUP LIFE PLAN'                                                             
+   DISPLAY SKIP 1 COL 43 'QUARTERLY PREMIUM DUE LISTING @ ' MTHFR +             
+   ' TO ' MTHTO                                                                 
+   DISPLAY SKIP 2 COL 2 'DEAL.' COL 9 'CERT' +                                  
+   COL 49 'LIFE' COL 61 'LIFE' COL 71 'AD&D' COL 81 'AD&D' +                    
+   COL 92 'DEPS' COL 100 'TOTAL' COL 108 'ONT' COL 115 'QUE' +                  
+   COL 125 'AMOUNT'                                                             
+                                                                                
+   DISPLAY COL 3 'NO.' COL 9 'NO.' COL 23 'NAME' +                              
+   COL 36 'BIRTHDAY' COL 48 'VOLUME' COL 59 'PREMIUM' COL 70 'VOLUME' +         
+   COL 79 'PREMIUM' COL 92 'PREM' COL 99 'PREMIUM' COL 108 'TAX' +              
+   COL 115 'TAX' COL 126 'DUE'                                                  
+   DISPLAY SKIP 1 POS 1 'FINAL' POS 2 'TOTALS' POS 5 LIFEVOL +                  
+                  POS 7 ADDVOL POS 9 DEPRATE +                                  
+                  POS 11 ONTAX POS 13 AMD                                       
+   DISPLAY POS 6 LPREM POS 8 ADDPREM POS 10 TOTPREM POS 12 PQTAX                
+END-IF                                                                          
+END-PROC                                                                        

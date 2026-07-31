@@ -1,0 +1,77 @@
+PARM LINK(GLCHRUP  R)                                                           
+                                                                                
+ LIST OFF                                                                       
+ FILE FILEA                                                                     
+ ID           1   6  A                                                          
+ NAME         9  29  A                                                          
+ BRANCH      30   5  A                                                          
+ INST-NO     36   3  A                                                          
+ ACCOUNT     40  12  A                                                          
+ AMOUNT      59   7  A                                                          
+ REC-TYPE    67   1  A                                                          
+ *                                                                              
+ FILE FILEB VS(UPDATE)                                                          
+ ID-B         1   6  A                                                          
+ BRANCH-B    30   5  A                                                          
+ INST-B      36   3  A                                                          
+ ACCOUNT-B   40  12  A                                                          
+ AMOUNT-B    59   7  A                                                          
+ *                                                                              
+ KEY-B       W    6   A                                                         
+ *                                                                              
+ JOB                                                                            
+  KEY-B = ID                                                                    
+  IF REC-TYPE = 'C'                                                             
+     PERFORM UPDATE-RECORD                                                      
+  ELSE                                                                          
+     IF REC-TYPE = 'A'                                                          
+        PERFORM ADD-RECORD                                                      
+     ELSE                                                                       
+        IF REC-TYPE = 'D'                                                       
+           PERFORM DELETE-RECORD                                                
+        END-IF                                                                  
+     END-IF                                                                     
+  END-IF                                                                        
+                                                                                
+                                                                                
+UPDATE-RECORD.  PROC                                                            
+  READ FILEB KEY KEY-B, STATUS                                                  
+  IF FILE-STATUS EQ 0                                                           
+     PERFORM CHECK-FIELDS                                                       
+  ELSE                                                                          
+     DISPLAY ' *** UPDATE KEY NOT FOUND:' KEY-B                                 
+  END-IF                                                                        
+END-PROC                                                                        
+                                                                                
+CHECK-FIELDS.  PROC                                                             
+ IF AMOUNT NE '       '                                                         
+    AMOUNT-B = AMOUNT                                                           
+ END-IF                                                                         
+ IF BRANCH NE '     '                                                           
+   BRANCH-B = BRANCH                                                            
+ END-IF                                                                         
+ IF INST-NO NE '   '                                                            
+   INST-B = INST-NO                                                             
+ END-IF                                                                         
+ IF ACCOUNT NE '            '                                                   
+   ACCOUNT-B = ACCOUNT                                                          
+ END-IF                                                                         
+ WRITE FILEB UPDATE                                                             
+END-PROC                                                                        
+                                                                                
+ADD-RECORD.  PROC                                                               
+ MOVE SPACES TO REC-TYPE                                                        
+ WRITE FILEB, ADD, STATUS, FROM FILEA                                           
+ IF FILE-STATUS EQ 8                                                            
+    DISPLAY ' *** ERROR ADD DUP KEY:' ID                                        
+ END-IF                                                                         
+END-PROC                                                                        
+                                                                                
+DELETE-RECORD.  PROC                                                            
+  READ FILEB KEY KEY-B, STATUS                                                  
+  IF FILE-STATUS EQ 0                                                           
+     WRITE FILEB DELETE                                                         
+  ELSE                                                                          
+     DISPLAY ' *** DELETE KEY NOT EXIST:' KEY-B                                 
+  END-IF                                                                        
+END-PROC                                                                        
