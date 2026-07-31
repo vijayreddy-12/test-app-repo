@@ -1,0 +1,364 @@
+     1.     //PYTH2400 JOB (GP-YT91),YT,CLASS=P,MSGCLASS=A
+     2.     /*JOBPARM R=M04A
+     3.     //*LOGONID PYT
+     4.     //GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)
+     5.     //*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,
+     6.     //*      TEN.GROUP.TEST.STANDARD.PROCLIB,
+     7.     //*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,
+     8.     //*      PEN.GROUP.PROD.STANDARD.PROCLIB)
+     9.     //*GBSET  INCLUDE MEMBER=J2SETD
+    10.     //GBSET  INCLUDE MEMBER=J2SETP
+    33.     //GBLOAD INCLUDE MEMBER=J2DB2
+    61.     //*********************************************************************
+    62.     //*                                                                   *
+    63.     //*************-------------------------------------------------------*
+    64.     //*                                                                   *
+    65.     //*   CA REPORTING - WAREHOUSE                                        *
+    66.     //*                                                                   *
+    67.     //*   UPDATE GIPSY AND GFM GROUP/DIVISIONS IN WAREHOUSE               *
+    68.     //*                                                                   *
+    69.     //*                                                                   *
+    70.     //*************-------------------------------------------------------*
+    71.     //* BASHAWE - AUG 12/05 - STOP GFM FEED TO REPORTING WAREHOUSE        *
+    72.     //*                                                                   *
+    73.     //*********************************************************************
+    74.     //*                                                                   *
+    75.     //*--------------------------------------------------------------*    *
+    76.     //* HISTORY                                                           *
+    77.     //* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *
+    78.     //*                                                                   *
+    79.     //*********************************************************************
+    80.     //*
+    81.     //YTH2400 EXEC GB2400
+0    1.                                //PYTH2400 JOB (GP-YT91),YT,CLASS=P,MSGCLASS=A
+0    2.                                /*JOBPARM R=M04A
+0    3.                                //*LOGONID PYT
+0    4.                                //GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)
+0    5.                                //*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,
+     6.                                //*      TEN.GROUP.TEST.STANDARD.PROCLIB,
+     7.                                //*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,
+     8.                                //*      PEN.GROUP.PROD.STANDARD.PROCLIB)
+     9.                                //*GBSET  INCLUDE MEMBER=J2SETD
+0   10.                                //GBSET  INCLUDE MEMBER=J2SETP
+0   11.                                L   01 I/*--------------------------------------------------------------------*
+    12.                                L   01 I/*  LIBRARY OVERRIDES FOR DEV LEVEL
+    13.                                L   01 I/*--------------------------------------------------------------------*
+    14.                                L   01 I/*                     !!! NOTE !!!
+    15.                                L   01 I/*  IF MAKING CHANGES TO THIS ELEMENT, PLEASE MAKE SURE THAT SIMILAR
+    16.                                L   01 I/*  CHANGES ARE MADE TO THE CORRESPONDING ELEMENT IN THE "GROUP" LIB
+    17.                                L   01 I/*--------------------------------------------------------------------*
+    18.                                L   01 I/*  HISTORY
+    19.                                L   01 I/*  200806 - TRUDY     - CREATED AS PART OF THE ECU PROJECT
+    20.                                L   01 I/*  201104 - C MUNCAN  - ADDED LOADLIB0 & REMOVED DBALOAD
+    21.                                L   01 I/*                       AS PART OF IDMS TO DB2 CONVERSION
+    22.                                L   01 I/*--------------------------------------------------------------------*
+0   23.                                L   01 I/ SET LOADLIB0='PCX.MLICOMMX.LOAD'
+0   24.                                L   01 I/ SET LOADLIB1='PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD'
+0   25.                                L   01 I/ SET LOADLIB2='PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD'
+0   26.                                L   01 I/ SET LOADLIB3='PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD'
+0   27.                                L   01 I/ SET LOADLIB4='PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD'
+0   28.                                L   01 I/ SET LOADLIB5='PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD'
+0   29.                                L   01 I/ SET LOADLIB6='PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD'
+0   30.                                L   01 I/ SET UTILOAD='PCX.MLI.COMMON.LOAD'
+0   31.                                L   01 I/ SET LELIB='SYS1.SCEERUN'
+0   32.                                L   01 I/ SET DB2LOAD='PCX.DB2.DSNLOAD'
+0   33.                                //GBLOAD INCLUDE MEMBER=J2DB2
+0   34.                                L   01 I/*--------------------------------------------------------------------*
+    35.                                L   01 I/*  JOBLIB INCLUDE FOR BATCH WITH DB2
+    36.                                L   01 I/*--------------------------------------------------------------------*
+    37.                                L   01 I/*                     !!! NOTE !!!
+    38.                                L   01 I/*  IF MAKING CHANGES TO THIS ELEMENT, PLEASE MAKE SURE THAT SIMILAR
+    39.                                L   01 I/*  CHANGES ARE MADE TO THE CORRESPONDING ELEMENT IN THE "GROUP" LIB
+    40.                                L   01 I/*--------------------------------------------------------------------*
+    41.                                L   01 I/*  HISTORY
+    42.                                L   01 I/*  200806 - TRUDY     - CREATED AS PART OF THE ECU PROJECT
+    43.                                L   01 I/*  201104 - C MUNCAN  - ADDED LOADLIB0 & REMOVED DBALOAD
+    44.                                L   01 I/*                       AS PART OF IDMS TO DB2 CONVERSION
+    45.                                L   01 I/*--------------------------------------------------------------------*
+0   46.                                L   01 I/JOBLIB   DD DSN=&LOADLIB0,
+                                              SUBSTITUTION JCL - DSN=PCX.MLICOMMX.LOAD,
+                                       L   01 I/            DISP=SHR
+    47.                                L   01 I/         DD DSN=&LOADLIB1,
+                                              SUBSTITUTION JCL - DSN=PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    48.                                L   01 I/         DD DSN=&LOADLIB2,
+                                              SUBSTITUTION JCL - DSN=PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    49.                                L   01 I/         DD DSN=&LOADLIB3,
+                                              SUBSTITUTION JCL - DSN=PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    50.                                L   01 I/         DD DSN=&LOADLIB4,
+                                              SUBSTITUTION JCL - DSN=PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    51.                                L   01 I/         DD DSN=&LOADLIB5,
+                                              SUBSTITUTION JCL - DSN=PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    52.                                L   01 I/         DD DSN=&LOADLIB6,
+                                              SUBSTITUTION JCL - DSN=PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    53.                                L   01 I/         DD DSN=PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    54.                                L   01 I/         DD DSN=PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    55.                                L   01 I/         DD DSN=&UTILOAD,
+                                              SUBSTITUTION JCL - DSN=PCX.MLI.COMMON.LOAD,
+                                       L   01 I/            DISP=SHR
+    56.                                L   01 I/         DD DSN=PCX.MLI.COMMON.LOAD,
+                                       L   01 I/            DISP=SHR
+    57.                                L   01 I/         DD DSN=PEN.ITS.PROD.STANDARD.BTCHLOAD,
+                                       L   01 I/            DISP=SHR
+    58.                                L   01 I/         DD DSN=SYS1.UTILS,
+                                       L   01 I/            DISP=SHR
+    59.                                L   01 I/         DD DSN=&LELIB,
+                                              SUBSTITUTION JCL - DSN=SYS1.SCEERUN,
+                                       L   01 I/            DISP=SHR
+    60.                                L   01 I/         DD DSN=&DB2LOAD,
+                                              SUBSTITUTION JCL - DSN=PCX.DB2.DSNLOAD,
+                                       L   01 I/            DISP=SHR
+0   61.                                //*********************************************************************
+    62.                                //*                                                                   *
+    63.                                //*************-------------------------------------------------------*
+    64.                                //*                                                                   *
+    65.                                //*   CA REPORTING - WAREHOUSE                                        *
+    66.                                //*                                                                   *
+    67.                                //*   UPDATE GIPSY AND GFM GROUP/DIVISIONS IN WAREHOUSE               *
+    68.                                //*                                                                   *
+    69.                                //*                                                                   *
+    70.                                //*************-------------------------------------------------------*
+    71.                                //* BASHAWE - AUG 12/05 - STOP GFM FEED TO REPORTING WAREHOUSE        *
+    72.                                //*                                                                   *
+    73.                                //*********************************************************************
+    74.                                //*                                                                   *
+    75.                                //*--------------------------------------------------------------*    *
+    76.                                //* HISTORY                                                           *
+    77.                                //* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *
+    78.                                //*                                                                   *
+    79.                                //*********************************************************************
+    80.                                //*
+0   81.     YTH2400                    //YTH2400 EXEC GB2400
+0   82.     YTH2400                 45 L01    XXGB2400  PROC CLVL='PROD.STANDARD',        ** CTLCARDS DATASET
+                                    45 L01    XX             CSTAT='PEN.GROUP',           ** CTLCARDS DATASET LEVEL
+                                    45 L01    XX             DELVL=PROD,                  ** EXTRACT LEVEL
+                                    45 L01    XX             DESTAT='PYT',                ** EXTRACT STATUS
+                                       L01    XX             DSLVL=PROD,
+                                       L01    XX             DSSTAT=PEN.GLHNEW,
+                                    45 L01    XX             GEN1='(+1)',                 ** NEW GDG VOLUME
+                                    45 L01    XX             OUTJ='*',                    ** SYSOUT FOR JCL
+                                    45 L01    XX             OUTS='S',                    ** SYSOUT FOR ABENDS
+                                    48 L01    XX             SPACE1='(TRK,(2,2),RLSE)',      <== SMALL FILES
+                                    45 L01    XX             TSOLVL='PROD.STANDARD',      ** TSO DATASET
+                                    45 L01    XX             TSOSTAT='PEN.GROUP',         ** TSO DATASET LEVEL
+                                    45 L01    XX             UNITD=PROD,                  ** GENERIC DASD UNIT NAME
+                                    45 L01    XX             VDISP=OLD,                   ** VO DATA DISPOSITION
+                                    45 L01    XX             VLVL=PROD,                   ** VO DATA LEVEL
+                                    45 L01    XX             VSTAT='PYV.VO'               ** VO DATA STATUS
+0   83.                                L01    XX*********************************************************************
+    84.                                L01    XX*                                                                   *
+    85.                                L01    XX* GB240005 - SORT     - COLLECT DIVISION UPDATES FROM VO TO BACKUP **
+    86.                                L01    XX* GB240006 - SORT     - COLLECT CONTRACT UPDATES FROM VO TO BACKUP **
+    87.                                L01    XX* GB240007 - IEFBR14  - DELETE ALL UPDATES FROM VO                 **
+    88.                                L01    XX* GB240008 - IEFBR14  - SEED THE GDG FOR COLLECTING UPDATES FROM VO**
+    89.                                L01    XX*                                                                  **
+    90.                                L01    XX* GB240010 - GCCPUPG1 - UPDATE CONTRACT AND DIVISION INFORMATION   **
+    91.                                L01    XX*                       IN DB2 DATA WAREHOUSE                      **
+    92.                                L01    XX*********************************************************************
+    93.                                L01    XX*                                                                   *
+    94.                                L01    XX*********************************************************************
+    95.                                L01    XX* COPY OUT ALL GENERATIONS OF DIVISION UPDATES FROM VO TO A BACKUP  *
+    96.                                L01    XX*                                                                   *
+    97.                                L01    XX*********************************************************************
+    98.                                L01    XX*                                                                   *
+    99.                                L01    XX*--------------------------------------------------------------*    *
+   100.                                L01    XX* HISTORY                                                           *
+   101.                                L01    XX* 20AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *
+   102.                                L01    XX*                                                                   *
+   103.                                L01    XX* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT
+   104.                                L01    XX* AUG2023   - LGIPS DECOM - DROP THE GPSY FILES
+   105.                                L01    XX*********************************************************************
+   106.                                L01    XX*
+0  107.     YTH2400  GB240005          L01    XXGB240005 EXEC PGM=SORT
+0  108.     YTH2400  GB240005          L01    XXSYSOUT    DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  109.     YTH2400  GB240005          L01    XXSYSPRINT  DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  110.     YTH2400  GB240005    4     L01    XXSORTIN    DD DSN=&VSTAT..&VLVL..DWH.DIVISION.UPDATES,
+                                              SUBSTITUTION JCL - DSN=PYV.VO.PROD.DWH.DIVISION.UPDATES,
+                                       L01    XX             DISP=&VDISP
+                                              SUBSTITUTION JCL - DISP=OLD
+0  111.     YTH2400  GB240005          L01    XXSORTOUT   DD DSN=&DESTAT..&DELVL..VO.DIVISION.EXTRACT&GEN1,
+                                              SUBSTITUTION JCL - DSN=PYT.PROD.VO.DIVISION.EXTRACT(+1),
+                                       L01    XX             DISP=(NEW,CATLG,DELETE),
+                                       L01    XX             UNIT=&UNITD,
+                                              SUBSTITUTION JCL - UNIT=PROD,
+                                       L01    XX             SPACE=&SPACE1,
+                                              SUBSTITUTION JCL - SPACE=(TRK,(2,2),RLSE),
+                                       L01    XX             DCB=*.SORTIN
+0  112.     YTH2400  GB240005          L01    XXSYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB240005),
+                                              SUBSTITUTION JCL - DSN=PEN.GROUP.PROD.STANDARD.CTLCARDS(GB240005),
+                                       L01    XX             DISP=SHR
+0     .1                                       SORT FIELDS=(1,10,CH,A),EQUALS                                         00010000
+      .2                                       SUM  FIELDS=NONE                                                       00020000
+      .3                                       END                                                                    00030000
+   113.                                L01    XX*********************************************************************
+   114.                                L01    XX*                                                                   *
+   115.                                L01    XX*                                                                  **
+   116.                                L01    XX*********************************************************************
+   117.                                L01    XX* COPY OUT ALL GENERATIONS OF CONTRACT UPDATES FROM VO TO A BACKUP  *
+   118.                                L01    XX*                                                                   *
+   119.                                L01    XX*********************************************************************
+   120.                                L01    XX*
+0  121.     YTH2400  GB240006          L01    XXGB240006 EXEC PGM=SORT,
+                                       L01    XX             COND=(0,LT)
+0  122.     YTH2400  GB240006          L01    XXSYSOUT    DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  123.     YTH2400  GB240006          L01    XXSYSPRINT  DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  124.     YTH2400  GB240006    4     L01    XXSORTIN    DD DSN=&VSTAT..&VLVL..DWH.CONTRACT.UPDATES,
+                                              SUBSTITUTION JCL - DSN=PYV.VO.PROD.DWH.CONTRACT.UPDATES,
+                                       L01    XX             DISP=&VDISP
+                                              SUBSTITUTION JCL - DISP=OLD
+0  125.     YTH2400  GB240006          L01    XXSORTOUT   DD DSN=&DESTAT..&DELVL..VO.CONTRACT.EXTRACT&GEN1,
+                                              SUBSTITUTION JCL - DSN=PYT.PROD.VO.CONTRACT.EXTRACT(+1),
+                                       L01    XX             DISP=(NEW,CATLG,DELETE),
+                                       L01    XX             UNIT=&UNITD,
+                                              SUBSTITUTION JCL - UNIT=PROD,
+                                       L01    XX             SPACE=&SPACE1,
+                                              SUBSTITUTION JCL - SPACE=(TRK,(2,2),RLSE),
+                                       L01    XX             DCB=*.SORTIN
+0  126.     YTH2400  GB240006          L01    XXSYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GB240006),
+                                              SUBSTITUTION JCL - DSN=PEN.GROUP.PROD.STANDARD.CTLCARDS(GB240006),
+                                       L01    XX             DISP=SHR
+0     .1                                       SORT FIELDS=(1,7,CH,A),EQUALS                                          00010000
+      .2                                       SUM  FIELDS=NONE                                                       00020000
+      .3                                       END                                                                    00030000
+   127.                                L01    XX*********************************************************************
+   128.                                L01    XX*                                                                   *
+   129.                                L01    XX*                                                                  **
+   130.                                L01    XX*********************************************************************
+   131.                                L01    XX*   CLEAR OUT ALL GENERATIONS OF VO DWH CONTRACT AND DIVISION UPDATE*
+   132.                                L01    XX*                                                                   *
+   133.                                L01    XX*********************************************************************
+   134.                                L01    XX*
+0  135.     YTH2400  GB240007          L01    XXGB240007 EXEC PGM=IEFBR14,
+                                       L01    XX             COND=(0,LT)
+0  136.     YTH2400  GB240007          L01    XXSYSOUT    DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  137.     YTH2400  GB240007          L01    XXSYSPRINT  DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  138.     YTH2400  GB240007    4     L01    XXDROPCON   DD DSN=&VSTAT..&VLVL..DWH.CONTRACT.UPDATES,
+                                              SUBSTITUTION JCL - DSN=PYV.VO.PROD.DWH.CONTRACT.UPDATES,
+                                       L01    XX             DISP=(OLD,DELETE,KEEP)
+0  139.     YTH2400  GB240007    4     L01    XXDROPDIV   DD DSN=&VSTAT..&VLVL..DWH.DIVISION.UPDATES,
+                                              SUBSTITUTION JCL - DSN=PYV.VO.PROD.DWH.DIVISION.UPDATES,
+                                       L01    XX             DISP=(OLD,DELETE,KEEP)
+0  140.                                L01    XX*********************************************************************
+   141.                                L01    XX*                                                                   *
+   142.                                L01    XX*                                                                  **
+   143.                                L01    XX*********************************************************************
+   144.                                L01    XX*   ALLOCATE AN EMPTY GENERATION TO SEED NEXT SET OF VO CPD UPDATES *
+   145.                                L01    XX*                                                                   *
+   146.                                L01    XX*********************************************************************
+   147.                                L01    XX*
+0  148.     YTH2400  GB240008          L01    XXGB240008 EXEC PGM=IEFBR14,
+                                       L01    XX             COND=(0,LT)
+0  149.     YTH2400  GB240008          L01    XXSYSOUT    DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  150.     YTH2400  GB240008          L01    XXSYSPRINT  DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  151.     YTH2400  GB240008          L01    XXSEEDDIV   DD DSN=&VSTAT..&VLVL..DWH.DIVISION.UPDATES&GEN1,
+                                              SUBSTITUTION JCL - DSN=PYV.VO.PROD.DWH.DIVISION.UPDATES(+1),
+                                       L01    XX             DISP=(NEW,CATLG,DELETE),
+                                       L01    XX             UNIT=&UNITD,
+                                              SUBSTITUTION JCL - UNIT=PROD,
+                                       L01    XX             SPACE=&SPACE1,
+                                              SUBSTITUTION JCL - SPACE=(TRK,(2,2),RLSE),
+                                       L01    XX             DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)
+0  152.     YTH2400  GB240008          L01    XXSEEDCON   DD DSN=&VSTAT..&VLVL..DWH.CONTRACT.UPDATES&GEN1,
+                                              SUBSTITUTION JCL - DSN=PYV.VO.PROD.DWH.CONTRACT.UPDATES(+1),
+                                       L01    XX             DISP=(NEW,CATLG,DELETE),
+                                       L01    XX             UNIT=&UNITD,
+                                              SUBSTITUTION JCL - UNIT=PROD,
+                                       L01    XX             SPACE=&SPACE1,
+                                              SUBSTITUTION JCL - SPACE=(TRK,(2,2),RLSE),
+                                       L01    XX             DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)
+0  153.                                L01    XX*********************************************************************
+   154.                                L01    XX*                                                                   *
+   155.                                L01    XX*                                                                  **
+   156.                                L01    XX*********************************************************************
+   157.                                L01    XX*                                                                   *
+   158.                                L01    XX*        GB240010 - GCCPUPG1 - UPDATE CONTRACT AND DIVISION        **
+   159.                                L01    XX*                              INFORMATION IN THE DB2 DATA         **
+   160.                                L01    XX*                              WAREHOUSE                           **
+   161.                                L01    XX*                                                                   *
+   162.                                L01    XX*                            - THE CONTRACT AND DIVISION EXTRACT   **
+   163.                                L01    XX*                              FILES ARE CREATED IN GB2200 AND     **
+   164.                                L01    XX*                              GB2300 WITH INFORMATION EXTRACTED   **
+   165.                                L01    XX*                              FROM GFM AND GIPSY                  **
+   166.                                L01    XX*                                                                   *
+   167.                                L01    XX*                            - THE CONTRACT AND DIVISION EXTRACT   **
+   168.                                L01    XX*                              FILES FOR VO ARE CREATED BY A VO    **
+   169.                                L01    XX*                              JOB IN JOB CONTROL AND FTP'D TO     **
+   170.                                L01    XX*                              THE MAINFRAME                       **
+   171.                                L01    XX*                                                                   *
+   172.                                L01    XX*********************************************************************
+   173.                                L01    XX*          IKJEFT01 - THIS IS REALLY TSO WHICH IS NEEDED TO RUN DB2**
+   174.                                L01    XX*                     THE ACTUAL PROGRAM NAME IS IN THE SYSTSIN    **
+   175.                                L01    XX*                     (IN THIS CASE THE PROGRAM IS GCCPUPG1)       **
+   176.                                L01    XX*                                                                  **
+   177.                                L01    XX*                                                                   *
+   178.                                L01    XX*********************************************************************
+   179.                                L01    XX*
+0  180.     YTH2400  GB240010          L01    XXGB240010 EXEC PGM=IKJEFT01,
+                                       L01    XX             COND=(0,LT),
+                                       L01    XX             REGION=8192K
+0  181.                                L01    XX*********************************************************************
+   182.                                L01    XX*                                                                   *
+   183.                                L01    XX* PROGRAM EXECUTE CARDS - RUN PROGRAM GCCPUPG1                      *
+   184.                                L01    XX*                                                                   *
+   185.                                L01    XX*********************************************************************
+0  186.     YTH2400  GB240010          L01    XXSYSTSPRT  DD SYSOUT=*
+0  187.     YTH2400  GB240010          L01    XXSYSTSIN   DD DSN=&TSOSTAT..&TSOLVL..CTLCARDS(GCCPUPG1),
+                                              SUBSTITUTION JCL - DSN=PEN.GROUP.PROD.STANDARD.CTLCARDS(GCCPUPG1),
+                                       L01    XX             DISP=SHR
+0     .1                                        DSN SYSTEM(PDBC)
+      .2                         8                  RUN PROGRAM(GCCPUPG1) -
+      .3                                        END
+   188.                                L01    XX*********************************************************************
+   189.                                L01    XX*                                                                   *
+   190.                                L01    XX* DATA SERVER FILES                                                **
+   191.                                L01    XX*                                                                   *
+   192.                                L01    XX*********************************************************************
+0  193.     YTH2400  GB240010          L01    XXDLSI00    DD DSN=&DSSTAT..&DSLVL..STANDARD.TABLE(GAEDATSR),
+                                              SUBSTITUTION JCL - DSN=PEN.GLHNEW.PROD.STANDARD.TABLE(GAEDATSR),
+                                       L01    XX             DISP=SHR
+0  194.     YTH2400  GB240010          L01    XXSYSOUTU   DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  195.     YTH2400  GB240010          L01    XXSYSLST    DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  196.     YTH2400  GB240010          L01    XXSYSABOUT  DD SYSOUT=&OUTS
+                                              SUBSTITUTION JCL - SYSOUT=S
+0  197.     YTH2400  GB240010          L01    XXABENDAID  DD SYSOUT=&OUTS
+                                              SUBSTITUTION JCL - SYSOUT=S
+0  198.     YTH2400  GB240010          L01    XXSYSUDUMP  DD SYSOUT=&OUTS
+                                              SUBSTITUTION JCL - SYSOUT=S
+0  199.     YTH2400  GB240010          L01    XXSYSOUT    DD SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  200.     YTH2400  GB240010          L01    XXSYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),
+                                       L01    XX             SYSOUT=&OUTJ
+                                              SUBSTITUTION JCL - SYSOUT=*
+0  201.                                L01    XX*********************************************************************
+   202.                                L01    XX*                                                                   *
+   203.                                L01    XX* DIVISION EXTRACT                                                 **
+   204.                                L01    XX*                                                                   *
+   205.                                L01    XX*********************************************************************
+0  206.     YTH2400  GB240010          L01    XXDLSI10    DD DSN=&DESTAT..&DELVL..VO.DIVISION.EXTRACT&GEN1,
+                                              SUBSTITUTION JCL - DSN=PYT.PROD.VO.DIVISION.EXTRACT(+1),
+                                       L01    XX             DISP=SHR
+0  207.                                L01    XX*********************************************************************
+   208.                                L01    XX*                                                                   *
+   209.                                L01    XX* CONTRACT EXTRACT                                                 **
+   210.                                L01    XX*                                                                   *
+   211.                                L01    XX*********************************************************************
+0  212.     YTH2400  GB240010          L01    XXDLSI11    DD DSN=&DESTAT..&DELVL..VO.CONTRACT.EXTRACT&GEN1,
+                                              SUBSTITUTION JCL - DSN=PYT.PROD.VO.CONTRACT.EXTRACT(+1),
+                                       L01    XX             DISP=SHR
