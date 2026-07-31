@@ -1,0 +1,8 @@
+  SIGNON ESF=YES                                                                
+  SUBMIT PROC=RBCCOPY CASE=YES                 -                                
+         &PDSN=TGL.CLSERV.OPR.EFT.RECEIVED.DEC1225 -                            
+         &SDSN=CD.TEST.DAA.R1C1MNLF.DEV.STD152     -                            
+         &VAR1=SUBMITFILE                      -                                
+         &SYSOP2=AAPASTD0152{DEV{NL                                             
+*                                                                               
+  SIGNOFF                                                                       

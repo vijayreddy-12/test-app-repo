@@ -1,0 +1,8 @@
+  SIGNON ESF=YES                                                                
+  SUBMIT PROC=RBCCOPY CASE=YES                 -                                
+         &PDSN=TGL.UNISYS.LHC.EFT.RECEIVED     -                                
+         &SDSN=CD.DAA.R1C1MNLF.PROD.STD152     -                                
+         &VAR1=SUBMITFILE                      -                                
+         &SYSOP2=AAPASTD0152 || \{\ || PROD || \{\ || NL                        
+*                                                                               
+  SIGNOFF                                                                       
