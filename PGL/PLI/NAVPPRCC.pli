@@ -1,0 +1,152 @@
+ *-----------------------------------------------------------------*/  00002   
+ *                                                                 */  00003   
+ *      NAVPPRCC  -  CLONE OF DMSPPRCC (DMS)                       */  00004   
+ *                                                                 */  00005   
+ *      COUNTS THE NUMBER OF RECORDS IN THE INPUT FILE AND         */  00006   
+ *        COMPARE THE COUNT WITH THE PARAMETER AND SETS            */  00007   
+ *        RETURN CONDITION CODES AS FOLLOWS:                       */  00008   
+ *                                                                 */          
+ *          1) RECORD COUNT >  PARAMETER, SET COND TO 0            */  00009   
+ *          2) RECORD COUNT <= PARAMETER, SET COND TO 4            */  00010   
+ *                                                                 */          
+ *      PARAMETER:                                                 */  00012   
+ *          THE NUMBER TO BE COMPARED TO INPUT FILE RECORD COUNT   */  00013   
+ *                                                                 */  00015   
+ *      FILES:                                                     */  00016   
+ *                                                                 */  00017   
+ *      INFILE    -  INPUT FILE                                    */  00018   
+ *                                                                 */  00022   
+ *-----------------------------------------------------------------*/  00023   
+ NAVPPRCC:                                                              00024   
+      PROCEDURE (JOBPARM) OPTIONS (MAIN);                               00026   
+      DEFAULT RANGE (*) STATIC;                                         00027   
+  *-------------------------------------------------------------------*/00028   
+  *   PARAMETERS                                                      */00029   
+  *-------------------------------------------------------------------*/00030   
+ DCL  JOBPARM        CHAR  (100)  VARYING;                              00031   
+  *-------------------------------------------------------------------*/00032   
+  *   FILES                                                           */00033   
+  *-------------------------------------------------------------------*/00034   
+ DCL  SYSPRINT       FILE STREAM OUTPUT PRINT;                          00035   
+ DCL  INFILE         FILE RECORD INPUT;                                 00037   
+  *-------------------------------------------------------------------*/00040   
+  *   BUILTIN FUNCTIONS & EXTERNAL ENTRIES                            */00041   
+  *-------------------------------------------------------------------*/00042   
+ DCL  SUBSTR         BUILTIN;                                           00043   
+ DCL  PLIDUMP        BUILTIN;                                           00044   
+ DCL  PLIRETC        BUILTIN;                                           00045   
+ DCL  DATE           BUILTIN;                                           00046   
+ DCL  VERIFY         BUILTIN;                                           00047   
+ DCL  HIGH           BUILTIN;                                           00048   
+ DCL  LOW            BUILTIN;                                           00049   
+  *-------------------------------------------------------------------*/00050   
+  *   SWITCHES                                                        */00051   
+  *-------------------------------------------------------------------*/00052   
+ DCL  TRUE           BIT  (1)  INIT ('1'B);                             00053   
+ DCL  YES            BIT  (1)  INIT ('1'B);                             00054   
+ DCL  FALSE          BIT  (1)  INIT ('0'B);                             00055   
+ DCL  NO             BIT  (1)  INIT ('0'B);                             00056   
+ DCL  EOF            BIT  (1)  INIT ('0'B);                             00057   
+ DCL  FTT_ERROR      BIT  (1)  INIT ('1'B);                             00058   
+ DCL  PARM_OK        BIT  (1)  INIT ('0'B);                             00058   
+ *-------------------------------------------------------------------*/00059   
+ *   COUNTERS                                                        */00060   
+ *-------------------------------------------------------------------*/00061   
+ DCL (I,J,K,L)       FIXED BIN (31) INIT (0);                           00062   
+ DCL  RECSIN         FIXED BIN (31) INIT (0);                           00063   
+ *-------------------------------------------------------------------*/00066   
+ *   I/O WORKAREAS                                                   */00067   
+ *-------------------------------------------------------------------*/00068   
+ DCL  WORKDATE       CHAR (8)  INIT (' ');                              00069   
+ DCL  INREC          CHAR (32750)    VARYING;                           00070   
+ *-------------------------------------------------------------------*/00077   
+ *   MISCELLANEOUS                                                   */00078   
+ *-------------------------------------------------------------------*/00079   
+ DCL  PARM_CHAR      CHAR (8);                                                  
+ DCL  PARM_NUM       PIC '(8)9'   DEFINED PARM_CHAR;                    00080   
+ *-------------------------------------------------------------------*/00082   
+ *   ON CONDITIONS                                                   */00083   
+ *-------------------------------------------------------------------*/00084   
+      ON ERROR SNAP                                                     00085   
+         BEGIN;                                                         00086   
+            IF FTT_ERROR                                                00087   
+            THEN DO;                                                    00088   
+               FTT_ERROR = FALSE;                                       00089   
+               PUT SKIP LIST('***********************************');    00090   
+               PUT SKIP LIST('******  ERROR  ERROR  ERROR  ******');    00091   
+               PUT SKIP LIST('******  ERROR  ERROR  ERROR  ******');    00092   
+               PUT SKIP LIST('***********************************');    00093   
+               CALL LOG;                                                00094   
+               CALL PLIDUMP ('FCHB');                                   00095   
+            END;                                                        00096   
+            ELSE                                                        00097   
+               CALL PLIDUMP ('FSHB');                                   00098   
+         END;                                                           00099   
+      ON ENDFILE (INFILE)                                               00100   
+      BEGIN;                                                            00101   
+        EOF = TRUE;                                                     00102   
+      END;                                                              00103   
+ *-------------------------------------------------------------------*/00110   
+ *   INITIALIZATION AND PARAMETER SETUP                              */00111   
+ *-------------------------------------------------------------------*/00112   
+      OPEN FILE (INFILE),                                               00113   
+           FILE (SYSPRINT);                                             00114   
+                                                                                
+      WORKDATE = SUBSTR (DATE,5,2) || '/' ||                            00115   
+                 SUBSTR (DATE,3,2) || '/' ||                            00116   
+                 SUBSTR (DATE,1,2);                                     00117   
+                                                                                
+      PARM_CHAR = SUBSTR(JOBPARM,1,8);                                          
+      IF VERIFY(PARM_CHAR,'0123456789') = 0                             00119   
+      THEN  PARM_OK = TRUE;                                             00120   
+      ELSE DO;                                                                  
+         PUT FILE (SYSPRINT) SKIP (3) LIST                              00121   
+             ('               EFT RECORD COUNT JOB LOG ');              00122   
+         PUT FILE (SYSPRINT) SKIP (2) LIST                              00123   
+             ('            RUN DATE: ' || WORKDATE);                    00124   
+         PUT FILE (SYSPRINT) SKIP (2) LIST                              00125   
+             ('PARAMETER IN = ' || JOBPARM);                            00126   
+         PUT FILE (SYSPRINT) SKIP (2) LIST                              00125   
+             ('PARAMETER NOT NUMERIC, FORMAT: 99999999');               00126   
+         PUT FILE (SYSPRINT) SKIP (2) LIST                              00125   
+             ('EXAMPLE: 00000080');                                     00126   
+      END;                                                                      
+                                                                                
+      READ FILE (INFILE) INTO (INREC);                                  00132   
+ *-------------------------------------------------------------------*/00134   
+ *   MAINLINE                                                        */00135   
+ *-------------------------------------------------------------------*/00136   
+      DO WHILE (^EOF);                                                  00137   
+         RECSIN = RECSIN + 1;                                           00138   
+         READ FILE (INFILE) INTO (INREC);                               00150   
+      END;                                                              00151   
+                                                                                
+      IF PARM_OK                                                                
+      THEN DO;                                                                  
+         IF RECSIN > PARM_NUM                                                   
+         THEN CALL PLIRETC(0);                                                  
+         ELSE IF RECSIN = PARM_NUM                                              
+         THEN CALL PLIRETC(4);                                                  
+         ELSE IF RECSIN < PARM_NUM                                              
+         THEN CALL PLIRETC(4);                                                  
+      END;                                                                      
+                                                                                
+      CLOSE FILE (INFILE);                                              00152   
+      CALL LOG;                                                         00155   
+      CLOSE FILE (SYSPRINT);                                            00156   
+      GO TO EOJ;                                                        00157   
+  *-------------------------------------------------------------------*/00158   
+  *   LOG PROCEDURE - PRINTS COUNTS                                   */00159   
+  *-------------------------------------------------------------------*/00160   
+    LOG: PROC;                                                          00161   
+      PUT FILE (SYSPRINT) PAGE;                                         00162   
+      PUT FILE (SYSPRINT) SKIP (3) LIST                                 00163   
+          ('               EFT RECORD COUNT JOB LOG ');                 00164   
+      PUT FILE (SYSPRINT) SKIP (2) LIST                                 00165   
+          ('            RUN DATE: ' || WORKDATE);                       00166   
+      PUT FILE (SYSPRINT) SKIP (3) LIST                                 00167   
+          (' RECORDS READ IN :..............' || RECSIN);               00168   
+ END; *  END OF    LOG PROC  */                                        00179   
+ EOJ:                                                                  00180   
+ END; *  END OF JOB  */                                                00181   
+ 
