@@ -1,0 +1,12 @@
+GB.FINANCE.CMR.FR@manulife.com                                                  
+                                                                                
+** ATTENTION - The un-split LCS files now available **                          
+                                                                                
+                                                                                
+ The 3 LCS files are now available upon the server.                             
+ You may proceed with the CBP process if the following conditions have been met:
+ * Notification that the 3 DMS files are available                              
+ * The Client Structure feed has run successfully                               
+ * The GOSP feed has run successfully                                           
+ * The LCS pooling split files have been added to the USERFEED directory        
+                                                                                

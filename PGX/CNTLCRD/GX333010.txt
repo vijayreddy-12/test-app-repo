@@ -1,0 +1,11 @@
+GB.FINANCE.CMR.FR@manulife.com                                                  
+                                                                                
+** ATTENTION - DMS files now available **                                       
+                                                                                
+                                                                                
+ The 3 DMS files are now available upon the server.                             
+ You may proceed with the CBP process if the following conditions have been met:
+ * Notification that the 3 LCS files are available                              
+ * The Client Structure feed has run successfully                               
+ * The GOSP feed has run successfully                                           
+                                                                                

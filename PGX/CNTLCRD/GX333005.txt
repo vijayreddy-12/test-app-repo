@@ -1,0 +1,5 @@
+cd cmrp_datafeed                                                                
+PUT 'pgx.cmrp.prod.extr.dmsgipsy.feed(0)' dmscov_data.dat                       
+PUT 'pgx.cmrp.prod.extr.dmsgfm.feed(0)' dmsgfm_data.dat                         
+PUT 'pgx.cmrp.prod.extr.dmsvo.feed(0)' dmsvo_data.dat                           
+QUIT                                                                            

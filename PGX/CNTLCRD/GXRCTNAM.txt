@@ -1,0 +1,1 @@
+    SORT FIELDS=COPY,STOPAFT=1                                          00010001

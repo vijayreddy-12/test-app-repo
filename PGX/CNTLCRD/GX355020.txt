@@ -1,0 +1,2 @@
+    SORT FIELDS=COPY                                                    00010000
+    OUTREC FIELDS=(1,4,34)                                              00020002

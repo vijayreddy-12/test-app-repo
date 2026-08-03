@@ -1,0 +1,3 @@
+cd cmrp_datafeed                                                                
+PUT 'pgx.cmrp.prod.trigger.file' clst_trigger.dat                               
+QUIT                                                                            

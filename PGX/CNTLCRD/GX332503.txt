@@ -1,0 +1,5 @@
+   PRINT INFILE (IFILE) COUNT(1)                                                
+   IF LASTCC EQ 0 THEN -                                                        
+      SET MAXCC = 00                                                            
+   IF LASTCC EQ 4 THEN -                                                        
+      SET MAXCC = 12                                                            

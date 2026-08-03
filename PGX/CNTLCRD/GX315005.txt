@@ -1,0 +1,8 @@
+cd cmrp_datafeed                                                                
+PUT 'pgx.cmrp.prod.extr.voclient.feed(0)'    voclient_data.dat                  
+PUT 'pgx.cmrp.prod.extr.vocont.feed(0)'      vocontract_data.dat                
+PUT 'pgx.cmrp.prod.extr.voben.feed(0)'       vobenefit_data.dat                 
+PUT 'pgx.cmrp.prod.extr.voloc.feed(0)'       volocation_data.dat                
+PUT 'pgx.cmrp.prod.extr.voltdqua.feed(0)'    voltdqualprd_data.dat              
+PUT 'pgx.cmrp.prod.extr.volifewv.feed(0)'    volifewaiver_data.dat              
+QUIT                                                                            

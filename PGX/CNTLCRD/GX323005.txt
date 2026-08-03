@@ -1,0 +1,5 @@
+cd cmrp_datafeed                                                                
+PUT 'pgx.cmrp.prod.extr.lcsgipsy.feed(0)' lcswatl_raw_data.dat                  
+PUT 'pgx.cmrp.prod.extr.lcsgfm.feed(0)' lcscomb_raw_data.dat                    
+PUT 'pgx.cmrp.prod.extr.lcsvo.feed(0)' lcsvo_raw_data.dat                       
+QUIT                                                                            

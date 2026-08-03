@@ -1,0 +1,2 @@
+  REPRO INFILE  (INDD01)  -                                                     
+        OUTFILE (OUTDD01) REPLACE                                               

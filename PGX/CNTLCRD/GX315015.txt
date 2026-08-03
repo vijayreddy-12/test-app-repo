@@ -1,0 +1,13 @@
+GB.FINANCE.CMR.FR@manulife.com                                                  
+                                                                                
+** ATTENTION - Client Structure files are available ***                         
+                                                                                
+ The Client Structure files have been downloaded.                               
+ These include the Gipsy, Guano, Policy and ERbackup files.                     
+                                                                                
+ As well, the four VO files (VO Client, Contract, Benefit and                   
+ Location) and the five MLAC files (Ideas Policy, Ideas Coverage,               
+ Facets Policy, Facets Coverage and Aexpert Alive) are available.               
+                                                                                
+ If you do not receive notification that the Client Structure                   
+ job completed in a timely fashion, please notify GBS Support.                  
