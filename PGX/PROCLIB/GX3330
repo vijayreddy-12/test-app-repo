@@ -1,0 +1,48 @@
+//GX3330  PROC CLVL=PROD,                   ** CTLCARDS LEVEL                   
+//             CSTAT='PEN.GLHNEW',          ** CTLCARDS PREFIX                  
+//             DLVL=PROD,                   ** DATA SET LEVEL                   
+//             DSTAT=PGX,                   ** DATA SET STATUS                  
+//             GEN1='(+1)',                 ** GDG VERSION                      
+//             UNIT=PROD                    ** UNIT TYPE                        
+//* -------------------------------------------------------------------         
+//* HISTORY :                                                                   
+//* 29OCT2008 - IBM GR - ENTERPRISE COMPILER UPGRADE                            
+//* FEB 2015-TL237147   - REMOVING SYSTCPD DD                                   
+//* JUL 2016-TL296190   - SERVER NAME CHANGE AS PART OF FTPS INFRA CHG          
+//*     MLISGBNETP1 21 IS CHANGED TO GBFTPBATCH1.AMERICAS.MANULIFE.NET          
+//* JUL 2024-   RAL     - USE PGW.PROTECT.VAULT(FTPBTCH3) DUE TO                
+//*                       CHANGE OF FTP ID IN USE                               
+//*********************************************************************         
+//*   FTP DOWNLOAD                                                              
+//*       SEND DMS GIPSY AND GFM DATA FILES FROM MAINFRAME TO                   
+//*       MLISGBNETP1.                                                          
+//*       PARM='167.92.24.15 (EXIT' IS USED FOR DEV  (ENTSSERVER9)              
+//*       PARM='MLISGBNETP1 21 (EXIT' IS USED FOR PROD (MLISGBNETP1)            
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX333005 EXEC PGM=FTP,                                                        
+//             COND=(0,LT),                                                     
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET (EXIT'                   
+//INPUT     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX333005),                  
+//             DISP=SHR                                                         
+//NETRC     DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                 
+//             DISP=SHR                                                         
+//OUTPUT    DD DSN=&DSTAT..CMRP.&DLVL..PGX3330.DATA.FTPLOG&GEN1,                
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=(TRK,(5,1),RLSE),                                          
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=160,                      
+//             BLKSIZE=27840)                                                   
+//SYSPRINT  DD SYSOUT=*                                                         
+//* -------------------------------------------------------------------         
+//*   SEND A MAIL NOTE TO THE USERS TO INFORM THEM THAT THE DATA HAS            
+//*   TRANSFERRED SUCCESSFULLY.                                                 
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX333010 EXEC PGM=SMTPMAIL,                                                   
+//             COND=(0,LT)                                                      
+//SMTPOUT   DD SYSOUT=(B,SMTP)                                                  
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX333010),                  
+//             DISP=SHR                                                         

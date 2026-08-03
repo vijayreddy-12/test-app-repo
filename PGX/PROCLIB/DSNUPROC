@@ -1,0 +1,22 @@
+//DSNUPROC PROC LIB='PCX.DB2.DSNLOAD',SYSTEM=,UID='',UTPROC='',SIZE=0M
+//**********************************************************************
+//* DESCRIPTIVE-NAME: DB2 UTILITY PROCEDURE (SOURCE:PCX.DB2.V*.PROCLIB)*
+//* PARMS:    LIB    = THE DATA SET NAME OF THE DB2 PROGRAM LIBRARY    *
+//*           SYSTEM = THE DB2 SUBSYSTEM NAME.                         *
+//*           UID    = THE UTILITY IDENTIFIER (NAME) INSIDE DB2        *
+//*                    NULL WILL DEFAULT TO USERID.JOBNAME             *
+//*           UTPROC = INDICATOR TO START OR RESTART UTILITY           *
+//*                    NULL FOR START OR RESTART / RESTART(PHASE)      *
+//* CHANGE-ACTIVITY:                                                   *
+//* 05/27/2009 CHOO: ADDED BYPASS TO X37 NOW THAT WE ARE USING DFSORT  *
+//*                  AND RUNNING DB2 V81 . RECOMENDATION IBM LAB       *
+//* 2022 JUNE BRIAN LAUBE (AND SYSTEM DBAS) - COMMENT PROIGN DD        *
+//*                  SO STOPX37 STARTS WATCHING THIS JOB STEP AGAIN    *
+//*                  (BECAUSE WE THINK IT IS OK TODAY)                 *
+//**********************************************************************
+//DSNUPROC EXEC PGM=DSNUTILB,PARM='&SYSTEM,&UID,&UTPROC',REGION=&SIZE
+//STEPLIB  DD   DSN=&LIB,DISP=SHR
+//SYSPRINT DD   SYSOUT=*
+//UTPRINT  DD   SYSOUT=*
+//SYSUDUMP DD   SYSOUT=*
+//*PROIGN   DD   DUMMY THIS DD INDICATES TO BYPASS X37

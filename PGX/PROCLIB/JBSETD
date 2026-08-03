@@ -1,0 +1,23 @@
+//*--------------------------------------------------------------------*        
+//*  LIBRARY OVERRIDES FOR DEV LEVEL                                            
+//*--------------------------------------------------------------------*        
+//*                     !!! NOTE !!!                                            
+//*  IF MAKING CHANGES TO THIS ELEMENT, PLEASE MAKE SURE THAT SIMILAR           
+//*  CHANGES ARE MADE TO THE CORRESPONDING ELEMENT IN THE "GROUP" LIB           
+//*--------------------------------------------------------------------*        
+//*  HISTORY                                                                    
+//*  200806 - TRUDY     - CREATED AS PART OF THE ECU PROJECT                    
+//*  201306 - TRUDY     - SET TO MATCH J2 INCLUDES                              
+//*                     - ADDED LOADLIB0 & REMOVED DBALOAD                      
+//*                       AS PART OF IDMS TO DB2 CONVERSION                     
+//*--------------------------------------------------------------------*        
+// SET LOADLIB0='PCX.MLICOMMX.LOAD'                                             
+// SET LOADLIB1='TEN.GROUP.DEV.STANDARD.LE.BTCHLOAD'                            
+// SET LOADLIB2='TEN.GLHNEW.DEV.STANDARD.LE.BTCHLOAD'                           
+// SET LOADLIB3='TEN.GROUP.TEST.STANDARD.LE.BTCHLOAD'                           
+// SET LOADLIB4='TEN.GLHNEW.TEST.STANDARD.LE.BTCHLOAD'                          
+// SET LOADLIB5='TEN.GROUP.ACCEPT.STANDARD.LE.BTCHLOAD'                         
+// SET LOADLIB6='TEN.GLHNEW.ACCEPT.STANDARD.LE.BTCHLOAD'                        
+// SET UTILOAD='TCX.MLI.COMMON.LOAD'                                            
+// SET LELIB='SYS1.SCEERUN'                                                     
+// SET DB2LOAD='PCX.DB2.DSNLNST'                                                

@@ -1,0 +1,42 @@
+//*--------------------------------------------------------------------*        
+//*  JOBLIB INCLUDE FOR BATCH WITH DB2                                          
+//*--------------------------------------------------------------------*        
+//*                     !!! NOTE !!!                                            
+//*  IF MAKING CHANGES TO THIS ELEMENT, PLEASE MAKE SURE THAT SIMILAR           
+//*  CHANGES ARE MADE TO THE CORRESPONDING ELEMENT IN THE "GROUP" LIB           
+//*--------------------------------------------------------------------*        
+//*  HISTORY                                                                    
+//*  200806 - TRUDY     - CREATED AS PART OF THE ECU PROJECT                    
+//*  201104 - C MUNCAN  - ADDED LOADLIB0 & REMOVED DBALOAD                      
+//*                       AS PART OF IDMS TO DB2 CONVERSION                     
+//*--------------------------------------------------------------------*        
+//JOBLIB   DD DSN=&LOADLIB0,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=&LOADLIB1,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=&LOADLIB2,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=&LOADLIB3,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=&LOADLIB4,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=&LOADLIB5,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=&LOADLIB6,                                                    
+//            DISP=SHR                                                          
+//         DD DSN=PEN.GLHNEW.PROD.STANDARD.LE.BTCHLOAD,                         
+//            DISP=SHR                                                          
+//         DD DSN=PEN.GROUP.PROD.STANDARD.LE.BTCHLOAD,                          
+//            DISP=SHR                                                          
+//         DD DSN=&UTILOAD,                                                     
+//            DISP=SHR                                                          
+//         DD DSN=PCX.MLI.COMMON.LOAD,                                          
+//            DISP=SHR                                                          
+//         DD DSN=PEN.ITS.PROD.STANDARD.BTCHLOAD,                               
+//            DISP=SHR                                                          
+//         DD DSN=SYS1.UTILS,                                                   
+//            DISP=SHR                                                          
+//         DD DSN=&LELIB,                                                       
+//            DISP=SHR                                                          
+//         DD DSN=&DB2LOAD,                                                     
+//            DISP=SHR                                                          

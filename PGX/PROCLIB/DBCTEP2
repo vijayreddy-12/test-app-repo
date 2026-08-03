@@ -1,0 +1,16 @@
+//DBCTEP2  PROC SSID=,TYPE=T,DSNLOAD=PCX.DB2.DSNLOAD
+//*-----------------------------------------------------------------*
+//* Delete rows older than 1 month using DSNTEP2                    *
+//*-----------------------------------------------------------------*
+//DELSTEP EXEC PGM=IKJEFT01,DYNAMNBR=20
+//SYSTSPRT DD SYSOUT=*
+//SYSPRINT DD SYSOUT=*
+//SYSTSIN  DD DSN=PDP.DBC.CTLCARDS(&SSID),DISP=SHR
+//         DD DSN=PDP.DBC.CTLCARDS(DBC&TYPE.&SSID),DISP=SHR
+//*SYSTSIN  DD *
+//*  DSN SYSTEM(DDBC)
+//*  RUN PROGRAM(DSNTEP2) PLAN(DSNTEP2) -
+//*  LIB('PCX.DB2.RUNLID.LNST')
+//*  END
+//*
+

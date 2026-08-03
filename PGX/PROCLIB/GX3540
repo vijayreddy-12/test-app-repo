@@ -1,0 +1,170 @@
+//GX3540  PROC CLVL='PROD',                                                     
+//             CSTAT='PEN.GLHNEW',          ** CTLCARDS PREFIX                  
+//             DLVL=PROD,                   ** DATA SET LEVEL                   
+//             DSLVL=PROD,                  ** DATASERVER LEVEL                 
+//             DSSTAT=PEN.GLHNEW,                                               
+//             DSTAT=PGX,                   ** DATA SET STATUS                  
+//             GEN0='(0)',                  ** GDG VERSION                      
+//             GEN1='(+1)',                 ** GDG VERSION                      
+//             OUTA='*',                    ** SYSOUT DEFN                      
+//             OUTS='S',                    ** SYSUDUMP DEFN                    
+//             SPACE1='(CYL,(10,5),RLSE)',  ** EXTRACT SPACE                    
+//             SPACE2='(TRK,(1,1),RLSE)',   ** GENERATION SPACE                 
+//             UNIT1=PROD,                  ** UNIT TYPE                        
+//             UNIT2=SYSWK                  ** UNIT TYPE                        
+//* -------------------------------------------------------------               
+//* HISTORY :                                                                   
+//* 29OCT2008 - IBM GR - ENTERPRISE COMPILER UPGRADE                            
+//* JAN2012   - IDMSDB2 - GAEDATSR REPLACEMENT                                  
+//*********************************************************************         
+//*   CHECK TO SEE IF THE SOURCE FILE IS EMPTY.  IF THE FILE IS                 
+//*   EMPTY, THE JOB WILL ABEND.                                                
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX354003 EXEC PGM=IDCAMS,                                                     
+//             COND=(0,LT)                                                      
+//IFILE     DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLOC(0),                           
+//             DISP=SHR                                                         
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354003),                  
+//             DISP=SHR                                                         
+//* -------------------------------------------------------------               
+//*   LIST THE INPUT GDG DATA FOR FILE:                                         
+//*   PGX.CMRP.PROD.EXTR.VOLOC                                                  
+//*   (RUNS A LISTCAT FUNCTION TO PRODUCE ALL DATASET INFORMATION               
+//*    FOR A PARTICULAR GDG)                                                    
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX354005 EXEC PGM=IDCAMS,                                                     
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD DSN=&&VO,                                                        
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT2,                                                     
+//             SPACE=&SPACE2,                                                   
+//             DCB=(RECFM=VBA,LRECL=134,BLKSIZE=27872)                          
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354005),                  
+//             DISP=SHR                                                         
+//* -------------------------------------------------------------               
+//*   REMOVE ALL BUT THE GDG NAMES                                              
+//*   (SORT OUT ALL DATASET INFORMATION AND LEAVE ONLY THE NAMES                
+//*    OF ALL GDG VERSIONS IN THE RESULTING DATASET)                            
+//* -------------------------------------------------------------               
+//*   M                                                                         
+//*                                                                             
+//GX354010 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SORTIN    DD DSN=&&VO,                                                        
+//             DISP=(OLD,DELETE)                                                
+//SORTOUT   DD DSN=&&GDG,                                                       
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT2,                                                     
+//             SPACE=&SPACE2,                                                   
+//             DCB=(RECFM=VB,LRECL=134,BLKSIZE=27872)                           
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354010),                  
+//             DISP=SHR                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//* -------------------------------------------------------------               
+//*   EXTRACT THE MOST RECENT FILE NAME                                         
+//*   (REMOVE ALL DATASET NAMES FROM THE GDG DATASET NAME LIST                  
+//*    EXCEPT FOR THE MOST CURRENT)                                             
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX354015 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SORTIN    DD DSN=&&GDG,                                                       
+//             DISP=(OLD,DELETE)                                                
+//SORTOUT   DD DSN=&&GDGNAME,                                                   
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT2,                                                     
+//             SPACE=&SPACE2,                                                   
+//             DCB=(RECFM=VB,LRECL=134,BLKSIZE=27872)                           
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GXRCTNAM),                  
+//             DISP=SHR                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//* -------------------------------------------------------------               
+//*   EXTRACT THE GENERATION NUMBER FROM THE GDG NAME                           
+//*   (EG. G0002V00)                                                            
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX354020 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SORTIN    DD DSN=&&GDGNAME,                                                   
+//             DISP=(OLD,DELETE)                                                
+//SORTOUT   DD DSN=&DSTAT..CMRP.&DLVL..VOLOC.CURR.GEN&GEN1,                     
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE2,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=VB,LRECL=134,                      
+//             BLKSIZE=27872)                                                   
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354020),                  
+//             DISP=SHR                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//* -------------------------------------------------------------               
+//*   INSERT TRAILER AND CONTROL DATA ON VOLOC EXTRACT                          
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX354025 EXEC PGM=CMRPTRLR,                                                   
+//             COND=(0,LT)                                                      
+//*------------------------------------------------------------------*          
+//* DATA SERVER FILES                                                *          
+//*------------------------------------------------------------------*          
+//DLSI00    DD DSN=&DSSTAT..&DSLVL..STANDARD.TABLE(GAEDATSR),                   
+//             DISP=SHR                                                         
+//*------------------------------------------------------------------*          
+//DLSI10    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLOC(0),                           
+//             DISP=SHR                                                         
+//DLSI71    DD DSN=&DSTAT..CMRP.&DLVL..VOLOC.CURR.GEN&GEN1,                     
+//             DISP=SHR                                                         
+//DLSI72    DD DSN=&DSTAT..CMRP.&DLVL..VOLOC.EXPECT.GEN&GEN0,                   
+//             DISP=SHR                                                         
+//DLSI13    DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354025),                  
+//             DISP=SHR                                                         
+//DLSO20    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLOC.FEED&GEN1,                    
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=60,BLKSIZE=27960)         
+//DLSO70    DD DSN=&DSTAT..CMRP.&DLVL..VOLOC.EXPECT.GEN&GEN1,                   
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE2,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=VB,LRECL=134,                      
+//             BLKSIZE=27872)                                                   
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//ABENDAID  DD SYSOUT=&OUTS                                                     
+//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYSABOUT  DD SYSOUT=&OUTS                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//* -------------------------------------------------------------               
+//*   SORT THE UPLOADED VOLOC FILE BEFORE UPDATING THE VSAM VERSION.            
+//*   THIS JOB ABENDED IN JAN 2005 BECAUSE THE ASCII SORT ORDER                 
+//*   IS NOT THE SAME AS THE EBCDIC ORDER.                                      
+//*   DOUG VOLL - FEB 2005                                                      
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX354027 EXEC PGM=SORT,                                                       
+//             COND=(0,LT)                                                      
+//SORTIN    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLOC(0),                           
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&&VOLOC,                                                     
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT2,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(RECFM=FB,LRECL=23,BLKSIZE=27991)                            
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354027),                  
+//             DISP=SHR                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//* --------------------------------------------------------------- *           
+//*   REPRO(REPLACE) VOLOC VSAM FILE WITH THE VOLOC EXTRACT RECORDS             
+//* --------------------------------------------------------------- *           
+//*                                                                             
+//GX354030 EXEC PGM=IDCAMS,                                                     
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//INDD01    DD DSN=&&VOLOC,                                                     
+//             DISP=(OLD,DELETE)                                                
+//OUTDD01   DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLOC.VSAM,                         
+//             DISP=SHR                                                         
+//SYSIN     DD DSN=&CSTAT..&CLVL..STANDARD.CTLCARDS(GX354030),                  
+//             DISP=SHR                                                         

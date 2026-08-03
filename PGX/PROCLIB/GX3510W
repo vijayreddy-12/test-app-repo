@@ -1,0 +1,128 @@
+//GX3510W PROC DLVL=PROD,                   ** DATA SET LEVEL                   
+//             DSTAT=PGX,                   ** DATA SET STATUS                  
+//             GEN1='(+1)',                 ** GDG VERSION                      
+//             OUTA='*',                    ** SYSOUT DEFN                      
+//             SPACE1='(CYL,(10,5),RLSE)',  ** EXTRACT SPACE                    
+//             UNIT1=PROD                   ** UNIT TYPE                        
+//* -------------------------------------------------------------               
+//*   DELETE THE TRIGGER FILE SO THAT THIS "WATCH" JOB WILL NOT                 
+//*   BE BROUGHT INTO THE JES QUEUE A SECOND TIME.                              
+//*   THE PROD TRIGGER FILE IS: PGX.PROD.VOTOCMR.TRIGGER                        
+//* -------------------------------------------------------------               
+//*                                                                             
+//GX3510W EXEC PGM=IEFBR14,                                                     
+//             COND=(0,LT)                                                      
+//DELETE1   DD DSN=&DSTAT..&DLVL..VOTOCMR.TRIGGER,                              
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT1                                                      
+//* -----------------------------------------------------------------           
+//*   COPY THE UPLOADED VO FILES TO THE PGX DATASETNAMES                        
+//*   THAT WILL BE READ IN PGX3510, PGX3520, PGX3530, PGX3540,                  
+//*   PGX3550 AND PGX3560. THE FILES CANNOT BE UPLOADED DIRECTLY                
+//*   TO THE (+1) GDG NAMES AS THE RESULTING DATASETS BECOME VARIABLE           
+//*   BLOCKED, RESULTING IN FAILURE IN THE CMR CLIENT STRUCTURE JOB.            
+//*********************************************************************         
+//* -------------------------------------------------------------------         
+//*   IEBEGENER THE CLIENT FILE TO A GDG                                        
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX3510W1 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=512K                                                      
+//SYSUT1    DD DSN=&DSTAT..&DLVL..VO.CLIENT,                                    
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOCLIENT&GEN1,                      
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=248,                      
+//             BLKSIZE=27776)                                                   
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//* -------------------------------------------------------------------         
+//*   IEBEGENER THE CONTRACT FILE TO A GDG                                      
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX3510W2 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=512K                                                      
+//SYSUT1    DD DSN=&DSTAT..&DLVL..VO.CONTRACT,                                  
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOCONT&GEN1,                        
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=199,                      
+//             BLKSIZE=27860)                                                   
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//* -------------------------------------------------------------------         
+//*   IEBEGENER THE BENEFIT FILE TO A GDG                                       
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX3510W3 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=512K                                                      
+//SYSUT1    DD DSN=&DSTAT..&DLVL..VO.BENEFIT,                                   
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOBEN&GEN1,                         
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=118,                      
+//             BLKSIZE=27966)                                                   
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//* -------------------------------------------------------------------         
+//*   IEBEGENER THE LOCATION FILE TO A GDG                                      
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX3510W4 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=512K                                                      
+//SYSUT1    DD DSN=&DSTAT..&DLVL..VO.LOCATION,                                  
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLOC&GEN1,                         
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=23,BLKSIZE=27991)         
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//* -------------------------------------------------------------------         
+//*   IEBEGENER THE LTD QUALIFYING PERIOD FILE TO A GDG                         
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX3510W5 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=512K                                                      
+//SYSUT1    DD DSN=&DSTAT..&DLVL..VO.LTDQUAL,                                   
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLTDQUA&GEN1,                      
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=26,BLKSIZE=27976)         
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*********************************************************************         
+//* -------------------------------------------------------------------         
+//*   IEBEGENER THE LIFE WAIVER FILE TO A GDG                                   
+//* -------------------------------------------------------------------         
+//*                                                                             
+//GX3510W6 EXEC PGM=IEBGENER,                                                   
+//             COND=(0,LT),                                                     
+//             REGION=512K                                                      
+//SYSUT1    DD DSN=&DSTAT..&DLVL..VO.LIFEWAIV,                                  
+//             DISP=SHR                                                         
+//SYSUT2    DD DSN=&DSTAT..CMRP.&DLVL..EXTR.VOLIFEWV&GEN1,                      
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT1,                                                     
+//             SPACE=&SPACE1,                                                   
+//             DCB=(SYS1.GDG.MODEL.SEQ,RECFM=FB,LRECL=24,BLKSIZE=27984)         
+//SYSIN     DD DUMMY                                                            
+//SYSPRINT  DD SYSOUT=&OUTA                                                     

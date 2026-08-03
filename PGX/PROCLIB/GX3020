@@ -1,0 +1,10 @@
+//GX3020  PROC                                                                  
+//*--------------------------------------------------------------------*        
+//*      THIS PROC IS NOW OBSOLETE                                     *        
+//*      (LGIPS DECOMISSIONING)                                        *        
+//*      IF CONTENTS ARE REQUIRED, USE THE PREVIOUS VERSION (-1)       *        
+//*      OBSOLETED AS OF JUL, 2023                                     *        
+//*--------------------------------------------------------------------*        
+//*                                                                             
+//OBSOLETE EXEC PGM=IEFBR14,                                                    
+//             COND=(0,LT)                                                      
