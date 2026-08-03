@@ -1,0 +1,88 @@
+    1  git clone https://github.com/vijayreddy-12/test-app-repo.git
+    2  cd test-app-repo
+    3  git mv jcl JCL
+    4  [200~for d in */ ; do
+    5  [ "$d" != "PGB/" ] && git mv "$d" PGB/
+    6  done
+    7  LS -D
+    8  pwd
+    9  https://github.com/vijayreddy-12/test-app-repo
+   10  [200~git clone https://github.com/vijayreddy-12/test-app-repo~
+   11  git clone https://github.com/vijayreddy-12/test-app-repo~
+   12  git clone https://github.com/vijayreddy-12/test-app-repo
+   13  cd test-app-repo
+   14  for d in */; do2  [ "$d" != "PGB/" ] && git mv "$d" PGB/3done
+   15  for d in */; do  [ "$d" != "PGB/" ] && git mv "$d" PGB/done;  git status
+   16  for d in */; do [ "$d" != "PGB/" ] && git mv "$d" PGB/; done
+   17  git status
+   18  git commit -m "Move files into PGB folder"
+   19  git push origin main
+   20  git pull origin main --rebase
+   21  git status
+   22  git rebase --abort
+   23  git push --force origin main
+   24  LS D
+   25  ls
+   26  cd ..
+   27  ls
+   28  git clone [200~https://github.com/vijayreddy-12/test-app-repo~
+   29  git clone https://github.com/vijayreddy-12/test-app-repo~
+   30  git clone https://github.com/vijayreddy-12/test-app-repo
+   31   ls
+   32  git clone https://github.com/vijayreddy-12/test-app-repo
+   33  ls -d
+   34  lsl
+   35  ls
+   36  cd [200~
+   37  clear
+   38  git clone https://github.com/vijayreddy-12/test-app-repo
+   39  cd ~
+   40  rm -rf test-app-repo
+   41  git clone https://github.com/vijayreddy-12/test-app-repo.git
+   42  cd ~/test-app-repo
+   43  git rebase --abort
+   44  git status
+   45  ls
+   46  cd pgb
+   47  LS
+   48  mkdir PROCLIB
+   49  mkdir COPYLIB CNTLCRD INCL ASMBLR 
+   50  ls
+   51  mkdir "INPUT FILES"
+   52  git mv JCL JCLLIB
+   53  ls
+   54  git status
+   55  git add .
+   56  git commit -m "Create folder structure and rename JCL to JCLLIB"
+   57  git push origin main
+   58  touch ASMBLR/.gitkeep CNTLCRD/.gitkeep COBOL/.gitkeep COPYLIB/.gitkeep INCL/.gitkeep PROCLIB/.gitkeep
+   59  touch "INPUT FILES/.gitkeep"
+   60  git add .
+   61  git commit -m "Add project folder structure"
+   62  git push origin main
+   63  ls
+   64  cd ..
+   65  ls
+   66  mkdir PGC
+   67  LS
+   68  CD PGC
+   69  cd pgc
+   70  mkdir PGC-BATCH
+   71  mkdir PGC-ONLINE
+   72  cd pgc-batch
+   73  touch ASMBLR/.gitkeep CNTLCRD/.gitkeep COBOL/.gitkeep COPYLIB/.gitkeep INCL/.gitkeep PROCLIB/.gitkeep
+   74  kdir ASMBLR CNTLCRD COBOL COPYLIB INCL PROCLIB JCLLIB
+   75  Mkdir ASMBLR CNTLCRD COBOL COPYLIB INCL PROCLIB JCLLIB
+   76  ls
+   77  touch ASMBLR/.gitkeep CNTLCRD/.gitkeep COBOL/.gitkeep COPYLIB/.gitkeep INCL/.gitkeep PROCLIB/.gitkeep
+   78  mkdir -p "INPUT FILES"
+   79  ls
+   80  touch "INPUT FILES/.gitkeep"
+   81  git status
+   82  git add .
+   83  git commit -m "Add project folder structure"
+   84  git push origin main
+   85  ~git pull origin main --rebase
+   86  git pull origin main --rebase
+   87  git push origin main
+   88  history > commands.txt
