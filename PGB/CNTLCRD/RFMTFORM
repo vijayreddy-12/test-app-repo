@@ -1,0 +1,8 @@
+TARGET=REC                                                                      
+COPYBOOK=GCCC****                                                               
+PREPROC=GCCPFRMP                                                                
+;QALIAS=WEB.YT.FORM.SUBMIT                                                      
+ERRORACTION=STOP                                                                
+MESSAGEVERSION=2.00                                                             
+MESSAGETYPEIDMAJOR=0391                                                         
+MESSAGETYPEIDMINOR=0001                                                         

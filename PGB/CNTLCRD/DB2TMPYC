@@ -1,0 +1,158 @@
+--DEFINE GB CUSTOMER PROFILE DB2 DATASET TEMPLATES                              
+--  THESE TEMPLATES LET DB2 UTILITIES DYNAMICALLY DEFINE REQD DATASETS          
+--                                                                              
+--  THESE TEMPLATES USE THE COMMON HLQ OF 'PYC' (OR 'TYC')                      
+--                                                                              
+-- CHG 33 DAYS TO 45 DAYS - APRIL 15, 2014 - BRIAN LAUBE                        
+--                                                                              
+--                                                                              
+--  TYC DATASET FOR LOCAL IMAGE COPY BKUP DATASET. 45 DAYS                      
+TEMPLATE TYCLM                                                                  
+  DSN                                                                           
+  'TYC.DB2.L&IC..D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+--                                                                              
+--  PYC DATASET FOR LOCAL IMAGE COPY BKUP DATASET. 45 DAYS                      
+TEMPLATE PYCLM                                                                  
+  DSN                                                                           
+  'PYC.DB2.L&IC..D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+--                                                                              
+--  TYC DATASET FOR REMOTE IMAGE COPY BKUP DATASET. 45 DAYS                     
+TEMPLATE TYCRM                                                                  
+  DSN                                                                           
+  'TYC.DB2.R&IC..D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                
+     UNIT XTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+--                                                                              
+--  PYC DATASET FOR REMOTE IMAGE COPY BKUP DATASET. 45 DAYS                     
+TEMPLATE PYCRM                                                                  
+  DSN                                                                           
+  'PYC.DB2.R&IC..D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                
+     UNIT XTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+--                                                                              
+--  PYC DATASET FOR LOCAL REORG FULL IMAGE COPY BACKUP DATASET. 45 DAYS         
+TEMPLATE PYCLR                                                                  
+  DSN                                                                           
+  'PYC.DB2.LR.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+--                                                                              
+--  TYC DATASET FOR LOCAL REORG FULL IMAGE COPY BACKUP DATASET. 45 DAYS         
+TEMPLATE TYCLR                                                                  
+  DSN                                                                           
+  'TYC.DB2.LR.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+TEMPLATE TYCLRSN                                                                
+  DSN                                                                           
+  'TYC.DB2.LR.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK NO                                                        
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+TEMPLATE PYCLRSN                                                                
+  DSN                                                                           
+  'PYC.DB2.LR.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK NO                                                        
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 45                                                                   
+--                                                                              
+--                                                                              
+--  THE FOLLOWING TEMPLATES ARE NOT KNOWN TO BE USED.                           
+--  BUT COULD BE USED.                                                          
+--  -CHECK THAT THE HLQ IS APPROPRIATELY DEFINED IN THE                         
+--    RETENTION DATASET  POS.CA1.RDS.SYSI                                       
+--    VAULT PATTERN DATASET POS.CA1.VPD.SYSI                                    
+--                                                                              
+--  TYC DATASET FOR LOCAL FULL IMAGE COPY BACKUP DATASET. 400 DAYS              
+  TEMPLATE TYCLY                                                                
+  DSN                                                                           
+  'TYC.DB2.LY.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 400                                                                  
+--                                                                              
+--  PYC DATASET FOR LOCAL FULL IMAGE COPY BACKUP DATASET. 400 DAYS              
+  TEMPLATE PYCLY                                                                
+  DSN                                                                           
+  'PYC.DB2.LY.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 400                                                                  
+--                                                                              
+--  TYC DATASET FOR LOCAL FULL IMAGE COPY BACKUP DATASET. 2600 DAYS             
+  TEMPLATE TYCL7                                                                
+  DSN                                                                           
+  'TYC.DB2.L7.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 2600                                                                 
+--                                                                              
+--  PYC DATASET FOR LOCAL FULL IMAGE COPY BACKUP DATASET. 2600 DAYS             
+  TEMPLATE PYCL7                                                                
+  DSN                                                                           
+  'PYC.DB2.L7.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT VTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 2600                                                                 
+--                                                                              
+--  TYC DATASET FOR REMOTE FULL IMAGE COPY BACKUP DATASET. 2600 DAYS            
+  TEMPLATE TYCR7                                                                
+  DSN                                                                           
+  'TYC.DB2.R7.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT XTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 2600                                                                 
+--                                                                              
+--  PYC DATASET FOR REMOTE FULL IMAGE COPY BACKUP DATASET. 2600 DAYS            
+  TEMPLATE PYCR7                                                                
+  DSN                                                                           
+  'PYC.DB2.R7.D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                   
+     UNIT XTAPE STACK YES                                                       
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     RETPD 2600                                                                 
+--                                                                              
+--  TYC DATASET FOR LOCAL IMAGE COPY BKUP DATASET ON DASD.  14 DAYS             
+  TEMPLATE TYCLD                                                                
+  DSN                                                                           
+  'TYC.DB2.L&IC..D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     UNIT TEST                                                                  
+     SPACE(20,20) CYL                                                           
+     DATACLAS MULTIVOL     -- MULTIVOL ALLOWS DATASET TO BE HUGE!               
+     MGMTCLAS MC#2WKS                                                           
+--                                                                              
+--  PYC DATASET FOR LOCAL IMAGE COPY BKUP DATASET ON DASD.  14 DAYS             
+  TEMPLATE PYCLD                                                                
+  DSN                                                                           
+  'PYC.DB2.L&IC..D&DT(3,5)..T&HO.&MI..&DB(1,6)..&TS..P&PA(3,3).'                
+     DISP (NEW,CATLG,DELETE)                                                    
+     MODELDCB PGB.MODEL                                                         
+     UNIT PROD                                                                  
+     SPACE(20,20) CYL                                                           
+     DATACLAS MULTIVOL     -- MULTIVOL ALLOWS DATASET TO BE HUGE!               
+     MGMTCLAS MC#2WKS                                                           

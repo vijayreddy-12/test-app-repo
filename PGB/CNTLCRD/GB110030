@@ -1,0 +1,9 @@
+ SORT FIELDS=(6,1,CH,A,                                                         
+              7,2,CH,A,                                                         
+              9,1,CH,A,                                                         
+              10,1,CH,A,                                                        
+              13,7,CH,A,                                                        
+              20,3,CH,A,                                                        
+              23,8,CH,A,                                                        
+              31,10,CH,A)                                                       
+ END SORT                                                                       

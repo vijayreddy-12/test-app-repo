@@ -1,0 +1,7 @@
+INPUTQ=(,CPQ1,MLI.Q.YT.FORM.SUBMIT)                                             
+DSN=PGB.REGN.PROD.FORM.MQ(+1)                                                   
+;MESSAGECOUNT=5                                                                 
+DSORG=PS                                                                        
+UNIT=PROD                                                                       
+SPACE=(CYL,10,5)                                                                
+DISP=(NEW,CATLG,CATLG)                                                          

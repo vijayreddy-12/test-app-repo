@@ -1,0 +1,27 @@
+0000      Notes                                                                 
+0000      The case of this file MUST remain mixed                               
+0000      This file is used by Real Time Reporting - Scheduler                  
+0000      Email Notification - Job PGBSCA1 and PGBSCA2                          
+0000      The first four characters of each line identify                       
+0000      record type                                                           
+0000      0000 or blanks = notes or comments                                    
+0000      1000           = English Email Text                                   
+0000      2000           = French Email Text                                    
+1000Your report request is now available. To access your                        
+1000results, follow these instructions:                                         
+1000                                                                            
+1000  1.  Go to: http://www.manulife.ca/groupbenefits                           
+1000  2.  Login to the Plan Administrator or Plan Advisor Secure Site           
+1000  3.  Click the 'instant reports' quick link located on the home page       
+1000  4.  Click the 'view report results' link from the related links panel     
+1000      on the page to view your results                                      
+1000                                                                            
+2000Votre relev© est prªt.  Pour le produire, proc©dez comme suit :             
+2000                                                                            
+2000  1.  Allez ë http://www.manuvie.ca/assurancecollective;                    
+2000  2.  entrez dans le site prot©g© ë l'intention de l'administrateur         
+2000      de r©gime ou du conseiller en avantages sociaux;                      
+2000  3.  cliquez sur le lien rapide 'relev©s en temps r©el' du page d'accueil; 
+2000  4.  cliquez sur le lien 'affichage des r©sultats des demandes de relev©s' 
+2000      du menu liens connexes pour voire vos r©sultats.                      
+2000                                                                            

@@ -1,0 +1,4 @@
+DSN SYSTEM(PDBC)                                                                
+   RUN PROGRAM(DSNTEP2) PLAN(DSNTEP23) -                                        
+       LIB('PCX.DB2.RUNLIB.LOAD')                                               
+   END                                                                          

@@ -1,0 +1,10 @@
+*******************************************************************             
+*******************************************************************             
+* C360 - SORT TO MERGE UNLOADED TCUST AND TGCT COLUMNS            *             
+*        TO GET THE TCUST GROUP AND CERT ON TO THE DELTA TXN      *             
+*******************************************************************             
+*******************************************************************             
+ SORT FIELDS=COPY                                                               
+ JOINKEYS FILE=F1,FIELDS=(2,6,A)                                                
+ JOINKEYS FILE=F2,FIELDS=(18,6,A)                                               
+ REFORMAT FIELDS=(F2:1,7,F2:8,10,F1:1,1)                                        

@@ -1,0 +1,21 @@
+  OPTIONS TEMPLATEDD TEMPLDEF                                                   
+                                                                                
+  QUIESCE TABLESPACE DYC01P.ZSSOLH2                                             
+                                                                                
+  REORG TABLESPACE DYC01P.ZSSOLH2                                               
+         KEEPDICTIONARY                                                         
+         SORTDATA NO                                                            
+         SORTKEYS                                                               
+         COPYDDN(PYCLRSN)                                                       
+         SHRLEVEL CHANGE                                                        
+         DISCARD FROM TABLE DBCYCP1.TSSOLH                                      
+            WHEN (SSO_TS   < (CURRENT TIMESTAMP - 180 DAYS)                     
+                 )                                                              
+         FASTSWITCH NO                                                          
+         STATISTICS                                                             
+            TABLE (ALL) SAMPLE 10                                               
+            INDEX (ALL  KEYCARD FREQVAL NUMCOLS 1 COUNT 10                      
+                                FREQVAL NUMCOLS 2 COUNT 10)                     
+         SORTDEVT WORK SORTNUM 0                                                
+                                                                                
+  QUIESCE TABLESPACE DYC01P.ZSSOLH2                                             

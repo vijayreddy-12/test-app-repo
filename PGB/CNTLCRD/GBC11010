@@ -1,0 +1,16 @@
+*******************************************************************             
+*******************************************************************             
+* C360 - SORT TO IDENTFY CHANGES IN CPD TABLE TCUST               *             
+*        - INPUT IS UNLOADED TCUST COLUMNS - EMAIL AND PHONES     *             
+*******************************************************************             
+*******************************************************************             
+ OPTION COPY                                                                    
+ JOINKEYS FILE=F1,FIELDS=(1,6,A)                                                
+ JOINKEYS FILE=F2,FIELDS=(1,6,A)                                                
+ JOIN     UNPAIRED                                                              
+ REFORMAT FIELDS=(F1:1,6,F1:7,60,F1:67,10,F1:77,6,F1:83,10,?,                   
+                  F2:1,6,F2:7,60,F2:67,10,F2:77,6,F2:83,10)                     
+ OUTFIL REMOVECC,OMIT=(1,92,CH,EQ,94,92,CH),                                    
+       IFTHEN=(WHEN=(93,1,CH,EQ,C'1'),BUILD=(C'D',1,6)),                        
+       IFTHEN=(WHEN=(93,1,CH,EQ,C'2'),BUILD=(C'I',94,6)),                       
+       IFTHEN=(WHEN=(NONE),BUILD=(C'U',1,6))                                    

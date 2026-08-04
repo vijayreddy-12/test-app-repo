@@ -1,0 +1,3 @@
+ SORT FIELDS=(1,10,CH,A),EQUALS                                         00010000
+ SUM  FIELDS=NONE                                                       00020000
+ END                                                                    00030000

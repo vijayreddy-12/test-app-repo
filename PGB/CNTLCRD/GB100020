@@ -1,0 +1,3 @@
+  PRINT INFILE (IFILE) COUNT(1)                                                 
+  IF LASTCC EQ 0 THEN -                                                         
+  SET MAXCC = 6                                                                 
