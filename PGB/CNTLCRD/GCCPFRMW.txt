@@ -1,0 +1,4 @@
+  DSN SYSTEM(DDBC)                                                              
+      RUN PROGRAM(GCCPFRMW) -                                                   
+      PLAN(YCBTCHA1)                                                            
+  END                                                                           

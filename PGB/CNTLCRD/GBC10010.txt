@@ -1,0 +1,2 @@
+SELECT CUST_ID, EMAIL_ADDR, BUS_PHONE_NUM, BUS_PHONE_EXT, PHONE_NUM             
+FROM   DBCYCD1.TCUST;                                                           
