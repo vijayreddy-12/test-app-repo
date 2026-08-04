@@ -10,6 +10,6 @@
 //*                                                                             
 //GB111005 EXEC SAS,                                                            
 //             PARM='SYSPARM=&DB2PLAN DB2SSID=&DB2SSID'                         
-//SYSRPT    DD SYSOUT=(5,PGBPR010)                                              
+//SYSRPT    DD SYSOUT=*                                                         
 //SYSIN     DD DSN=&PENV1..&PLVL1..SAS(GB111005),                               
 //             DISP=SHR                                                         

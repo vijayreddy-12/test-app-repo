@@ -134,13 +134,15 @@
 //SYSLST    DD SYSOUT=&OUTJ                                                     
 //SYSABOUT  DD SYSOUT=&OUTS                                                     
 //ABENDAID  DD SYSOUT=&OUTS                                                     
-//SYSUDUMP  DD SYSOUT=&OUTS                                                     
+//SYCUDUMP  DD SYSOUT=&OUTS                                                     
 //SYSOUT    DD SYSOUT=&OUTJ                                                     
 //SYSPRINT  DD DCB=(RECFM=FBA,LRECL=133,BLKSIZE=27930),                         
 //             SYSOUT=&OUTJ                                                     
-//*********************************************************************         
-//*                                                                   *         
-//* GBPURG30 - GCCPFRMA - LOGIN HISTORY PURGE                        **         
+//*****************                                                             
+//**********                                                                    
+//***************************                                                   
+//*                                                                             
+//* GBPURG30 - GCCP                                                             
 //*********************************************************************         
 //*------------------------------------------------------------------**         
 //*        GBPURG30 - PURGE THE DATABASE (DB2) OF LOGIN HISTORY WHICH**         
@@ -160,7 +162,7 @@
 //*********************************************************************         
 //GBPURG30 EXEC DSNUPROC,                                                       
 //             COND=(5,LT),TIME=600,                                            
-//             SYSTEM=PDBC                                                      
+//             SYSTEM=DDBC                                                      
 //SYSPUNCH  DD SYSOUT=*                                                         
 //SYSREC    DD DSN=&&SYSREC1,                                                   
 //             DISP=(NEW,PASS),                                                 
@@ -174,19 +176,22 @@
 //             SPACE=(CYL,(20,20),RLSE),                                        
 //             DCB=BUFNO=50,                                                    
 //             DATACLAS=MULTIVOL                                                
-//TEMPLDEF  DD DSN=&CSTAT..&CLVL..CTLCARDS(DB2TMPYC),                           
+//*TEMPLDEF  DD DSN=&CSTAT..&CLVL..CTLCARDS(DB2TMPYC),                          
+//TEMPLDEF  DD DSN=TGW.RC.POC.CTLCARDS(DB2TMPYC),                               
 //             DISP=SHR                                                         
-//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG30),                           
+//*SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG30),                          
+//SYSIN     DD DSN=TGW.RC.POC.CTLCARDS(GBPURG30),                               
 //             DISP=SHR                                                         
 //*                                                                             
 //**********************************************************                    
 //* CHECK DATA                                                                  
 //**********************************************************                    
-//GBPURG35 EXEC DSNUPROC,SYSTEM=PDBC,TIME=600                                   
+//GBPURG35 EXEC DSNUPROC,SYSTEM=DDBC,TIME=600                                   
 //SYSUT1    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
 //SORTOUT   DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
 //SYSERR    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
-//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG35),                           
+//*SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG35),                          
+//SYSIN     DD DSN=TGW.RC.POC.CTLCARDS(GBPURG35),                               
 //             DISP=SHR                                                         
 //*                                                                             
 //**********************************************************                    
@@ -194,7 +199,7 @@
 //**********************************************************                    
 //GBPURG40 EXEC DSNUPROC,                                                       
 //             COND=(5,LT),TIME=600,                                            
-//             SYSTEM=PDBC                                                      
+//             SYSTEM=DDBC                                                      
 //SYSPUNCH  DD SYSOUT=*                                                         
 //SYSREC    DD DSN=&&SYSREC2,                                                   
 //             DISP=(NEW,PASS),                                                 
@@ -208,17 +213,20 @@
 //             SPACE=(CYL,(20,20),RLSE),                                        
 //             DCB=BUFNO=50,                                                    
 //             DATACLAS=MULTIVOL                                                
-//TEMPLDEF  DD DSN=&CSTAT..&CLVL..CTLCARDS(DB2TMPYC),                           
+//*TEMPLDEF  DD DSN=&CSTAT..&CLVL..CTLCARDS(DB2TMPYC),                          
+//TEMPLDEF  DD DSN=TGW.RC.POC.CTLCARDS(DB2TMPYC),                               
 //             DISP=SHR                                                         
-//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG40),                           
+//*SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG40),                           
+//SYSIN     DD DSN=TGW.RC.POC.CTLCARDS(GBPURG40),                               
 //             DISP=SHR                                                         
 //*                                                                             
 //**********************************************************                    
 //* CHECK DATA                                                                  
 //**********************************************************                    
-//GBPURG45 EXEC DSNUPROC,SYSTEM=PDBC,TIME=600                                   
+//GBPURG45 EXEC DSNUPROC,SYSTEM=DDBC,TIME=600                                   
 //SYSUT1    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
 //SORTOUT   DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
 //SYSERR    DD SPACE=(CYL,(100,500),,,ROUND),UNIT=WORK                          
-//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG45),                           
+//*SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(GBPURG45),                          
+//SYSIN     DD DSN=TGW.RC.POC.CTLCARDS(GBPURG45),                               
 //             DISP=SHR                                                         

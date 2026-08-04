@@ -1,0 +1,72 @@
+//GBRGORP PROC OLVL=PROD,                    ** PGB OUTPUT LEVEL                
+//             OSTAT='PGB.REGN',            ** PGB STATUS                       
+//             PENV1='PEN.GROUP',           ** PROGRAM NDVR LEVEL               
+//             PLVL1='PROD.STANDARD',       ** PROGRAM LIBRARY LEVEL            
+//             SPACE1='(CYL,(2,2),RLSE)',   ** OUTPUT FILE SIZE                 
+//             UNIT=PROD                    ** SYSTEM UNIT                      
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* GETTING INFORMATION FROM CPM DATABASE ON TGD AND TPAA             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                   *         
+//*--------------------------------------------------------------*    *         
+//* HISTORY                                                           *         
+//* 29AUG08  ECU PROJECT  UPGRADED IN ENTERPRISE COMPILER PROJECT     *         
+//*                                                                   *         
+//* MAY2013   - GROUP NUMBER EXPANSION PROJECT                                  
+//*********************************************************************         
+//*                                                                             
+//GBRGOR05 EXEC SAS,                                                            
+//             COND=(0,LT),                                                     
+//             REGION=0M,                                                       
+//             WORK='400,400'                                                   
+//SYSPRINT  DD SYSOUT=*                                                         
+//REPORT    DD DSN=&OSTAT..&OLVL..GBRGORP.TPAAEXT,                              
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=&SPACE1,                                                   
+//             DCB=(RECFM=FB,LRECL=270,BLKSIZE=0)                               
+//*SYSIN     DD DSN=TGW.RAINCODE.POC.SAS(GBRGOR05),                             
+//SYSIN     DD DSN=TGW.RC.POC.PGB.SAS(GBRGOR05),                                
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* GETTING INFORMATION FROM CPM DATABASE ON TGD AND TPAA             *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GBRGOR10 EXEC SAS,                                                            
+//             COND=(0,LT),                                                     
+//             REGION=0M,                                                       
+//             WORK='400,400'                                                   
+//SYSPRINT  DD SYSOUT=*                                                         
+//LOGINS    DD DSN=&OSTAT..&OLVL..GBRGORP.TLHEXTR,                              
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             SPACE=&SPACE1,                                                   
+//             DCB=(RECFM=FB,LRECL=150,BLKSIZE=0)                               
+//*SYSIN     DD DSN=TGW.RAINCODE.POC.SAS(GBRGOR10),                             
+//SYSIN     DD DSN=TGW.RC.POC.PGB.SAS(GBRGOR10),                                
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//* MERGING THE DATA FROM THE TWO PREVIOUS STEPS FOR THE REPORT       *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//GBRGOR15 EXEC SAS,                                                            
+//             COND=(0,LT),                                                     
+//             REGION=0M,                                                       
+//             WORK='400,400'                                                   
+//SYSPRINT  DD SYSOUT=*                                                         
+//ADVISR    DD DSN=&OSTAT..&OLVL..GBRGORP.TPAAEXT,                              
+//             DISP=SHR                                                         
+//LOGINS    DD DSN=&OSTAT..&OLVL..GBRGORP.TLHEXTR,                              
+//             DISP=SHR                                                         
+//RESULTS   DD SYSOUT=(5,PGBPR011)                                              
+//SYSIN     DD DSN=&PENV1..&PLVL1..SAS(GBRGOR15),                               
+//             DISP=SHR                                                         

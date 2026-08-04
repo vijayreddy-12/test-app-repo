@@ -46,8 +46,9 @@
 //             COND=(8,LT)                                                      
 //SYSOUT    DD SYSOUT=*                                                         
 //SYSPRINT  DD SYSOUT=*                                                         
-//SORTIN    DD DSN=&&FORMAT,                                                    
-//             DISP=(OLD,PASS)                                                  
+//*SORTIN    DD DSN=&&FORMAT,                                                   
+//SORTIN    DD DSN=TGW.RCPOC.MRFORMTE.OUT,DISP=SHR                              
+//*             DISP=(OLD,PASS)                                                 
 //SORTOUT   DD DSN=&&SORTED,                                                    
 //             DISP=(NEW,PASS),                                                 
 //             UNIT=WORK,                                                       
@@ -132,5 +133,6 @@
 //SMTPOUT   DD SYSOUT=(B,SMTP)                                                  
 //SYSOUT    DD SYSOUT=&OUTJ                                                     
 //SYSUDUMP  DD SYSOUT=&OUTJ                                                     
-//SMTPIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(GB1000A3),                           
+//*SMTPIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(GB1000A3),                          
+//SMTPIN    DD DSN=TGW.RC.POC.CTLCARDS(GB1000A3),                               
 //             DISP=SHR                                                         
