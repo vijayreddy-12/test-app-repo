@@ -1,4 +1,0 @@
-  DSN SYSTEM(PDBC)                                                              
-      RUN PROGRAM(GCCPSCD2) -                                                   
-      PLAN(YCBTCHP1)                                                            
-  END                                                                           
