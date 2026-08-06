@@ -1,0 +1,31 @@
+//PYCRPT03 JOB (GB-YC91),'PYCRPT03',                                    00001000
+//        MSGCLASS=A,CLASS=P,REGION=5000K                               00002000
+//*                                                                     00002100
+/*JOBPARM R=M04A,L=999999                                               00003000
+//*                                                                     00003100
+//*LOGONID PYC                                                          00004000
+//*                                                                     00010500
+//GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)                 00010705
+//*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,                 00010803
+//*      TEN.GROUP.TEST.STANDARD.PROCLIB,                               00010903
+//*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,                             00011003
+//*      PEN.GROUP.PROD.STANDARD.PROCLIB)                               00011103
+//*                                                                     00011203
+//*GBSET  INCLUDE MEMBER=J2SETD                                         00011305
+//GBSET  INCLUDE MEMBER=J2SETP                                          00011405
+//*                                                                     00011503
+//GBLOAD INCLUDE MEMBER=J2DB2                                           00011603
+//*                                                                     00011703
+//********************************************************************* 00011803
+//*-------------------------------------------------------------------* 00011900
+//*                                                                   * 00012000
+//*                                                                   * 00012100
+//* THIS JOB EXTRACT AND PREPARE MONTHLY REPORT FROM CPM DATABASE     * 00012202
+//* FOR PLAN ADMINISTRTOR DETAILS AS PER THE REQUIRMENT UNDER TL376854* 00012302
+//*                                                                   * 00012500
+//*-------------------------------------------------------------------* 00012600
+//*                                                                   * 00012700
+//********************************************************************* 00012800
+//*                                                                     00012900
+//YCRPT03 EXEC YCRPT03                                                  00013005
+//*                                                                     00014000

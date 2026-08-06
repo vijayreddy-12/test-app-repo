@@ -1,0 +1,27 @@
+//PYCRPT06 JOB (GB-YC91),'PYCRPT06',                                    00010006
+//        MSGCLASS=A,CLASS=P                                            00020006
+//*                                                                     00030000
+/*JOBPARM R=M04A,L=999999                                               00040000
+//*                                                                     00050000
+//*LOGONID PYC                                                          00060000
+//*                                                                     00070000
+//GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)                 00080006
+//*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,                 00090000
+//*      TEN.GROUP.TEST.STANDARD.PROCLIB,                               00100000
+//*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,                             00110000
+//*      PEN.GROUP.PROD.STANDARD.PROCLIB)                               00120000
+//*                                                                     00130000
+//GBSET  INCLUDE MEMBER=J2SETP                                          00150006
+//*                                                                     00160000
+//GBLOAD INCLUDE MEMBER=J2DB2                                           00170000
+//*                                                                     00180000
+//********************************************************************* 00190000
+//*                                                                   * 00200007
+//* THIS JOB PREPARES A REPORT ON ALL ACTIVE GRP/DIVS HAVING          * 00262007
+//* INFORMATION ABOUT SITE AUTHORITY,ACCUM BALANCES, AND ALL OTHER    * 00263007
+//* OCS FLAGS IN CPD                                                  * 00264007
+//*                                                                   * 00270000
+//********************************************************************* 00280000
+//*                                                                     00290000
+//YCRPT06 EXEC YCRPT06                                                  00300006
+//*                                                                     00310006
