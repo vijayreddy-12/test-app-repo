@@ -1,0 +1,153 @@
+//YCRPT03  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX            00010000
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL             00020000
+//         DTECARD='PGW.PROD.DATEFILE', ** DATE CARD                    00030000
+//         GEN0='(+0)',                 ** LEVEL +0 GENERATION          00040000
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                 00050000
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                  00060000
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                00070000
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                 00080000
+//         STAT='PYC.HCS.YCRPT03',        ** OUTPUT FILE PREFIX         00090000
+//         LVL='PROD',                    ** OUTPUT FILE LEVEL          00100000
+//         UNIT=PROD,                     ** SYSTEM UNIT                00110000
+//         SPACE1='(CYL,(500,500),RLSE)',  ** SPACE FOR REPORT          00120000
+//         SPACE2='(TRK,(5,5),RLSE)'    ** SPACE FOR DATECARD           00130000
+//*                                                                     00140000
+//*                                                                     00150000
+//********************************************************************* 00160000
+//* THIS JOB EXTRACT AND PREPARE MONTHLY REPORT FROM CPM DATABASE     * 00170000
+//* FOR PLAN ADMINISTRTOR DETAILS AS PER THE REQUIRMENT UNDER TL376854* 00180000
+//********************************************************************* 00190000
+//* MODIFICATION LOG:                                                 * 00200000
+//* ~~~~~~~~~~~~~~~~~                                                 * 00210000
+//* 2018-10-25    - NEW CREATION (TL376854)                           * 00220000
+//* 2019-03-26    - Revised LAN/FTP path (TL392393)                   * 00221000
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     * 00222000
+//********************************************************************* 00230000
+//********************************************************************* 00240000
+//*                                                                   * 00250000
+//* DELETE FILES CREATED FROM PREVIOUS RUN                            * 00260000
+//*                                                                   * 00270000
+//********************************************************************* 00280000
+//*                                                                     00290000
+//CRPT0300 EXEC PGM=IDCAMS,                                             00300000
+//             COND=(0,LT)                                              00310000
+//SYSPRINT  DD SYSOUT=*                                                 00320000
+//SYSIN     DD *                                                        00330000
+   DELETE PYC.HCS.YCRPT03.PROD.EXT                                      00340000
+   DELETE PYC.HCS.YCRPT03.PROD.EXT.FMT                                  00350000
+   DELETE PYC.HCS.YCRPT03.PROD.EXT.FMT.F1                               00360000
+   DELETE PYC.HCS.YCRPT03.PROD.EXT.FMT.F2                               00370000
+   DELETE PYC.HCS.YCRPT03.PROD.FTPCARD                                  00380000
+   SET MAXCC=0                                                          00390000
+/*                                                                      00400000
+//*                                                                     00410000
+//********************************************************************* 00420000
+//*  EXTRACT THE DATA FROM CPD                                          00430000
+//********************************************************************* 00440000
+//*                                                                     00450000
+//CRPT0310 EXEC SAS,                                                    00460000
+//         COND=(0,LT),                                                 00470000
+//         WORK='4000,4000',                                            00480000
+//         REGION=0M                                                    00490000
+//*                                                                     00500000
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                            00510000
+//            DISP=SHR                                                  00520000
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                            00530000
+//            DISP=SHR                                                  00540000
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT03S1),                       00550000
+//            DISP=SHR                                                  00560000
+//*                                                                     00570000
+//SYSPRINT DD SYSOUT=*                                                  00580000
+//*                                                                     00590000
+//REPORT   DD DSN=&STAT..&LVL..EXT,                                     00600000
+//            DISP=(NEW,CATLG,DELETE),                                  00610000
+//            UNIT=&UNIT,                                               00620000
+//            SPACE=&SPACE1,                                            00630000
+//            DCB=(RECFM=FB,LRECL=500,BLKSIZE=0)                        00640000
+//*                                                                     00650000
+//********************************************************************* 00660000
+//*  REPLACE ALL COMMAS WITH SPACE FROM EXT FILE                     *  00670000
+//*  and ALL ~ (A1) WITH COMMA (6B) TO MAKE IT COMMA SEPERATED FILE     00680000
+//********************************************************************* 00690000
+//*                                                                     00700000
+//CRPT0320 EXEC PGM=SORT,                                               00710000
+//         COND=(4,LT)                                                  00720000
+//*                                                                     00730000
+//SYSOUT   DD SYSOUT=*                                                  00740000
+//SORTIN   DD DSN=&STAT..&LVL..EXT,                                     00750000
+//            DISP=SHR                                                  00760000
+//SORTOUT  DD DSN=&STAT..&LVL..EXT.FMT,                                 00770000
+//            DISP=(NEW,CATLG,DELETE),                                  00780000
+//            UNIT=&UNIT,                                               00790000
+//            SPACE=&SPACE1,                                            00800000
+//            DCB=(RECFM=FB,LRECL=500,BLKSIZE=0)                        00810000
+//*                                                                     00820000
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT03C1),                    00830000
+//            DISP=SHR                                                  00840000
+//*                                                                     00850000
+//********************************************************************* 00860000
+//*  SPLIT THE FILE INTO TWO AS THE NO. OF RECORDS IS HUGE.          *  00870000
+//********************************************************************* 00880000
+//*                                                                     00890000
+//CRPT0330 EXEC PGM=SORT,                                               00900000
+//         COND=(4,LT)                                                  00910000
+//SYSOUT   DD SYSOUT=*                                                  00920000
+//SORTIN   DD DSN=&STAT..&LVL..EXT.FMT,                                 00930000
+//            DISP=SHR                                                  00940000
+//SORTOF01 DD DSN=&STAT..&LVL..EXT.FMT.F1,                              00950000
+//            DISP=(NEW,CATLG,DELETE),                                  00960000
+//            UNIT=&UNIT,                                               00970000
+//            SPACE=&SPACE1,                                            00980000
+//            DCB=(RECFM=FB,LRECL=500,BLKSIZE=0)                        00990000
+//SORTOF02 DD DSN=&STAT..&LVL..EXT.FMT.F2,                              01000000
+//            DISP=(NEW,CATLG,DELETE),                                  01010000
+//            UNIT=&UNIT,                                               01020000
+//            SPACE=&SPACE1,                                            01030000
+//            DCB=(RECFM=FB,LRECL=500,BLKSIZE=0)                        01040000
+//*                                                                     01050000
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT03C2),                    01060000
+//            DISP=SHR                                                  01070000
+//*                                                                     01080000
+//********************************************************************* 01090000
+//*  PREPARE THE FTP CARD                                               01100000
+//********************************************************************* 01110000
+//*                                                                     01120000
+//CRPT0340 EXEC SAS,                                                    01130000
+//         COND=(4,LT),                                                 01140000
+//         WORK='4000,4000',                                            01150000
+//         REGION=0M                                                    01160000
+//*                                                                     01170000
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                            01180000
+//            DISP=SHR                                                  01190000
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                            01200000
+//            DISP=SHR                                                  01210000
+//DATEFILE DD DSN=&DTECARD&GEN0,                                        01220000
+//            DISP=SHR                                                  01230000
+//REPORT1  DD DSN=&STAT..&LVL..EXT.FMT.F1,                              01240000
+//            DISP=SHR                                                  01250000
+//REPORT2  DD DSN=&STAT..&LVL..EXT.FMT.F2,                              01260000
+//            DISP=SHR                                                  01270000
+//FTPCARD  DD DSN=&STAT..&LVL..FTPCARD,                                 01280000
+//            DISP=(NEW,CATLG,DELETE),                                  01290000
+//            UNIT=&UNIT,                                               01300000
+//            SPACE=&SPACE2,                                            01310000
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)                         01320000
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT03S2),                       01330000
+//            DISP=SHR                                                  01340000
+//*                                                                     01350000
+//********************************************************************* 01360000
+//*                                                                   * 01370000
+//*          FTP THE reports to LAN                                   * 01380000
+//* (\\entsserver24\dfs\shared\can\EUC Technology\Applications\       * 01390000
+//*      GroupLinks\Input\CPM\)                                         01400000
+//*      VIRTUAL DIRECTORY --> TL392393                                 01401000
+//********************************************************************* 01410000
+//CRPT0350 EXEC PGM=FTP,                                                01420000
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',       01430000
+//             COND=(4,LT)                                              01440000
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                          01451000
+//            DISP=SHR                                                  01460000
+//INPUT    DD DSN=&STAT..&LVL..FTPCARD,                                 01470000
+//            DISP=SHR                                                  01480000
+//OUTPUT   DD SYSOUT=*                                                  01490000
+//SYSPRINT DD SYSOUT=*                                                  01500000

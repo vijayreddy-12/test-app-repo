@@ -1,0 +1,360 @@
+//YCRPT01  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         SSID=PDBC,                     ** DB2 SYSTEM                         
+//         SYSPARM=P1,                    ** DB2 SYSTEM                         
+//         STAT='PYC.HCS.YCRPT01',        ** OUTPUT FILE PREFIX                 
+//         LVL='PROD',                    ** OUTPUT FILE LEVEL                  
+//         GEN1='(+1)',                   ** PLUS 1 GDG                         
+//         MAIL='(B,SMTP)',               ** SYSOUT FOR MAIL                    
+//         UNIT=PROD                      ** SYSTEM UNIT                        
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//* THIS JOB IS CREATED EXTRACT AND PREPARE                           *         
+//* Monthly report of LTD/STD & AMS report registration on PA SITE    *         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2015-09-25    - CREATION                                          *         
+//* 2015-11-24    - INPUT IN STEP02 CHANGED TO USE ONLY CURENT GEN    *         
+//* 2016-08-25    - CONVERT JOB TO INSTITUTION STANDARDS              *         
+//*********************************************************************         
+//*                                                                             
+//STEP01   EXEC SAS,                                                            
+//         COND=(0,LT),                                                         
+//         WORK='400,400',                                                      
+//         REGION=0M,                                                           
+//         PARM='SYSPARM="&SSID,&SYSPARM"'                                      
+//*                                                                             
+//*--- SAS FILES -----------------------------------------------------*         
+//*                                                                             
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                                    
+//            DISP=SHR                                                          
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(YCRPT01S),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//*--- OUT FILES -----------------------------------------------------*         
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//*                                                                             
+//REPORT   DD DSN=&STAT..&LVL..EXT&GEN1,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,10),RLSE),                                          
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//HDRCOUNT DD DSN=&STAT..&LVL..EXT.HDRCOUNT,                                    
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,10),RLSE),                                          
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//HDRDATA  DD DSN=&STAT..&LVL..EXT.HDRDATA,                                     
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,10),RLSE),                                          
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  PREPARE THE INITIAL COUNT FILE                                   *         
+//*********************************************************************         
+//*                                                                             
+//STEP02   EXEC PGM=ICETOOL,                                                    
+//         COND=(0,LT)                                                          
+//*                                                                             
+//TOOLMSG  DD SYSOUT=*                                                          
+//DFSMSG   DD SYSOUT=*                                                          
+//*                                                                             
+//INPUT    DD DSN=&STAT..&LVL..EXT&GEN1,                                        
+//            DISP=SHR                                                          
+//*                                                                             
+//TEMP1    DD DSN=&STAT..&LVL..EXT.DATA,                                        
+//            DISP=(NEW,CATLG,CATLG),                                           
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,10),RLSE),                                          
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//OUTPUT   DD DSN=&STAT..&LVL..EXT.COUNT,                                       
+//            DISP=(NEW,CATLG,CATLG),                                           
+//            UNIT=&UNIT,                                                       
+//            SPACE=(TRK,(100,100),RLSE),                                       
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//TOOLIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT011),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//CTL1CNTL DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT012),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  REPLACE ALL COMMAS WITH SPACE FROM DATA FILE                     *         
+//*********************************************************************         
+//*                                                                             
+//STEP03   EXEC PGM=SORT,                                                       
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSOUT   DD SYSOUT=*                                                          
+//*                                                                             
+//SORTIN   DD DSN=&STAT..&LVL..EXT.DATA,                                        
+//            DISP=SHR                                                          
+//*                                                                             
+//SORTOUT  DD DSN=&STAT..&LVL..EXT.DATA.A,                                      
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT013),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  REPLACE ALL SEMICOLON(5E) WITH COMMA (6B) TO MAKE IT                       
+//*  COMMA SEPARATED FILE (CSV)                                                 
+//*********************************************************************         
+//*                                                                             
+//STEP04   EXEC PGM=SORT,                                                       
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSOUT   DD SYSOUT=*                                                          
+//*                                                                             
+//SORTIN   DD DSN=&STAT..&LVL..EXT.DATA.A,                                      
+//            DISP=SHR                                                          
+//*                                                                             
+//SORTOUT  DD DSN=&STAT..&LVL..EXT.DATA.B,                                      
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT014),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  MERGE HEADER REC WITH DATA                                                 
+//*********************************************************************         
+//*                                                                             
+//STEP05   EXEC PGM=IEBGENER,                                                   
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//SYSIN    DD DUMMY                                                             
+//*                                                                             
+//SYSUT1   DD DSN=&STAT..&LVL..EXT.HDRDATA,                                     
+//            DISP=SHR                                                          
+//         DD DSN=&STAT..&LVL..EXT.DATA.B,                                      
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSUT2   DD DSN=&STAT..&LVL..EXT.DATAMRG&GEN1,                                
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(CYL,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  REPLACE ALL COMMAS WITH SPACE FROM COUNT FILE                              
+//*********************************************************************         
+//*                                                                             
+//STEP06   EXEC PGM=SORT,                                                       
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSOUT   DD SYSOUT=*                                                          
+//*                                                                             
+//SORTIN   DD DSN=&STAT..&LVL..EXT.COUNT,                                       
+//            DISP=SHR                                                          
+//*                                                                             
+//SORTOUT  DD DSN=&STAT..&LVL..EXT.COUNT.A,                                     
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(TRK,(100,100),RLSE),                                       
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT015),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  REPLACE ALL SEMICOLON(5E) WITH COMMA (6B) TO MAKE IT                       
+//*  COMMA SEPARATED FILE (CSV)                                                 
+//*********************************************************************         
+//*                                                                             
+//STEP07   EXEC PGM=SORT,                                                       
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSOUT   DD SYSOUT=*                                                          
+//*                                                                             
+//SORTIN   DD DSN=&STAT..&LVL..EXT.COUNT.A,                                     
+//            DISP=SHR                                                          
+//*                                                                             
+//SORTOUT  DD DSN=&STAT..&LVL..EXT.COUNT.B,                                     
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(TRK,(100,100),RLSE),                                       
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT016),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  MERGE HEADER REC WITH COUNT                                                
+//*********************************************************************         
+//*                                                                             
+//STEP08   EXEC PGM=IEBGENER,                                                   
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//SYSIN    DD DUMMY                                                             
+//*                                                                             
+//SYSUT1   DD DSN=&STAT..&LVL..EXT.HDRCOUNT,                                    
+//            DISP=SHR                                                          
+//         DD DSN=&STAT..&LVL..EXT.COUNT.B,                                     
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSUT2   DD DSN=&STAT..&LVL..EXT.COUNTMRG&GEN1,                               
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=(TRK,(100,100),RLSE),                                       
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  FORMAT CONTROL CARD YCRPT017 TO 120 CARACTERS                              
+//*********************************************************************         
+//*                                                                             
+//STEP09   EXEC PGM=FILEAID,                                                    
+//         COND=(0,LT)                                                          
+//*                                                                             
+//DD01     DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT017),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//DD01O    DD DSN=&&YCRPT017,                                                   
+//            DISP=(NEW,PASS,DELETE),                                           
+//            UNIT=SYSDA,                                                       
+//            SPACE=(CYL,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT019),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//SYSLIST  DD SYSOUT=*                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  FORMAT CONTROL CARD YCRPT018 TO 120 CARACTERS                              
+//*********************************************************************         
+//*                                                                             
+//STEP10   EXEC PGM=FILEAID,                                                    
+//         COND=(0,LT)                                                          
+//*                                                                             
+//DD01     DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT018),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//DD01O    DD DSN=&&YCRPT018,                                                   
+//            DISP=(NEW,PASS,DELETE),                                           
+//            UNIT=SYSDA,                                                       
+//            SPACE=(CYL,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT019),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//SYSLIST  DD SYSOUT=*                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  MERGE CTRCARDS & FILES TO LRECL=120                                        
+//*********************************************************************         
+//*                                                                             
+//STEP11   EXEC PGM=FILEAID,                                                    
+//         COND=(0,LT)                                                          
+//*                                                                             
+//DD01     DD DSN=&&YCRPT017,                                                   
+//            DISP=(OLD,PASS)                                                   
+//         DD DSN=&STAT..&LVL..EXT.DATAMRG&GEN1,                                
+//            DISP=SHR                                                          
+//         DD DSN=&&YCRPT018,                                                   
+//            DISP=(OLD,PASS)                                                   
+//         DD DSN=&STAT..&LVL..EXT.COUNTMRG&GEN1,                               
+//            DISP=SHR                                                          
+//*                                                                             
+//DD01O    DD DSN=&STAT..&LVL..SMTPFILE,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=SYSDA,                                                       
+//            SPACE=(CYL,(5,5),RLSE),                                           
+//            DCB=(RECFM=FB,LRECL=120,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT020),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//SYSLIST  DD SYSOUT=*                                                          
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  SEND AN E-MAIL TO TRANSFER DATA AND COUNT FILE AS ATTACHMENT               
+//*********************************************************************         
+//*                                                                             
+//STEP12   EXEC PGM=IEBGENER,                                                   
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSIN    DD DUMMY                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//*                                                                             
+//SYSUT1   DD DSN=&STAT..&LVL..SMTPFILE,                                        
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSUT2   DD SYSOUT=&MAIL                                                      
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//*  DELETE INTERMEDIATE FILES                                                  
+//*********************************************************************         
+//*                                                                             
+//STEP13   EXEC PGM=IEFBR14,                                                    
+//         COND=(0,LT)                                                          
+//*                                                                             
+//SYSIN    DD DUMMY                                                             
+//SYSOUT   DD SYSOUT=*                                                          
+//SYSPRINT DD SYSOUT=*                                                          
+//*                                                                             
+//DD01     DD DSN=&STAT..&LVL..EXT.HDRCOUNT,                                    
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD02     DD DSN=&STAT..&LVL..EXT.HDRDATA,                                     
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD03     DD DSN=&STAT..&LVL..EXT.COUNT,                                       
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD04     DD DSN=&STAT..&LVL..EXT.COUNT.A,                                     
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD05     DD DSN=&STAT..&LVL..EXT.COUNT.B,                                     
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD06     DD DSN=&STAT..&LVL..EXT.DATA,                                        
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD07     DD DSN=&STAT..&LVL..EXT.DATA.A,                                      
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD08     DD DSN=&STAT..&LVL..EXT.DATA.B,                                      
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//DD09     DD DSN=&STAT..&LVL..SMTPFILE,                                        
+//            DISP=(OLD,DELETE,DELETE),SPACE=(TRK,0)                            
+//*                                                                             
+//*                                                                             

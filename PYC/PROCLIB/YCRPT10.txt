@@ -1,0 +1,171 @@
+//YCRPT10 PROC CSTAT='PEN.GROUP',             ** CTLCARDS PREFIX                
+//             CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                 
+//             DTECARD='PGW.PROD.DATEFILE',   ** DATE CARD                      
+//             LVL='PROD',                    ** OUTPUT FILE LEVEL              
+//             SASSTAT='PEN.GROUP',           ** SAS PREFIX                     
+//             SASLVL='PROD.STANDARD',        ** SAS LEVEL                      
+//             STAT='PYC.HCS.YCRPT10',        ** OUTPUT FILE PREFIX             
+//             SPACE1='(TRK,(5,5),RLSE)',     ** SPACE FOR DATECARD             
+//             UNIT=PROD                      ** SYSTEM UNIT                    
+//*                                                                             
+//*********************************************************************         
+//*  DELETE PREVIOUS REPORT FILE                                                
+//*********************************************************************         
+//*                                                                             
+//STEP00  EXEC PGM=IEFBR14,                                                     
+//             COND=(4,LT),                                                     
+//             REGION=8M                                                        
+//DELRPT    DD DSN=&STAT..&LVL..GRPDIV.REPORT.V2,                               
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT.,MGMTCLAS=MC#3MTH,                                    
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=700,BLKSIZE=0)                               
+//*                                                                             
+//******************************************************************    00060000
+//* GET THE INFO FOR "USER PROFILE" TAB FROM CPM                                
+//******************************************************************    00060000
+//*                                                                             
+//STEP01  EXEC SAS,WORK='400,400',REGION=0M                                     
+//SYSPRINT DD  SYSOUT=Z                                                         
+//MACROS   DD  DSN=PEN.GROUP.PROD.STANDARD.SASMAC,                              
+//             DISP=SHR                                                         
+//DATEFILE DD  DISP=SHR,DSN=&DTECARD.(0)                                        
+//REPORT   DD  DSN=&STAT..&LVL..USERDET.EXTRACT,                                
+//             DISP=(NEW,CATLG,CATLG),MGMTCLAS=MC#3MTH,                         
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=714,BLKSIZE=0)                               
+//DATERNGE DD  DSN=&&DATRNG,                                                    
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=719,BLKSIZE=0)                               
+//SYSIN    DD  DSN=&SASSTAT..&SASLVL..SAS(CRPT1001),                            
+//             DISP=SHR                                                         
+//FT12F001 DD  SYSOUT=*                                                         
+//*                                                                             
+//***************************************************************               
+//*                                                                             
+//***************************************************************               
+//*                                                                             
+//STEP02  EXEC SAS,WORK='999999,999999',REGION=0M                               
+//SYSPRINT DD  SYSOUT=Z                                                         
+//MACROS   DD  DSN=PEN.GROUP.PROD.STANDARD.SASMAC,                              
+//             DISP=SHR                                                         
+//PASECUPD DD  DSN=&STAT..&LVL..PASECUPD,                                       
+//             DISP=(NEW,CATLG,CATLG),                                          
+//             MGMTCLAS=MC#3MTH,                                                
+//             SPACE=&SPACE1.,UNIT=&UNIT.,                                      
+//             DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)                               
+//SYSIN    DD  DSN=&SASSTAT..&SASLVL..SAS(CRPT1002),                            
+//             DISP=SHR                                                         
+//*                                                                             
+//***************************************************************               
+//*                                                                             
+//***************************************************************               
+//*                                                                             
+//STEP03  EXEC SAS,                                                             
+//             COND=(4,LT),                                                     
+//             REGION=4000K,                                                    
+//             WORK='800,400'                                                   
+//GRPNUSER DD  DSN=&STAT..&LVL..USERDET.EXTRACT,                                
+//             DISP=SHR                                                         
+//PASECUPD DD  DSN=&STAT..&LVL..PASECUPD,                                       
+//             DISP=SHR                                                         
+//REPORT   DD  DSN=&STAT..&LVL..GRPDIV.REPORT.V2,                               
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT.,MGMTCLAS=MC#3MTH,                                    
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=719,BLKSIZE=0)                               
+//SYSIN    DD  DSN=&SASSTAT..&SASLVL..SAS(CRPT1003),                            
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*  SET UP EMAIL HEADER - REQUIRED SO THAT HEADER LRECL MATCHES REPORT         
+//*********************************************************************         
+//*                                                                             
+//STEP04  EXEC PGM=FILEAID,                                                     
+//             REGION=4096K                                                     
+//*                                                                             
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSLIST   DD SYSOUT=*                                                         
+//SYSTOTAL  DD SYSOUT=*                                                         
+//*                                                                             
+//DD01      DD DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(CRPT10EM)                   
+//*                                                                             
+//DD01O     DD DSN=&&EMLADR,                                                    
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=719,BLKSIZE=0)                               
+//*                                                                             
+//SYSIN     DD DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(CRPT10S2)                   
+//*                                                                             
+//*********************************************************************         
+//*  COMPLETE HEADER - REQUIRED TO SEPARATE EMAIL BODY FROM ATTACHMENT          
+//*********************************************************************         
+//*                                                                             
+//STEP04A EXEC PGM=FILEAID,                                                     
+//             REGION=4096K                                                     
+//*                                                                             
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSLIST   DD SYSOUT=*                                                         
+//SYSTOTAL  DD SYSOUT=*                                                         
+//*                                                                             
+//DD01      DD DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(CRPT10SB)                   
+//DD01O     DD DSN=&&SMPLBNDY,                                                  
+//             DISP=(NEW,PASS,DELETE),                                          
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=719,BLKSIZE=0)                               
+//*                                                                             
+//SYSIN     DD DISP=SHR,DSN=&CSTAT..&CLVL..CTLCARDS(CRPT10S2)                   
+//*                                                                             
+//*********************************************************************         
+//*  PLACE HEADER ON REPORT                                                     
+//*********************************************************************         
+//*                                                                             
+//STEP05   EXEC PGM=IEBGENER                                                    
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSIN     DD DUMMY                                                            
+//SYSUT1    DD DISP=(OLD,PASS),DSN=&&EMLADR                                     
+//          DD DISP=(OLD,PASS),DSN=&&DATRNG                                     
+//          DD DISP=(OLD,PASS),DSN=&&SMPLBNDY                                   
+//          DD DSN=&STAT..&LVL..GRPDIV.REPORT.V2,                               
+//             DISP=SHR                                                         
+//*                                                                             
+//SYSUT2    DD DSN=&STAT..&LVL..GRPDIV.RPT.EMAIL,                               
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT.,                                                     
+//             SPACE=&SPACE1.,                                                  
+//             DCB=(RECFM=FB,LRECL=719,BLKSIZE=0)                               
+//*                                                                             
+//*********************************************************************         
+//*  EMAIL THE FILES                                                            
+//*********************************************************************         
+//*                                                                             
+//STEP06   EXEC PGM=IEBGENER                                                    
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSIN     DD DUMMY                                                            
+//SYSUT1    DD DISP=SHR,DSN=&STAT..&LVL..GRPDIV.RPT.EMAIL                       
+//SYSUT2    DD SYSOUT=(B,SMTP)                                                  
+//*                                                                             
+//*********************************************************************         
+//*  DELETE TEMPORARY CONTROL AND EXTRACT FILES                                 
+//*********************************************************************         
+//*                                                                             
+//STEP07  EXEC PGM=IEFBR14,                                                     
+//             COND=(4,LT),                                                     
+//             REGION=8M                                                        
+//DELEXT    DD DSN=&STAT..&LVL..USERDET.EXTRACT,                                
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             SPACE=&SPACE1.                                                   
+//DELFCTN   DD DSN=&STAT..&LVL..PASECUPD,                                       
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             SPACE=&SPACE1.                                                   
+//DELEML    DD DSN=&STAT..&LVL..GRPDIV.RPT.EMAIL,                               
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             SPACE=&SPACE1.                                                   
+//*                                                                             

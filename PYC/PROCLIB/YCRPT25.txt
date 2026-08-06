@@ -1,0 +1,177 @@
+//YCRPT25  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         OUTA='*',                      ** SYSOUT CLASS                       
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         STAT='PYC.YCRPT25',            ** OUTPUT FILE PREFIX                 
+//         UNIT=PROD,                     ** SYSTEM UNIT                        
+//         SPACE1='(CYL,(2000,500),RLSE)', ** SPACE                             
+//         SPACE2='(CYL,(150,15),RLSE)'    ** SPACE                             
+//*                                                                             
+//*********************************************************************         
+//* THIS JOB IS A CPM DATA PULL OF ACTIVE USERS OF THE PLAN MEMBER    *         
+//* SITE - REFERENCE CDTASMGBS-1437                                   *         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2022-04-01    - NEW CREATION (CDTASMGBS-1437)                     *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     *         
+//*********************************************************************         
+//*                                                                             
+//*********************************************************************         
+//*  EXTRACT OF PLAN MEMBERS THAT ARE REGISTERED                                
+//*********************************************************************         
+//*                                                                             
+//CRPT2510 EXEC SAS,                                                            
+//         WORK='230000,23000',                                                 
+//         REGION=0M                                                            
+//*                                                                             
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT25S1),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//REPORT   DD DSN=&STAT..GRPLIST.EXTRACT1,                                      
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)                                
+//*                                                                             
+//*********************************************************************         
+//*  EXTRACT OF PLAN MEMBERS THAT ARE ACTIVATED                                 
+//*********************************************************************         
+//*                                                                             
+//CRPT2520 EXEC SAS,                                                            
+//         WORK='300000,30000',                                                 
+//         REGION=0M                                                            
+//*                                                                             
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT25S2),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//REPORT   DD DSN=&STAT..GRPLIST.EXTRACT2,                                      
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)                                
+//*                                                                             
+//*********************************************************************         
+//*  EXTRACT OF PLAN MEMBERS THAT ARE REGISTERED & ACTIVATED                    
+//*********************************************************************         
+//*                                                                             
+//CRPT2530 EXEC SAS,                                                            
+//         WORK='500000,50000',                                                 
+//         REGION=0M                                                            
+//*                                                                             
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                                    
+//            DISP=SHR                                                          
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT25S3),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//REGISTER DD DSN=&STAT..GRPLIST.EXTRACT1,                                      
+//            DISP=(OLD,DELETE,KEEP)                                            
+//ACTIVATE DD DSN=&STAT..GRPLIST.EXTRACT2,                                      
+//            DISP=(OLD,DELETE,KEEP)                                            
+//REPORT   DD DSN=&STAT..GRPLIST.MERGED.REGDACTV,                               
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)                                
+//*                                                                             
+//*********************************************************************         
+//*  SPLIT LARGE EXTRACT INTO 600K PIECES                                       
+//*********************************************************************         
+//*                                                                             
+//CRPT2535 EXEC PGM=ICEMAN                                                      
+//SORTIN   DD DSN=&STAT..GRPLIST.MERGED.REGDACTV,                               
+//            DISP=(OLD,DELETE,KEEP)                                            
+//OUT01    DD DSN=&STAT..EXT.P01,                                               
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE2,                                                    
+//            DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)                                
+//OUT02    DD DSN=&STAT..EXT.P02,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT03    DD DSN=&STAT..EXT.P03,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT04    DD DSN=&STAT..EXT.P04,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT05    DD DSN=&STAT..EXT.P05,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT06    DD DSN=&STAT..EXT.P06,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT07    DD DSN=&STAT..EXT.P07,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT08    DD DSN=&STAT..EXT.P08,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT09    DD DSN=&STAT..EXT.P09,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT10    DD DSN=&STAT..EXT.P10,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT11    DD DSN=&STAT..EXT.P11,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT12    DD DSN=&STAT..EXT.P12,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT13    DD DSN=&STAT..EXT.P13,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT14    DD DSN=&STAT..EXT.P14,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//OUT15    DD DSN=&STAT..EXT.P15,                                               
+//            DISP=(,CATLG,DELETE),LIKE=&STAT..EXT.P01                          
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT2535),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*********************************************************************         
+//*  DETERMINE WHICH EXTRACT FILES ARE NOT EMPTY AND CREATE AN FTP CARD         
+//*  FILE THAT INCLUDES A DATE IN DSN FOR ONLY FILES THAT ARE NOT EMPTY         
+//*********************************************************************         
+//*                                                                             
+//CRPT2540 EXEC PGM=IKJEFT01                                                    
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT2540),                           
+//             DISP=SHR                                                         
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*                                                                             
+//*********************************************************************         
+//*  FTP THE NON EMPTY EXTRACTS TO THE LAN                                      
+//*  FOLDER PATH:                                                               
+//* \\ENTSSERVER21.AMERICAS.MANULIFE.NET\DFS\SHARED\CAN\AFFINITY\               
+//*   SHAREDATA\EVERYONE\AFFINITYMISREPORTS\PROD\NONTRAVEL\CPM                  
+//*  VIRTUAL DIRECTORY --> J1437 (REQ03717423)                                  
+//*********************************************************************         
+//*                                                                             
+//CRPT2550 EXEC PGM=FTP,                                                        
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',               
+//             COND=(4,LT)                                                      
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                  
+//            DISP=SHR                                                          
+//INPUT    DD *                                                                 
+CD J1437                                                                        
+LS -L                                                                           
+//         DD DSN=&STAT..FTPCARD,                                               
+//            DISP=SHR                                                          
+//         DD *                                                                 
+LS -L                                                                           
+QUIT                                                                            
+//OUTPUT   DD SYSOUT=&OUTA                                                      
+//SYSPRINT DD SYSOUT=&OUTA                                                      

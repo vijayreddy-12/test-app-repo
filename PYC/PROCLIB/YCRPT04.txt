@@ -1,0 +1,169 @@
+//YCRPT04  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         DTECARD='PGW.PROD.DATEFILE', ** DATE CARD                            
+//         GEN0='(+0)',                 ** LEVEL +0 GENERATION                  
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         STAT='PYC.HCS.YCRPT04',        ** OUTPUT FILE PREFIX                 
+//         LVL='PROD',                    ** OUTPUT FILE LEVEL                  
+//         UNIT=PROD,                     ** SYSTEM UNIT                        
+//         SPACE1='(CYL,(500,500),RLSE)',  ** SPACE FOR REPORT                  
+//         SPACE2='(TRK,(5,5),RLSE)'    ** SPACE FOR DATECARD                   
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//* THIS JOB EXTRACT AND PREPARE MONTHLY REPORT FROM CPM DATABASE     *         
+//* FOR PLAN ADMINISTRATOR DETAILS WITH EMAIL AND LANGUAGES.          *         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2018-10-31    - NEW CREATION (TL362343)                           *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     *         
+//*********************************************************************         
+//*********************************************************************         
+//*                                                                   *         
+//* DELETE FILES CREATED FROM PREVIOUS RUN                            *         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//CRPT0400 EXEC PGM=IDCAMS,                                                     
+//             COND=(0,LT)                                                      
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSIN     DD *                                                                
+   DELETE PYC.HCS.YCRPT04.PROD.EXT                                              
+   DELETE PYC.HCS.YCRPT04.PROD.EXT.FMT                                          
+   DELETE PYC.HCS.YCRPT04.PROD.EXT.FMT.F1                                       
+   DELETE PYC.HCS.YCRPT04.PROD.EXT.FMT.F2                                       
+   DELETE PYC.HCS.YCRPT04.PROD.FTPCARD                                          
+   DELETE PYC.HCS.YCRPT04.PROD.SMTPCARD                                         
+   SET MAXCC=0                                                                  
+/*                                                                              
+//*                                                                             
+//*********************************************************************         
+//*  EXTRACT THE DATA FROM CPD                                                  
+//*********************************************************************         
+//*                                                                             
+//CRPT0410 EXEC SAS,                                                            
+//         COND=(0,LT),                                                         
+//         WORK='4000,4000',                                                    
+//         REGION=0M                                                            
+//*                                                                             
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                                    
+//            DISP=SHR                                                          
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT04S1),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=*                                                          
+//*                                                                             
+//REPORT   DD DSN=&STAT..&LVL..EXT,                                             
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=573,BLKSIZE=0)                                
+//*                                                                             
+//*********************************************************************         
+//*  REPLACE ALL COMMAS WITH SPACE FROM EXT FILE                     *          
+//*  and ALL ~ (A1) WITH COMMA (6B) TO MAKE IT COMMA SEPERATED FILE             
+//*********************************************************************         
+//*                                                                             
+//CRPT0420 EXEC PGM=SORT,                                                       
+//         COND=(4,LT)                                                          
+//*                                                                             
+//SYSOUT   DD SYSOUT=*                                                          
+//SORTIN   DD DSN=&STAT..&LVL..EXT,                                             
+//            DISP=SHR                                                          
+//SORTOUT  DD DSN=&STAT..&LVL..EXT.FMT,                                         
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=573,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT04C1),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*********************************************************************         
+//*  SPLIT THE FILE INTO TWO AS THE NO. OF RECORDS IS HUGE.          *          
+//*********************************************************************         
+//*                                                                             
+//CRPT0430 EXEC PGM=SORT,                                                       
+//         COND=(4,LT)                                                          
+//SYSOUT   DD SYSOUT=*                                                          
+//SORTIN   DD DSN=&STAT..&LVL..EXT.FMT,                                         
+//            DISP=SHR                                                          
+//SORTOF01 DD DSN=&STAT..&LVL..EXT.FMT.F1,                                      
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=573,BLKSIZE=0)                                
+//SORTOF02 DD DSN=&STAT..&LVL..EXT.FMT.F2,                                      
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=573,BLKSIZE=0)                                
+//*                                                                             
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT04C2),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*********************************************************************         
+//*  PREPARE THE FTP CARD                                                       
+//*********************************************************************         
+//*                                                                             
+//CRPT0440 EXEC SAS,                                                            
+//         COND=(4,LT),                                                         
+//         WORK='4000,4000',                                                    
+//         REGION=0M                                                            
+//*                                                                             
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                                    
+//            DISP=SHR                                                          
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//DATEFILE DD DSN=&DTECARD&GEN0,                                                
+//            DISP=SHR                                                          
+//REPORT1  DD DSN=&STAT..&LVL..EXT.FMT.F1,                                      
+//            DISP=SHR                                                          
+//REPORT2  DD DSN=&STAT..&LVL..EXT.FMT.F2,                                      
+//            DISP=SHR                                                          
+//FTPCARD  DD DSN=&STAT..&LVL..FTPCARD,                                         
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE2,                                                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)                                 
+//SMTPCARD DD DSN=&STAT..&LVL..SMTPCARD,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE2,                                                    
+//            DCB=(RECFM=FB,LRECL=80,BLKSIZE=0)                                 
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT04S2),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//*          FTP THE reports to LAN                                   *         
+//* (S:\can\GB\CA PIA\GB PDS Control Reports\CPM - Email ID)          *         
+//*      VIRTUAL DIRECTORY --> T362343                                *         
+//*********************************************************************         
+//CRPT0450 EXEC PGM=FTP,                                                        
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',               
+//             COND=(4,LT)                                                      
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                  
+//            DISP=SHR                                                          
+//INPUT    DD DSN=&STAT..&LVL..FTPCARD,                                         
+//            DISP=SHR                                                          
+//OUTPUT   DD SYSOUT=*                                                          
+//SYSPRINT DD SYSOUT=*                                                          
+//*********************************************************************         
+//*                                                                   *         
+//*          CONFIRMATION EMAIL                                       *         
+//*                                                                   *         
+//*********************************************************************         
+//MAIL     EXEC PGM=SMTPMAIL,                                                   
+//             COND=(4,LT)                                                      
+//SMTPOUT   DD SYSOUT=(B,SMTP)                                                  
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&STAT..&LVL..SMTPCARD,                                       
+//             DISP=SHR                                                         

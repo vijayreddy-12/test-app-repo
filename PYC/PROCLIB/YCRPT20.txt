@@ -1,0 +1,86 @@
+//YCRPT20  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         OUTA='*',                      ** SYSOUT CLASS                       
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         STAT='PYC.HCS.YCRPT20',        ** OUTPUT FILE PREFIX                 
+//         UNIT=PROD,                     ** SYSTEM UNIT                        
+//         SPACE1='(CYL,(800,80),RLSE)'   ** SPACE FOR REPORT                   
+//*                                                                             
+//*********************************************************************         
+//* THIS JOB EXTRACTS & PREPARES MONTHLY REPORT FROM CPM DATABASE     *         
+//* MISSING ADDRESS REPORT FROM CPM - REFERENCE CDTASMGBS-7077        *         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2021-04-23    - NEW CREATION (CDTASMGBS-7077)                     *         
+//* 2023-01-17    - Added LOCSITE to FTP step INPUT for French chars  *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     *         
+//*********************************************************************         
+//*                                                                             
+//*********************************************************************         
+//*  EXTRACT THE DATA FROM CPD                                                  
+//*********************************************************************         
+//*                                                                             
+//CRPT2010 EXEC SAS,                                                            
+//         COND=(0,LT),                                                         
+//         WORK='5000,22500',                                                   
+//         REGION=0M                                                            
+//*                                                                             
+//INCLUDE  DD DSN=&SASSTAT..&SASLVL..SASCPY,                                    
+//            DISP=SHR                                                          
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT20S1),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//ADVEXTR  DD DSN=&STAT..ADVEXTR,                                               
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,                                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=985,BLKSIZE=0)                                
+//*                                                                             
+//*********************************************************************         
+//*  Rename ADVEXTR dataset from previous step to have a .date suffix           
+//*  and create FTP card that includes a date in DSN                            
+//*********************************************************************         
+//*                                                                             
+//CRPT2020 EXEC PGM=IKJEFT01                                                    
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT2020),                           
+//             DISP=SHR                                                         
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//*          FTP the report to the LAN                               *          
+//* (S:\can\GB\Client Financial Services\Secure Documents\                      
+//*      ManuConnect Aged Receivable\SFS Receivable Reports\Advisors            
+//*      VIRTUAL DIRECTORY --> JSD7077 (REQ02913262/RITM03792845)               
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//CRPT2030 EXEC PGM=FTP,                                                        
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',               
+//             COND=(4,LT)                                                      
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                  
+//            DISP=SHR                                                          
+//INPUT    DD *                                                                 
+cd JSD7077                                                                      
+ls -l                                                                           
+LOCSITE SBD=(IBM-1047,ISO8859-1)                                                
+//         DD DSN=&STAT..ADVEXTR.FTPCARD,                                       
+//            DISP=SHR                                                          
+//         DD *                                                                 
+ls -l                                                                           
+quit                                                                            
+//OUTPUT   DD SYSOUT=&OUTA                                                      
+//SYSPRINT DD SYSOUT=&OUTA                                                      

@@ -1,0 +1,134 @@
+//YCRPT36  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         OUTA='*',                      ** SYSOUT CLASS                       
+//         OUTMAIL='(B,SMTP)',            ** EMAIL OUTPUT                       
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         STAT='PYC.YCRPT36',            ** OUTPUT FILE PREFIX                 
+//         UNIT=PROD,                     ** SYSTEM UNIT                        
+//         SPACE='(CYL,(50,5),RLSE)'                                            
+//*                                                                             
+//*********************************************************************         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2022-08-18    - NEW CREATION (CDTASMGBS-1436)                     *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     *         
+//*********************************************************************         
+//*********************************************************************         
+//*                                                                             
+//******************************************************************            
+//* Workplace Advisor Report                                                    
+//******************************************************************            
+//*                                                                             
+//CRPT3610 EXEC SAS,                                                            
+//         WORK='400,400'                                                       
+//*                                                                             
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT36S1),                               
+//            DISP=SHR                                                          
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//ALLFORM  DD DSN=&STAT..OUT1,                                                  
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE,                                                     
+//            DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)                                
+//*                                                                             
+//******************************************************************            
+//*                                                                             
+//CRPT3620 EXEC SAS,                                                            
+//         WORK='400,400',                                                      
+//         COND=(0,NE)                                                          
+//*                                                                             
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT36S2),                               
+//            DISP=SHR                                                          
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//ALLFORM  DD DSN=&STAT..OUT2,                                                  
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE,                                                     
+//            DCB=(RECFM=FB,LRECL=100,BLKSIZE=0)                                
+//*                                                                             
+//******************************************************************            
+//*                                                                             
+//CRPT3630 EXEC PGM=SORT,COND=(0,NE)                                            
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA),                                                 
+//             SYSOUT=&OUTA                                                     
+//SORTJNF1  DD DSN=&STAT..OUT1,                                                 
+//             DISP=SHR                                                         
+//SORTJNF2  DD DSN=&STAT..OUT2,                                                 
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&STAT..JOINED,                                               
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             MGMTCLAS=MC#1WK,                                                 
+//             SPACE=&SPACE,                                                    
+//             DCB=(RECFM=FB,LRECL=86,BLKSIZE=0)                                
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3630),                           
+//             DISP=SHR                                                         
+//JNF1CNTL DD DUMMY                                                             
+//JNF2CNTL DD DUMMY                                                             
+//*                                                                             
+//******************************************************************            
+//*                                                                             
+//CRPT3640 EXEC PGM=SORT,COND=(0,NE)                                            
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD DCB=(RECFM=FBA),                                                 
+//             SYSOUT=&OUTA                                                     
+//SORTIN    DD DSN=&STAT..JOINED,                                               
+//             DISP=SHR                                                         
+//SORTOUT   DD DSN=&STAT..FINAL,                                                
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             UNIT=&UNIT,                                                      
+//             MGMTCLAS=MC#1WK,                                                 
+//             SPACE=&SPACE,                                                    
+//             DCB=(RECFM=FB,LRECL=86,BLKSIZE=0)                                
+//SYSIN     DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3640),                           
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*  FTP the extract to the LAN                                                 
+//*  Folder Path: S:\can\GB\group marketing                        -->          
+//*                 \Employee & Family Assistance Program\Reports  -->          
+//*                 \Monthly remittance                                         
+//*  VIRTUAL DIRECTORY --> J1436 (REQ04081045)                                  
+//*********************************************************************         
+//*                                                                             
+//CRPT3650 EXEC PGM=FTP,                                                        
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',               
+//             COND=(4,LT)                                                      
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                  
+//            DISP=SHR                                                          
+//INPUT    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3650),                            
+//            DISP=SHR                                                          
+//OUTPUT   DD SYSOUT=&OUTA                                                      
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//*********************************************************************         
+//* Send a notification that report has been produced and sent to LAN           
+//*********************************************************************         
+//*                                                                             
+//CRPT3660 EXEC PGM=SMTPMAIL,                                                   
+//             COND=(4,LT)                                                      
+//SMTPIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3660),                           
+//             DISP=SHR                                                         
+//          DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3661),                           
+//             DISP=SHR                                                         
+//SMTPOUT   DD SYSOUT=&OUTMAIL                                                  
+//SYSPRINT  DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SYSOUT    DD SYSOUT=*                                                         
+//                                                                              

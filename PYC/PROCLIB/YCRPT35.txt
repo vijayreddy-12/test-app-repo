@@ -1,0 +1,73 @@
+//YCRPT35  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         OUTA='*',                      ** SYSOUT CLASS                       
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         STAT='PYC.YCRPT35',            ** OUTPUT FILE PREFIX                 
+//         UNIT=PROD,                     ** SYSTEM UNIT                        
+//         SPACE='(CYL,(50,5),RLSE)'                                            
+//*                                                                             
+//*********************************************************************         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2022-08-04    - NEW CREATION (CDTASMGBS-1442)                     *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     *         
+//*********************************************************************         
+//*********************************************************************         
+//*                                                                             
+//*                                                                             
+//*********************************************************************         
+//* Based on today's date, return a low and high date in a dataset for          
+//* the previous month in a format suitable for DB2 queries. Also               
+//* create FTP card dataset that includes the date in the DSN.                  
+//*********************************************************************         
+//*                                                                             
+//CRPT3510 EXEC PGM=IKJEFT01                                                    
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3510),                           
+//             DISP=SHR                                                         
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*                                                                             
+//*********************************************************************         
+//* Create extract of PA's that have been added/deleted on CPM/CPD              
+//* during the past (previous) month.                                           
+//*********************************************************************         
+//*                                                                             
+//CRPT3520 EXEC SAS,COND=(0,NE),                                                
+//         WORK='400,400'                                                       
+//*                                                                             
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT35S1),                               
+//            DISP=SHR                                                          
+//DATEFILE DD  DSN=&STAT..DB2DATES,DISP=SHR                                     
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//REPORT  DD DSN=&STAT..EXTRACT,                                                
+//           DISP=(NEW,CATLG,DELETE),                                           
+//           UNIT=&UNIT,MGMTCLAS=MC#1WK,                                        
+//           SPACE=&SPACE,                                                      
+//           DCB=(RECFM=FB,LRECL=650,BLKSIZE=0)                                 
+//*                                                                             
+//*********************************************************************         
+//*  FTP the extract to the LAN                                                 
+//*  Folder Path: S:\CAN\Toronto\250Bloor\Rgo\PAAM Reports                      
+//*  VIRTUAL DIRECTORY --> J1442 (REQ03860734)                                  
+//*********************************************************************         
+//*                                                                             
+//CRPT3530 EXEC PGM=FTP,                                                        
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',               
+//             COND=(4,LT)                                                      
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                  
+//            DISP=SHR                                                          
+//INPUT    DD DSN=&STAT..FTPCARDS,                                              
+//            DISP=SHR                                                          
+//OUTPUT   DD SYSOUT=&OUTA                                                      
+//SYSPRINT DD SYSOUT=&OUTA                                                      

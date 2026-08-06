@@ -1,0 +1,142 @@
+//YCRPT30  PROC CSTAT='PEN.GROUP',        ** CTLCARDS PREFIX                    
+//         CLVL='PROD.STANDARD',          ** CTLCARDS LEVEL                     
+//         OUTA='*',                      ** SYSOUT CLASS                       
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//         SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         SAS1='PEN.GROUP',              ** SAS1 PREFIX                        
+//         SAS1LVL='PROD.STANDARD',       ** SAS1 LEVEL                         
+//         STAT='PYC.YCRPT30',            ** OUTPUT FILE PREFIX                 
+//         UNIT=PROD,                     ** SYSTEM UNIT                        
+//         SPACE1='(CYL,(600,600),RLSE)', ** SPACE                              
+//         SPACE2='(TRK,(5,1),RLSE)'                                            
+//*                                                                             
+//*********************************************************************         
+//* CPM REPORT ***** - PA information for CPM reporting               *         
+//* REFERENCE CDTASMGBS-1443                                          *         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2022-04-01    - NEW CREATION (CDTASMGBS-1443)                     *         
+//* 2022-04-14    - Correction to "titles" DSN                        *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1     *         
+//*********************************************************************         
+//*                                                                             
+//*********************************************************************         
+//*  GET THE PLAN ADMINISTRATOR /PLAN ADVISOR INFORMATION FROM CPM              
+//*********************************************************************         
+//*                                                                             
+//CRPT3010 EXEC SAS,                                                            
+//         WORK='500,21000'                                                     
+//*                                                                             
+//MACROS   DD DSN=&SASSTAT..&SASLVL..SASMAC,                                    
+//            DISP=SHR                                                          
+//SYSIN    DD DSN=&SAS1..&SAS1LVL..SAS(CRPT30S1),                               
+//            DISP=SHR                                                          
+//*                                                                             
+//SYSPRINT DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//FT12F001 DD SYSOUT=&OUTA                                                      
+//*                                                                             
+//REPORT   DD DSN=&STAT..EXTRACT,                                               
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=473,BLKSIZE=0)                                
+//TITLES   DD DSN=&STAT..EXTRACT.TITLES,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE2,                                                    
+//            DCB=(RECFM=FB,LRECL=473,BLKSIZE=0)                                
+//*                                                                             
+//CRPT3020 EXEC PGM=SORT,PARM='CORE=MAX'                                        
+//SYSABEND DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//SYSUDUMP DD SYSOUT=&OUTA                                                      
+//SORTIN   DD DSN=&STAT..EXTRACT,                                               
+//            DISP=SHR                                                          
+//SORTOUT  DD DSN=&STAT..EXTRACT.TOPDAT,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=473,BLKSIZE=0)                                
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3020),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//CRPT3030 EXEC PGM=SORT,PARM='CORE=MAX'                                        
+//SYSABEND DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//SYSUDUMP DD SYSOUT=&OUTA                                                      
+//SORTIN   DD DSN=&STAT..EXTRACT.TOPDAT,                                        
+//            DISP=(OLD,DELETE,KEEP)                                            
+//         DD DSN=&STAT..EXTRACT.TITLES,                                        
+//            DISP=SHR                                                          
+//SORTOUT  DD DSN=&STAT..EXTRACT.TOP,                                           
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=473,BLKSIZE=0)                                
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3030),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//CRPT3040 EXEC PGM=SORT,PARM='CORE=MAX'                                        
+//SYSABEND DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//SYSUDUMP DD SYSOUT=&OUTA                                                      
+//SORTIN   DD DSN=&STAT..EXTRACT,                                               
+//            DISP=(OLD,DELETE,KEEP)                                            
+//SORTOUT  DD DSN=&STAT..EXTRACT.BOTDAT,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=473,BLKSIZE=0)                                
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3040),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//CRPT3050 EXEC PGM=SORT,PARM='CORE=MAX'                                        
+//SYSABEND DD SYSOUT=&OUTA                                                      
+//SYSOUT   DD SYSOUT=&OUTA                                                      
+//SYSUDUMP DD SYSOUT=&OUTA                                                      
+//SORTIN   DD DSN=&STAT..EXTRACT.BOTDAT,                                        
+//            DISP=(OLD,DELETE,KEEP)                                            
+//         DD DSN=&STAT..EXTRACT.TITLES,                                        
+//            DISP=(OLD,DELETE,KEEP)                                            
+//SORTOUT  DD DSN=&STAT..EXTRACT.BOTTOM,                                        
+//            DISP=(NEW,CATLG,DELETE),                                          
+//            UNIT=&UNIT,MGMTCLAS=MC#1WK,                                       
+//            SPACE=&SPACE1,                                                    
+//            DCB=(RECFM=FB,LRECL=473,BLKSIZE=0)                                
+//SYSIN    DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3030),                            
+//            DISP=SHR                                                          
+//*                                                                             
+//*********************************************************************         
+//*  Create FTP cards containing the date & time in file names                  
+//*********************************************************************         
+//*                                                                             
+//CRPT3060 EXEC PGM=IKJEFT01                                                    
+//SYSTSIN   DD DSN=&CSTAT..&CLVL..CTLCARDS(CRPT3060),                           
+//             DISP=SHR                                                         
+//SYSTSPRT  DD SYSOUT=&OUTA                                                     
+//SYSOUT    DD SYSOUT=&OUTA                                                     
+//SYSUDUMP  DD SYSOUT=&OUTA                                                     
+//SYSPRINT  DD SYSOUT=&OUTA                                                     
+//*                                                                             
+//*********************************************************************         
+//*  FTP the extracts to the LAN                                                
+//*  Folder Path:                                                               
+//*  S:\can\GB\Client Financial Services\Premium Operations\                    
+//*     Premium Receivables\Gipsy Receivables\Gipsy Data Extracts               
+//*  VIRTUAL DIRECTORY --> J1443 (REQ03720343)                                  
+//*********************************************************************         
+//*                                                                             
+//CRPT3070 EXEC PGM=FTP,                                                        
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET 21 (EXIT',               
+//             COND=(4,LT)                                                      
+//NETRC    DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                  
+//            DISP=SHR                                                          
+//INPUT    DD DSN=&STAT..FTPCARD,                                               
+//            DISP=SHR                                                          
+//         DD *                                                                 
+LS -L                                                                           
+QUIT                                                                            
+//OUTPUT   DD SYSOUT=&OUTA                                                      
+//SYSPRINT DD SYSOUT=&OUTA                                                      

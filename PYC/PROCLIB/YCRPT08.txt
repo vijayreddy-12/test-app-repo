@@ -1,0 +1,135 @@
+//YCRPT08  PROC CLVL='PROD.STANDARD',                                           
+//         DTECARD='PGW.PROD.DATEFILE',   ** DATE CARD                          
+//         GEN0='(+0)',                   ** LEVEL +0 GENERATION                
+//         SASSTAT='PEN.GROUP',           ** SAS PREFIX                         
+//*        SASLVL='PROD.STANDARD',        ** SAS LEVEL                          
+//         STAT='PYC.HCS.YCRPT08',        ** OUTPUT FILE PREFIX                 
+//         LVL='PROD',                    ** OUTPUT FILE LEVEL                  
+//         UNIT1=PROD                     ** SYSTEM UNIT                        
+//*                                                                             
+//*********************************************************************         
+//* THIS JOB PREPARES A REPORT ON ALL ACTIVE GRP/DIVS FOR PLAN        *         
+//* ADMINISTRATOR ACCESS MANAGER REPORT-TL406827                      *         
+//*********************************************************************         
+//* MODIFICATION LOG:                                                 *         
+//* ~~~~~~~~~~~~~~~~~                                                 *         
+//* 2019-08-22    - NEW CREATION (TL406827)                           *         
+//* SEP2023  GB MOD  FTP CHANGES FROM ENTSSERVER13 TO GBFTPBATCH1               
+//*********************************************************************         
+//*********************************************************************         
+//*                                                                   *         
+//* DELETE FILES CREATED FROM PREVIOUS RUN                            *         
+//*                                                                   *         
+//*********************************************************************         
+//DELETE    EXEC PGM=IEFBR14                                                    
+//DEL1      DD DSN=&STAT..&LVL..REPORT,                                         
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(CYL,(50,50),RLSE),                                        
+//             RECFM=FB,                                                        
+//             LRECL=80,                                                        
+//             BLKSIZE=0                                                        
+//DEL2      DD DSN=&STAT..&LVL..FTPCARD,                                        
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(CYL,(50,50),RLSE),                                        
+//             RECFM=FB,                                                        
+//             LRECL=80,                                                        
+//             BLKSIZE=0                                                        
+//DEL2      DD DSN=&STAT..&LVL..SMTPCARD,                                       
+//             DISP=(MOD,DELETE,DELETE),                                        
+//             UNIT=&UNIT1,                                                     
+//             SPACE=(CYL,(50,50),RLSE),                                        
+//             RECFM=FB,                                                        
+//             LRECL=80,                                                        
+//             BLKSIZE=0                                                        
+//*********************************************************************         
+//*  EXTRACT THE DATA FROM CPD RELATED ACTIVE GROUPS/DIV FOR          *         
+//*  PLAN ADMINISTRATOR.                                              *         
+//*********************************************************************         
+//*                                                                             
+//CRPT0800  EXEC SAS,WORK='999999,999999',REGION=0M,COND=(0,LT)                 
+//*                                                                             
+//INCLUDE   DD DSN=&SASSTAT..&CLVL..SASCPY,                                     
+//             DISP=SHR                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//MACROS    DD DSN=&SASSTAT..&CLVL..SASMAC,                                     
+//             DISP=SHR                                                         
+//ALLFUNC   DD DSN=&STAT..&LVL..REPORT,                                         
+//             UNIT=&UNIT1,                                                     
+//             DISP=(NEW,CATLG,CATLG),                                          
+//             MGMTCLAS=MC#1MTH,                                                
+//             SPACE=(CYL,(500,500),RLSE),                                      
+//             DCB=(RECFM=FB,LRECL=200,BLKSIZE=0)                               
+//SYSIN     DD DSN=&SASSTAT..&CLVL..CTLCARDS(CRPT0800),DISP=SHR                 
+//*                                                                             
+//*********************************************************************         
+//*  PREPARE THE FTP CARD                                             *         
+//*********************************************************************         
+//*                                                                             
+//CRPT0810  EXEC SAS,COND=(0,LT),                                               
+//             WORK='800,400'                                                   
+//*                                                                             
+//INCLUDE   DD DSN=&SASSTAT..&CLVL..SASCPY,                                     
+//             DISP=SHR                                                         
+//MACROS    DD DSN=&SASSTAT..&CLVL..SASMAC,                                     
+//             DISP=SHR                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//DATEFILE  DD DSN=&DTECARD&GEN0,                                               
+//             DISP=SHR                                                         
+//CNTFILE   DD DSN=&SASSTAT..&CLVL..CTLCARDS(CRPT0810),DISP=SHR                 
+//REPORT    DD DSN=&STAT..&LVL..REPORT,                                         
+//             DISP=SHR                                                         
+//FTPCARD   DD DSN=&STAT..&LVL..FTPCARD,                                        
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             SPACE=(CYL,(45,15),RLSE),                                        
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0),                               
+//             UNIT=&UNIT1                                                      
+//SYSIN     DD DSN=&SASSTAT..&CLVL..CTLCARDS(CRPT0815),                         
+//             DISP=SHR                                                         
+//*********************************************************************         
+//*  PREPARE THE SMTPCARD                                             *         
+//*********************************************************************         
+//CRPT0811  EXEC SAS,COND=(0,LT),                                               
+//             WORK='800,400'                                                   
+//SYSPRINT  DD SYSOUT=*                                                         
+//DATEFILE  DD DSN=&DTECARD&GEN0,                                               
+//             DISP=SHR                                                         
+//SMTPCARD  DD DSN=&STAT..&LVL..SMTPCARD,                                       
+//             DISP=(NEW,CATLG,DELETE),                                         
+//             SPACE=(CYL,(45,15),RLSE),                                        
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=0),                               
+//             UNIT=&UNIT1                                                      
+//INCLUDE   DD DSN=&SASSTAT..&CLVL..SASCPY,                                     
+//             DISP=SHR                                                         
+//MACROS    DD DSN=&SASSTAT..&CLVL..SASMAC,                                     
+//             DISP=SHR                                                         
+//SYSIN     DD DSN=&SASSTAT..&CLVL..CTLCARDS(CRPT0820),                         
+//             DISP=SHR                                                         
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//*          FTP THE reports to LAN                                   *         
+//* (S:\CAN\GB\CUSTOMER SERVICE CENTRE\TMWIN\HOW TO\PA SITE                     
+//*      VIRTUAL DIRECTORY --> T406827                                *         
+//*********************************************************************         
+//**********************************************                                
+//FTP       EXEC PGM=FTP,COND=(0,LT),                                           
+//             PARM='GBFTPBATCH1.AMERICAS.MANULIFE.NET (EXIT'                   
+//OUTPUT    DD SYSOUT=*                                                         
+//SYSPRINT  DD SYSOUT=*                                                         
+//NETRC     DD DSN=PGW.PROTECT.VAULT(FTPBTCH3),                                 
+//             DISP=SHR                                                         
+//INPUT     DD DSN=&STAT..&LVL..FTPCARD,DISP=SHR                                
+//*                                                                             
+//*********************************************************************         
+//*                                                                   *         
+//*          CONFIRMATION EMAIL                                       *         
+//*                                                                   *         
+//*********************************************************************         
+//MAIL      EXEC PGM=SMTPMAIL,COND=(0,LT)                                       
+//SMTPOUT   DD SYSOUT=(B,SMTP)                                                  
+//SYSOUT    DD SYSOUT=*                                                         
+//SYSUDUMP  DD SYSOUT=*                                                         
+//SMTPIN    DD DSN=&STAT..&LVL..SMTPCARD,                                       
+//             DISP=SHR                                                         
