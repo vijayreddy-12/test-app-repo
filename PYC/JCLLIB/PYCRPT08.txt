@@ -1,0 +1,22 @@
+//PYCRPT08 JOB (GB-YC91),'PYCRPT08',                                            
+//        MSGCLASS=A,CLASS=P                                                    
+//*                                                                             
+/*JOBPARM R=M04A,L=999999                                                       
+//*                                                                             
+//*LOGONID PYC                                                                  
+//*                                                                             
+//GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)                         
+//*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,                         
+//*      TEN.GROUP.TEST.STANDARD.PROCLIB,                                       
+//*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,                                     
+//*      PEN.GROUP.PROD.STANDARD.PROCLIB)                                       
+//*                                                                             
+//*GBSET  INCLUDE MEMBER=J2SETD                                                 
+//GBSET  INCLUDE MEMBER=J2SETP                                                  
+//*                                                                             
+//GBLOAD INCLUDE MEMBER=J2DB2                                                   
+//*                                                                             
+//******************************************************************    00060000
+//** FOR AUTOMATION OF PLAN MEMBER ACCESS MANAGER REPORT-TL406827       00060000
+//******************************************************************    00060000
+//YCRPT08  EXEC  YCRPT08                                                        

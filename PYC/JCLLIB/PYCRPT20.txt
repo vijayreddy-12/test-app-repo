@@ -1,0 +1,30 @@
+//PYCRPT20 JOB (GB-YC91),'PYCRPT20',                                            
+//        MSGCLASS=A,CLASS=P,REGION=0M                                          
+//*                                                                             
+/*JOBPARM R=M04A,L=999999                                                       
+//*                                                                             
+//*LOGONID PYC                                                                  
+//*                                                                             
+//GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)                         
+//*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,                         
+//*      TEN.GROUP.TEST.STANDARD.PROCLIB,                                       
+//*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,                                     
+//*      PEN.GROUP.PROD.STANDARD.PROCLIB)                                       
+//*                                                                             
+//*GBSET  INCLUDE MEMBER=J2SETD                                                 
+//GBSET  INCLUDE MEMBER=J2SETP                                                  
+//*                                                                             
+//GBLOAD INCLUDE MEMBER=J2DB2                                                   
+//*                                                                             
+//*********************************************************************         
+//*-------------------------------------------------------------------*         
+//*                                                                   *         
+//* MISSING ADDRESS REPORT FROM CPM - REFERENCE CDTASMGBS-7077        *         
+//* RUNS MONTHLY AT END OF MONTH -2 WORK DAYS                         *         
+//* THIS IS A LEAVE UNTIL AM JOB - DO NOT CALL ONCALL P/A             *         
+//*-------------------------------------------------------------------*         
+//*                                                                   *         
+//*********************************************************************         
+//*                                                                             
+//YCRPT20 EXEC YCRPT20                                                          
+//*                                                                             

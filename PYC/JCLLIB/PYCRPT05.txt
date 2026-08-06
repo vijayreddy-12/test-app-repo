@@ -1,0 +1,31 @@
+//PYCRPT05 JOB (GB-YC91),'PYCRPT05',                                    00010008
+//        MSGCLASS=A,CLASS=P,REGION=5000K                               00020008
+//*                                                                     00030008
+/*JOBPARM R=M04A,L=999999                                               00040008
+//*                                                                     00050008
+//*LOGONID PYC                                                          00060008
+//*                                                                     00070008
+//GBPROC JCLLIB ORDER=(PEN.GROUP.PROD.STANDARD.PROCLIB)                 00080008
+//*GBPROC JCLLIB ORDER=(TEN.GROUP.DEV.STANDARD.PROCLIB,                 00090008
+//*      TEN.GROUP.TEST.STANDARD.PROCLIB,                               00100008
+//*      TEN.GROUP.ACCEPT.STANDARD.PROCLIB,                             00110008
+//*      PEN.GROUP.PROD.STANDARD.PROCLIB)                               00120008
+//*                                                                     00130008
+//*GBSET  INCLUDE MEMBER=J2SETD                                         00140008
+//GBSET  INCLUDE MEMBER=J2SETP                                          00150008
+//*                                                                     00160008
+//GBLOAD INCLUDE MEMBER=J2DB2                                           00170008
+//*                                                                     00180008
+//********************************************************************* 00190008
+//*-------------------------------------------------------------------* 00200008
+//*                                                                   * 00210008
+//*                                                                   * 00220008
+//* THIS JOB EXTRACT AND PREPARE QUATERLY DRUG PLAN, SDC FLAGS &      * 00230008
+//* SPECIALTY DRUG CARE REPORT FROM CPM DATABASE                      * 00240008
+//*                                                                   * 00250008
+//*-------------------------------------------------------------------* 00260008
+//*                                                                   * 00270008
+//********************************************************************* 00280008
+//*                                                                     00290008
+//YCRPT05 EXEC YCRPT05                                                  00300008
+//*                                                                     00310008
