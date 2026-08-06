@@ -1,0 +1,73 @@
+ %INCLUDE INCLUDE(OPTIONS6);                                                    
+ %INCLUDE MACROS(VSAMERRI,FILEREAD);                                            
+                                                                                
+  /*******************************************************************/         
+  /*READ TODAY'S DATE                                                */         
+  /*******************************************************************/         
+  %FILEREAD(DATES,DATEFILE,DATELOGIC,0);                                        
+  DATELOGIC:                                                                    
+                                                                                
+     %GLOBAL MONTH;                                                             
+     %GLOBAL D_YEAR;                                                            
+     INPUT @1  COMMENT $1.                                                      
+           @2  TYPE    $9.                                                      
+           @11 INDATE  $9.                                                      
+           @11 INYEAR  $4.                                                      
+           @15 INMM1   $3.                                                      
+           @31 INYEAR1 $2.                                                      
+           @33 INMNT1  $2.                                                      
+           @35 INDAY1  $2.                                                      
+           @;                                                                   
+     IF COMMENT = '*' OR TYPE NE 'CURRENT  ' THEN                               
+      DO;                                                                       
+        DELETE;                                                                 
+      END;                                                                      
+      CALL SYMPUT('YEAR',PUT(INYEAR1,$2.));                                     
+      CALL SYMPUT('MONTH',PUT(INMNT1,$2.));                                     
+      CALL SYMPUT('DAY',PUT(INDAY1,$2.));                                       
+    OUTPUT;                                                                     
+  RETURN;                                                                       
+  /*******************************************************************/         
+  /*READ CONTROL FILE TO GET THE REPORT NAME                         */         
+  /*******************************************************************/         
+  DATA IN_CNTFILE;                                                              
+       INFILE CNTFILE;                                                          
+                                                                                
+     INPUT   @1  RPTNAME  $40.                                                  
+             @;                                                                 
+     CALL SYMPUT('RPTNAME1',PUT(RPTNAME,$40.));                                 
+    OUTPUT;                                                                     
+  RETURN;                                                                       
+                                                                                
+ /*****************************************************************/            
+ /* THE FOLLOWING WILL GENERATE THE FTP INPUT CARD.               */            
+ /*****************************************************************/            
+  DATA FTPTXT;                                                                  
+                                                                                
+   ATTRIB TXT1     FORMAT=$CHAR80.                                              
+          TXT2     FORMAT=$CHAR80.                                              
+          TXT3     FORMAT=$CHAR80.                                              
+          TXT4     FORMAT=$CHAR80.;                                             
+                                                                                
+                                                                                
+ /* FIND THE O/P FILENAMES */                                                   
+   FID1=FOPEN('REPORT');                                                        
+   FNAME1 = FINFO(FID1,'DSNAME');                                               
+                                                                                
+   TXT1 = "CD TL406827";                                                        
+   TXT2 = "PUT '"||TRIM(FNAME1)||"' + ";                                        
+   TXT3 = "    &RPTNAME1..CSV";                                                 
+   TXT4 = "QUIT";                                                               
+                                                                                
+   OUTPUT;                                                                      
+  RETURN;                                                                       
+                                                                                
+  DATA _NULL_;                                                                  
+    SET FTPTXT;                                                                 
+    FILE FTPCARD;                                                               
+    PUT @1  TXT1        $80.;                                                   
+    PUT @1  TXT2        $80.;                                                   
+    PUT @1  TXT3        $80.;                                                   
+    PUT @1  TXT4        $80.;                                                   
+RUN;                                                                            
+                                                                                

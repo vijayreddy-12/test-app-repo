@@ -1,0 +1,269 @@
+ %INCLUDE MACROS(VSAMERRI,FILEREAD);                                            
+                                                                                
+ OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER MACROGEN;                           
+                                                                                
+/*-------------------------------------------------------                       
+  - READ TODAY'S DATE                               -                           
+  -------------------------------------------------------*/                     
+ %FILEREAD(DATES,DATEFILE,DATELOGIC,0);                                         
+ DATELOGIC:                                                                     
+                                                                                
+   %GLOBAL D_START_DATE;                                                        
+   %GLOBAL D_END_DATE;                                                          
+   ATTRIB START_DATE_MM   FORMAT=$CHAR02.;                                      
+   ATTRIB START_DATE_YYYY FORMAT=$CHAR04.;                                      
+   ATTRIB START_DATE      FORMAT=$CHAR12.;                                      
+   ATTRIB END_DATE        FORMAT=$CHAR12.;                                      
+                                                                                
+   INPUT @1  COMMENT  $1.                                                       
+         @2  TYPE     $9.                                                       
+         @38 DATEYYYY $CHAR04.                                                  
+         @43 DATEMM   $CHAR02.                                                  
+         @46 DATEDD   $CHAR02.                                                  
+         @;                                                                     
+                                                                                
+   IF COMMENT EQ '*' OR TYPE NE 'CURRENT  ' THEN RETURN;                        
+                                                                                
+   IF DATEMM = '01' THEN START_DATE_MM = '12';                                  
+   IF DATEMM = '02' THEN START_DATE_MM = '01';                                  
+   IF DATEMM = '03' THEN START_DATE_MM = '02';                                  
+   IF DATEMM = '04' THEN START_DATE_MM = '03';                                  
+   IF DATEMM = '05' THEN START_DATE_MM = '04';                                  
+   IF DATEMM = '06' THEN START_DATE_MM = '05';                                  
+   IF DATEMM = '07' THEN START_DATE_MM = '06';                                  
+   IF DATEMM = '08' THEN START_DATE_MM = '07';                                  
+   IF DATEMM = '09' THEN START_DATE_MM = '08';                                  
+   IF DATEMM = '10' THEN START_DATE_MM = '09';                                  
+   IF DATEMM = '11' THEN START_DATE_MM = '10';                                  
+   IF DATEMM = '12' THEN START_DATE_MM = '11';                                  
+                                                                                
+   IF START_DATE_MM = '12' THEN                                                 
+   DO;                                                                          
+      START_DATE_YYYY = PUT(PUT(DATEYYYY,4.) - 1,$04.);                         
+   END;                                                                         
+   ELSE                                                                         
+   DO;                                                                          
+      START_DATE_YYYY = DATEYYYY;                                               
+   END;                                                                         
+                                                                                
+   START_DATE = "'" || START_DATE_YYYY|| "-" || START_DATE_MM ||                
+                "-01'";                                                         
+                                                                                
+   END_DATE   = "'" || DATEYYYY || "-" || DATEMM ||                             
+                "-25'";                                                         
+                                                                                
+   CALL SYMPUT('D_START_DATE',PUT(START_DATE,$12.));                            
+   CALL SYMPUT('D_END_DATE',PUT(END_DATE,$12.));                                
+                                                                                
+ /*KEEP D_DATE_TIME; */                                                         
+                                                                                
+   OUTPUT;                                                                      
+                                                                                
+ RETURN;                                                                        
+                                                                                
+ PROC PRINT DATA=DATES;                                                         
+                                                                                
+ DATA _NULL_;                                                                   
+    PUT " ";                                                                    
+    PUT "START DATE IS '&D_START_DATE.'";                                       
+    PUT "  END DATE IS '&D_END_DATE.'";                                         
+    PUT " ";                                                                    
+                                                                                
+ DATA TEMP0;;                                                                   
+   FILE DATERNGE;                                                               
+   SET DATES;                                                                   
+   PUT   @5    'Extract From '                                                  
+         @18   START_DATE            12.                                        
+         @30   ' To '                                                           
+         @34   END_DATE              12.                                        
+         ;                                                                      
+                                                                                
+ PROC SQL;                                                                      
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    TU.CUST_ID           "CUST-ID",                                             
+    TU.USER_ID           "USER",                                                
+    TU.MAPPED_ID         "LINK_REPSRC_ID",                                      
+    TP.GROUP_ID          "GROUP",                                               
+    TP.DIV_ID            "DIVISION",                                            
+    TG.BUS_SEG_CD        "BUSSEG",                                              
+    TG.ACC_PM_REGIS_CD   "ACCESS_CD",                                           
+    TC.CUST_FIRST_NAME   "FIRST_NAME",                                          
+    TC.CUST_LAST_NAME    "LAST_NAME",                                           
+    TG.REG_GROUP_OFFICE  "RGO",                                                 
+    TC.ROLE              "ROLE",                                                
+    TC.CUST_STAT_CD      "STATUS",                                              
+    TC.CUST_STAT_REAS_CD "REASON",                                              
+    TG.SPONSOR_NAME      "SPONSOR",                                             
+    TC.CUST_ADDR_1       "ADDR_1",                                              
+    TC.CUST_ADDR_2       "ADDR_2",                                              
+    TC.CUST_ADDR_CITY    "CITY",                                                
+    TC.CUST_ADDR_PROV    "PROVINCE",                                            
+    TC.CUST_ADDR_COUNTRY "COUNTRY",                                             
+    TC.CUST_ADDR_POST_CD "POSTAL_CD",                                           
+    DATE(TEH.EVENT_TS)   "UPDDAT1",                                             
+    TC.EMAIL_ADDR        "EMAIL ADDRESS",                                       
+    TC.BUS_PHONE_NUM     "BUSPHON",                                             
+    TC.BUS_PHONE_EXT     "EXTN",                                                
+    TC.PHONE_NUM         "PHONE",                                               
+    TC.LANG_CD           "LANG"                                                 
+    FROM DBCYCP1.TPAA TP                                                        
+    Join DBCYCP1.TCUST TC                                                       
+      On TP.CUST_ID  = TC.CUST_ID                                               
+    Join DBCYCP1.TGD    TG                                                      
+      On TP.GROUP_ID = TG.GROUP_ID                                              
+      AND TP.DIV_ID  = TG.DIV_ID                                                
+    Join DBCYCP1.TUT    TU                                                      
+      On TU.CUST_ID  = TC.CUST_ID                                               
+    Join DBCYCP1.TEH    TEH                                                     
+      On TC.CUST_ID  = TEH.CUST_ID                                              
+    WHERE TC.ROLE             = 'P'                                             
+      AND TP.PA_STAT_CD       = 'A'                                             
+      AND TG.BUS_SEG_CD       = 'A'                                             
+      AND TG.CONTRACT_STAT_CD = 'I'                                             
+      AND (TEH.EVENT_TYP_CD   = 'PA'                                            
+           AND (DATE(TEH.EVENT_TS) BETWEEN &D_START_DATE                        
+                AND &D_END_DATE                                                 
+               )                                                                
+          )                                                                     
+    ORDER BY TP.GROUP_ID,                                                       
+             TP.DIV_ID                                                          
+   );                                                                           
+                                                                                
+ DATA TEMP1;                                                                    
+   SET GRPLIST;                                                                 
+                                                                                
+  ATTRIB RGO_EXP     FORMAT=$30.;                                               
+  ATTRIB REASON_EXP  FORMAT=$41.;                                               
+  ATTRIB ROLE_EXP    FORMAT=$30.;                                               
+  ATTRIB STATUS_EXP  FORMAT=$10.;                                               
+                                                                                
+  IF STATUS = "A" THEN STATUS_EXP = "Active    ";                               
+  IF STATUS = "S" THEN STATUS_EXP = "Suspended ";                               
+                                                                                
+  IF RGO = "10060" THEN RGO_EXP = "10060 Edmonton North          ";             
+  IF RGO = "10590" THEN RGO_EXP = "10590 Staff Payroll Deduction ";             
+  IF RGO = "10800" THEN RGO_EXP = "10800 Regina (10800)          ";             
+  IF RGO = "15010" THEN RGO_EXP = "15010 HEAD OFFICE             ";             
+  IF RGO = "15020" THEN RGO_EXP = "15020 Edmonton                ";             
+  IF RGO = "15030" THEN RGO_EXP = "15030 CALGARY                 ";             
+  IF RGO = "15040" THEN RGO_EXP = "15040 Calgary                 ";             
+  IF RGO = "15100" THEN RGO_EXP = "15100 Vancouver               ";             
+  IF RGO = "15170" THEN RGO_EXP = "15170 Toronto Downtown        ";             
+  IF RGO = "15200" THEN RGO_EXP = "15200 Winnipeg                ";             
+  IF RGO = "15320" THEN RGO_EXP = "15320 TRUSTEE                 ";             
+  IF RGO = "15360" THEN RGO_EXP = "15360 Halifax                 ";             
+  IF RGO = "15370" THEN RGO_EXP = "15370 Quebec City             ";             
+  IF RGO = "15420" THEN RGO_EXP = "15420 Kitchener Waterloo      ";             
+  IF RGO = "15430" THEN RGO_EXP = "15430 Hamilton                ";             
+  IF RGO = "15470" THEN RGO_EXP = "15470 London                  ";             
+  IF RGO = "15490" THEN RGO_EXP = "15490 Ottawa                  ";             
+  IF RGO = "15500" THEN RGO_EXP = "15500 Toronto Agency          ";             
+  IF RGO = "15550" THEN RGO_EXP = "15550 TORONTO VIC PARK        ";             
+  IF RGO = "15570" THEN RGO_EXP = "15570 Windsor                 ";             
+  IF RGO = "15750" THEN RGO_EXP = "15750 Montreal                ";             
+  IF RGO = "15880" THEN RGO_EXP = "15880 Regina                  ";             
+                                                                                
+  IF REASON = "A" THEN                                                          
+     REASON_EXP = "PAM Requested                            ";                  
+  IF REASON = "B" THEN                                                          
+     REASON_EXP = "Gipsy Batch Activation                   ";                  
+  IF REASON = "C" THEN                                                          
+     REASON_EXP = "Conversion                               ";                  
+  IF REASON = "D" THEN                                                          
+     REASON_EXP = "Post Conversion                          ";                  
+  IF REASON = "E" THEN                                                          
+     REASON_EXP = "Use VO Address for VO/HP new business    ";                  
+  IF REASON = "G" THEN                                                          
+     REASON_EXP = "MLAC GIS 3.0 preactivation batch process ";                  
+  IF REASON = "H" THEN                                                          
+     REASON_EXP = "Use HP address information               ";                  
+  IF REASON = "M" THEN                                                          
+     REASON_EXP = "MLI Requested                            ";                  
+  IF REASON = "N" THEN                                                          
+     REASON_EXP = "                                         ";                  
+  IF REASON = "O" THEN                                                          
+     REASON_EXP = "Use VO address information               ";                  
+  IF REASON = "P" THEN                                                          
+     REASON_EXP = "Password Suspended                       ";                  
+  IF REASON = "Q" THEN                                                          
+     REASON_EXP = "PVQ VIOLATION                            ";                  
+  IF REASON = "R" THEN                                                          
+     REASON_EXP = "RGO Requested                            ";                  
+  IF REASON = "T" THEN                                                          
+     REASON_EXP = "Terminated                               ";                  
+  IF REASON = "V" THEN                                                          
+     REASON_EXP = "VO Pre-registration                      ";                  
+                                                                                
+  IF ROLE = " " THEN ROLE_EXP = "Default value for TGCT        ";               
+  IF ROLE = "A" THEN ROLE_EXP = "Plan Advisor                  ";               
+  IF ROLE = "C" THEN ROLE_EXP = "CSR                           ";               
+  IF ROLE = "I" THEN ROLE_EXP = "Internal Manulife Staff       ";               
+  IF ROLE = "M" THEN ROLE_EXP = "Plan Advisor Manager          ";               
+  IF ROLE = "P" THEN ROLE_EXP = "Plan Administrator            ";               
+  IF ROLE = "R" THEN ROLE_EXP = "RGO Staff                     ";               
+  IF ROLE = "S" THEN ROLE_EXP = "CSR with Access to Staff Plan ";               
+  IF ROLE = "T" THEN ROLE_EXP = "MLI (Trainer)                 ";               
+   OUTPUT;                                                                      
+   RETURN;                                                                      
+                                                                                
+ DATA REPORT;                                                                   
+   FILE REPORT;                                                                 
+   SET TEMP1;                                                                   
+   PUT   @1    '"'                                                              
+         @2    CUST_ID                    11.                                   
+         @13   '","'                                                            
+         @16   USER                       20.                                   
+         @36   '","'                                                            
+         @39   RGO_EXP                    30.                                   
+         @69   '","'                                                            
+         @72   ROLE_EXP                   30.                                   
+         @102  '","'                                                            
+         @105  FIRST_NAME                 30.                                   
+         @135  '","'                                                            
+         @138  LAST_NAME                  30.                                   
+         @168  '","'                                                            
+         @171  STATUS_EXP                 10.                                   
+         @181  '","'                                                            
+         @184  REASON_EXP                 41.                                   
+         @225  '","'                                                            
+         @228  LINK_REPSRC_ID             20.                                   
+         @240  '","'                                                            
+         @243  GROUP                      07.                                   
+         @250  '","'                                                            
+         @253  DIVISION                   03.                                   
+         @256  '","'                                                            
+         @259  ACCESS_CD                  07.                                   
+         @266  '","'                                                            
+         @269  SPONSOR                    60.                                   
+         @329  '","'                                                            
+         @332  ADDR_1                     60.                                   
+         @392  '","'                                                            
+         @395  ADDR_2                     60.                                   
+         @455  '","'                                                            
+         @458  CITY                       60.                                   
+         @518  '","'                                                            
+         @521  PROVINCE                   30.                                   
+         @551  '","'                                                            
+         @554  COUNTRY                    30.                                   
+         @584  '","'                                                            
+         @587  POSTAL_CD                  09.                                   
+         @596  '","'                                                            
+         @599  EMAIL_ADDRESS              60.                                   
+         @659  '","'                                                            
+         @662  BUSPHON                    10.                                   
+         @672  '","'                                                            
+         @675  EXTN                       06.                                   
+         @681  '","'                                                            
+         @684  PHONE                      10.                                   
+         @694  '","'                                                            
+         @697  UPDDAT1                    DATE9.                                
+         @706  '","'                                                            
+         @709  BUSSEG                     01.                                   
+         @710  '","'                                                            
+         @713  LANG                       01.                                   
+         @714  '"'                                                              
+         ;                                                                      
+                                                                                

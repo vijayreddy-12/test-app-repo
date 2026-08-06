@@ -1,0 +1,183 @@
+OPTIONS NODATE NONUMBER;                                                        
+                                                                                
+DATA INFIL1;                                                                    
+  INFILE GRPNUSER;                                                              
+  INPUT @02   CUST_ID         $CHAR11.                                          
+        @243  GROUP_ID       $CHAR07.                                           
+        @253  DIV_ID         $CHAR03.                                           
+        @15   REST_REC       $CHAR700.                                          
+        ;                                                                       
+RUN;                                                                            
+DATA INFIL2;                                                                    
+  INFILE PASECUPD;                                                              
+  INPUT @01   CUST_ID         $CHAR11.                                          
+        @13   ACC_IND         $CHAR01.                                          
+        ;                                                                       
+RUN;                                                                            
+PROC SORT DATA=INFIL1;                                                          
+  BY CUST_ID                                                                    
+     ;                                                                          
+PROC SORT DATA=INFIL2;                                                          
+  BY CUST_ID                                                                    
+     ;                                                                          
+                                                                                
+                                                                                
+     PROC SQL;                                                                  
+     CREATE TABLE GROUP1  AS                                                    
+     SELECT                                                                     
+            A.CUST_ID,                                                          
+            A.GROUP_ID,                                                         
+            A.DIV_ID,                                                           
+            A.REST_REC                                                          
+       FROM INFIL1 A                                                            
+       ;                                                                        
+                                                                                
+    /* PROC PRINT DATA=PA1; */                                                  
+                                                                                
+                                                                                
+     PROC SQL;                                                                  
+     CREATE TABLE PASECUPD1 AS                                                  
+     SELECT                                                                     
+            B.CUST_ID,                                                          
+            B.ACC_IND                                                           
+       FROM INFIL2 B                                                            
+       ;                                                                        
+  /*  PROC PRINT DATA=TLH1;   */                                                
+                                                                                
+  /*================================================================            
+    SQL - PICK UP ONLY THOSE RECORD FROM EMLCNT XTRACR FILE WHERE               
+          MATCHING GROUP_ID   EXIST IN BOTH GROUP  EXTRACT AND                  
+          EMALCN XTRACT.                                                        
+    ===============================================================*/           
+     PROC SQL;                                                                  
+     CREATE TABLE COMMON1 AS                                                    
+     SELECT                                                                     
+            A.CUST_ID,                                                          
+            A.ACC_IND                                                           
+       FROM PASECUPD1 A, GROUP1 B                                               
+       WHERE A.CUST_ID  = B.CUST_ID                                             
+       ;                                                                        
+                                                                                
+  PROC SORT DATA = COMMON1 NODUPKEY;                                            
+     BY CUST_ID;                                                                
+                                                                                
+  /* PROC PRINT DATA=COMMON1;  */                                               
+                                                                                
+  /* ***************************************************** */                   
+  /* MERGE MASTER EXTRACT WITH AGENT EXTRACT WHEN THERE IS */                   
+  /* MASTCHING AGENT_CODE IN BOTH THE FILE.                */                   
+  /* ***************************************************** */                   
+                                                                                
+  DATA COMMON2;                                                                 
+   MERGE GROUP1(IN=K1) COMMON1(IN=K2);                                          
+    BY CUST_ID;                                                                 
+                                                                                
+    IF K1 AND K2 THEN OUTPUT;                                                   
+   RETURN;                                                                      
+                                                                                
+  /* PROC PRINT DATA=COMMON2; */                                                
+  /* ***************************************************** */                   
+  /* MERGE MASTER EXTRACT WITH AGENT EXTRACT WHEN          */                   
+  /* AGENT_CODE EXISTS IN MASTER EXTRACT BUT NOT IN         */                  
+  /* AGENT EXTRACT                                          */                  
+  /* ***************************************************** */                   
+                                                                                
+  DATA COMMON3;                                                                 
+   MERGE GROUP1(IN=K3) COMMON1(IN=K4);                                          
+    BY CUST_ID;                                                                 
+                                                                                
+    IF K3 AND NOT K4 THEN OUTPUT;                                               
+                                                                                
+   RETURN;                                                                      
+  /* PROC PRINT DATA=COMMON3;  */                                               
+                                                                                
+  /* ***************************************************** */                   
+  /* APPEND AND SORT THE DATA FILE PRODUCE BEFORE          */                   
+  /* ALSO, SET PAD STATUS AS 'N' WHEN THE PAD FIELD IS BLANK */                 
+  /* ***************************************************** */                   
+                                                                                
+  DATA COMMON4;                                                                 
+  SET COMMON2 COMMON3;                                                          
+  /* IF BNK_STATUS EQ " " THEN BNK_STATUS = "N"; */                             
+     IF ACC_IND    EQ " " THEN ACC_IND    = "#";                                
+  OUTPUT;                                                                       
+  RETURN;                                                                       
+                                                                                
+  /* PROC SORT DATA = COMMON4 NODUPKEY;   */                                    
+  PROC SORT DATA = COMMON4;                                                     
+     BY GROUP_ID  DIV_ID;                                                       
+                                                                                
+  DATA RPTDAT;                                                                  
+  SET COMMON4;                                                                  
+   FILE REPORT;                                                                 
+                                                                                
+         IF (_N_ = 1) THEN                                                      
+         DO;                                                                    
+            PUT @01  '"CUST_ID'                                                 
+                @09  '","'                                                      
+                @12  'USER'                                                     
+                @16  '","'                                                      
+                @19  'RGO'                                                      
+                @21  '","'                                                      
+                @24  'ROLE'                                                     
+                @28  '","'                                                      
+                @31  'FNAME'                                                    
+                @36  '","'                                                      
+                @39  'LNAME'                                                    
+                @44  '","'                                                      
+                @47  'STATUS'                                                   
+                @53  '","'                                                      
+                @56  'REASON'                                                   
+                @62  '","'                                                      
+                @65  'REPID'                                                    
+                @70  '","'                                                      
+                @73  'GROUP'                                                    
+                @78  '","'                                                      
+                @81  'DIV'                                                      
+                @84  '","'                                                      
+                @87  'ACCESS'                                                   
+                @93  '","'                                                      
+                @96  'SPONSOR'                                                  
+                @103 '","'                                                      
+                @106 'ADDR_1'                                                   
+                @112 '","'                                                      
+                @115 'ADDR_2'                                                   
+                @121 '","'                                                      
+                @124 'CITY'                                                     
+                @128 '","'                                                      
+                @131 'PROVINCE'                                                 
+                @139 '","'                                                      
+                @142 'COUNTRY'                                                  
+                @149 '","'                                                      
+                @152 'POSTAL_CD'                                                
+                @161 '","'                                                      
+                @164 'EMAIL'                                                    
+                @169 '","'                                                      
+                @172 'BUSPHON'                                                  
+                @179 '","'                                                      
+                @182 'EXTN'                                                     
+                @186 '","'                                                      
+                @189 'PHONE'                                                    
+                @194 '","'                                                      
+                @197 'CHG_DATE'                                                 
+                @205 '","'                                                      
+                @208 'BUSSEG'                                                   
+                @214 '","'                                                      
+                @217 'LANG'                                                     
+                @221 '","'                                                      
+                @224 'ACC_IND'                                                  
+                @231 '",'                                                       
+             ;                                                                  
+         END;                                                                   
+                                                                                
+     PUT @1  '"'                                                                
+         @2  CUST_ID          $11.                                              
+         @13 '",'                                                               
+         @15 REST_REC        $700.                                              
+         @715',"'                                                               
+         @717 ACC_IND         $01.                                              
+         @718'",'                                                               
+         ;                                                                      
+                                                                                
+ RUN;                                                                           
+                                                                                

@@ -1,0 +1,172 @@
+ %INCLUDE MACROS(VSAMERRI,FILEREAD);                                    00840000
+                                                                                
+ OPTIONS SOURCE SOURCE2 DATE NUMBER MACROGEN MPRINT                             
+         MISSING='.' NOCENTER LINESIZE=133;                                     
+                                                                                
+  /*-------------------------------------------------------             00860000
+    - GET ADVISOR DETAILS                                 -             00870000
+    -------------------------------------------------------*/           00880000
+                                                                                
+  OPTIONS LINESIZE=100 DB2SSID=PDBC NOCENTER;                                   
+                                                                         0085000
+  PROC SQL;                                                                     
+     CREATE TABLE ADVQUERY AS                                                   
+     SELECT *                                                                   
+     FROM CONNECTION TO DB2                                                     
+                                                                                
+     (SELECT                                                                    
+        PAA.GROUP_ID            AS GROUP                                        
+       ,PAA.DIV_ID              AS DIV                                          
+       ,TCUST.CUST_ID           AS CUST                                         
+       ,TCUST.CUST_FIRST_NAME   AS FNAME                                        
+       ,TCUST.CUST_LAST_NAME    AS LNAME                                        
+       ,TCUST.CUST_ADDR_1       AS ADDR1                                        
+       ,TCUST.CUST_ADDR_2       AS ADDR2                                        
+       ,TCUST.CUST_ADDR_CITY    AS CITY                                         
+       ,TCUST.CUST_ADDR_PROV    AS PROV                                         
+       ,TCUST.CUST_ADDR_COUNTRY AS COUNTRY                                      
+       ,TCUST.CUST_ADDR_POST_CD AS POSTCD                                       
+       ,TCUST.BUS_PHONE_NUM     AS BUSPHONE                                     
+       ,TCUST.BUS_PHONE_EXT     AS EXT                                          
+       ,TCUST.PHONE_NUM         AS HOME                                         
+       ,TCUST.LANG_CD           AS LANGCD                                       
+       ,'PLAN ADMINISTRATOR'    AS ROLE                                         
+       ,TCTCSR.CODE_ENG_DESC    AS CUST_STATUS                                  
+       ,'AUTHORIZED'            AS PA_STATUS                                    
+       ,TCUST.EMAIL_ADDR        AS EMAIL                                        
+     FROM                                                                       
+       (                                                                        
+         SELECT DISTINCT                                                        
+           GD.GROUP_ID                                                          
+         , GD.DIV_ID                                                            
+         , TPAA.CUST_ID                                                         
+         , TPAA.PA_STAT_CD                                                      
+         FROM                                                                   
+           (                                                                    
+             SELECT                                                             
+               GROUP_ID                                                         
+             , DIV_ID                                                           
+             FROM                                                               
+               DBCYCP1.TGD                                                      
+             WHERE                                                              
+               BUS_SEG_CD <> 'C'                                                
+             AND                                                                
+               CONTRACT_STAT_CD <> 'T'                                          
+           )                                                                    
+           GD                                                                   
+           LEFT JOIN                                                            
+             DBCYCP1.TPAA TPAA                                                  
+             ON                                                                 
+               GD.GROUP_ID = TPAA.GROUP_ID                                      
+               AND GD.DIV_ID = TPAA.DIV_ID                                      
+         WHERE                                                                  
+           TPAA.GROUP_ID IS NOT NULL                                            
+           AND TPAA.CUST_ID IN                                                  
+           (                                                                    
+             SELECT                                                             
+               CUST_ID                                                          
+             FROM                                                               
+               DBCYCP1.TCUST                                                    
+             WHERE                                                              
+               ROLE = 'P'                                                       
+               AND CUST_STAT_CD = 'A'                                           
+               AND CUST_STAT_REAS_CD <> 'T'                                     
+           )                                                                    
+       )                                                                        
+       PAA                                                                      
+       LEFT JOIN                                                                
+         (                                                                      
+           SELECT                                                               
+             CUST_ID                                                            
+           ,CLIENT_NUM AS GROUP_ID                                              
+           ,LOC_NUM    AS DIV_ID                                                
+           FROM                                                                 
+             DBCYCP1.TPACLA                                                     
+           WHERE                                                                
+             BILL_PRSNT_IND = 'Y'                                               
+         )                                                                      
+         PACLA                                                                  
+         ON                                                                     
+           PAA.CUST_ID = PACLA.CUST_ID                                          
+           AND PAA.GROUP_ID=PACLA.GROUP_ID                                      
+           AND PAA.DIV_ID = PACLA.DIV_ID                                        
+       LEFT JOIN                                                                
+         DBCYCP1.TCUST TCUST                                                    
+         ON                                                                     
+           PAA.CUST_ID = TCUST.CUST_ID                                          
+       LEFT JOIN                                                                
+         DBCYCP1.TCTCSR TCTCSR                                                  
+         ON                                                                     
+           TCTCSR.CODE_VALUE = TCUST.CUST_STAT_REAS_CD                          
+     WHERE                                                                      
+       PACLA.CUST_ID IS NOT NULL                                                
+       AND PAA.PA_STAT_CD='A'                                                   
+     ORDER BY                                                                   
+        PAA.GROUP_ID                                                            
+       ,PAA.DIV_ID                                                              
+     );                                                                         
+                                                                                
+  /* PROC PRINT DATA=ADVQUERY; */                                               
+                                                                                
+  /*-------------------------------------------------------             00860000
+    - PRODUCE REPORT                                      -             00870000
+    -------------------------------------------------------*/           00880000
+                                                                                
+  DATA CPDEXTR;                                                                 
+    FILE ADVEXTR;                                                               
+    SET ADVQUERY;                                                               
+                                                                                
+  /* COLUMN TITLES BEFORE THE FIRST RECORD                 */                   
+                                                                                
+    IF (_N_ = 1) THEN                                                           
+    DO;                                                                         
+       PUT   @01   '"'                                                          
+             @02   'GROUP'                                                      
+             @07   '","'                                                        
+             @10   'DIV'                                                        
+             @13   '","'                                                        
+             @16   'CUST'                                                       
+             @20   '","'                                                        
+             @23   'FNAME'                                                      
+             @28   '","'                                                        
+             @31   'LNAME'                                                      
+             @36   '","'                                                        
+             @39   'LANGCD'                                                     
+             @45   '","'                                                        
+             @48   'ROLE'                                                       
+             @52   '","'                                                        
+             @55   'CUST_STATUS'                                                
+             @66   '","'                                                        
+             @69   'PA_STATUS'                                                  
+             @78   '","'                                                        
+             @81   'EMAIL'                                                      
+             @86   '","'                                                        
+             ;                                                                  
+    END;                                                                        
+                                                                                
+    PUT   @01   '"'                                                             
+          @02   GROUP              $07.                                         
+          @09   '","'                                                           
+          @12   DIV                $03.                                         
+          @15   '","'                                                           
+          @18   CUST               $11.                                         
+          @29   '","'                                                           
+          @32   FNAME              $30.                                         
+          @62   '","'                                                           
+          @65   LNAME              $30.                                         
+          @95   '","'                                                           
+          @98   HOME               $10.                                         
+          @108  '","'                                                           
+          @111  LANGCD             $01.                                         
+          @112  '","'                                                           
+          @115  ROLE               $50.                                         
+          @165  '","'                                                           
+          @168  CUST_STATUS        $50.                                         
+          @218  '","'                                                           
+          @221  PA_STATUS          $50.                                         
+          @271  '","'                                                           
+          @274  EMAIL              $60.                                         
+          @334  '","'                                                           
+          ;                                                                     
+                                                                                
+ RUN;                                                                   03360000

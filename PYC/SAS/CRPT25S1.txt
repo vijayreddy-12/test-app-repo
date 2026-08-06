@@ -1,0 +1,55 @@
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    TG.GROUP_ID,                                                                
+    TG.CERT_ID,                                                                 
+    TC.CUST_FIRST_NAME,                                                         
+    TC.CUST_LAST_NAME,                                                          
+    TC.EMAIL_ADDR,                                                              
+    TC.PHONE_NUM,                                                               
+    TC.CUST_STAT_REAS_CD,                                                       
+    TC.OCS_STAT_CD,                                                             
+    TC.CUST_STAT_CD,                                                            
+    TC.ROLE,                                                                    
+    TH.EVENT_TYP_CD                                                             
+FROM                                                                            
+         DBCYCP1.TGCT  TG,                                                      
+         DBCYCP1.TCUST TC,                                                      
+         DBCYCP1.TEH   TH                                                       
+    WHERE                                                                       
+          TG.CUST_ID = TC.CUST_ID    AND                                        
+          TC.CUST_ID = TH.CUST_ID    AND                                        
+          TC.CUST_STAT_CD = 'A'      AND                                        
+          TH.EVENT_TYP_CD = 'PVQREG'                                            
+   );                                                                           
+                                                                                
+ DATA REPORT;                                                                   
+   FILE REPORT;                                                                 
+   SET GRPLIST;                                                                 
+   PUT   @1    GROUP_ID                              07.                        
+         @8    ';'                                                              
+         @9    CERT_ID                               10.                        
+         @19   ';'                                                              
+         @20   CUST_FIRST_NAME            30.                                   
+         @50   ';'                                                              
+         @51   CUST_LAST_NAME            30.                                    
+         @81   ';'                                                              
+         @82   ROLE                       1.                                    
+         @83   ';'                                                              
+         @84   EVENT_TYP_CD               6.                                    
+         @90   ';'                                                              
+         @91   EMAIL_ADDR                 60.                                   
+         @151  ';'                                                              
+         @152  PHONE_NUM              10.                                       
+         @162  ';'                                                              
+         @163  CUST_STAT_REAS_CD          1.                                    
+         @164  ';'                                                              
+         @165  OCS_STAT_CD                1.                                    
+         @166  ';'                                                              
+         @167  CUST_STAT_CD;                                                    
+                                                                                
+                                                                                

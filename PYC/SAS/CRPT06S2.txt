@@ -1,0 +1,142 @@
+/*******************************************************************/           
+/* --------------------------------------------------------------- */           
+/*            M A I N T E N A N C E     L O G                      */           
+/*            ===============================                      */           
+/*                                                                 */           
+/* DATE:        NAME:     DESCRIPTION:                             */           
+/* ---------    --------  ---------------------------------------- */           
+/* 12DEC2018    Aftab     ORIGINAL VERSION (TL-362337)             */           
+/*=================================================================*/           
+/*******************************************************************/           
+/*            D E S C R I P T I O N                                */           
+/*                                                                 */           
+/* THIS SAS PIECE CREATES THE FTP AND E-MAIL CONTROL CARD         */            
+/*                                                                 */           
+/*=================================================================*/           
+ %INCLUDE INCLUDE(OPTIONS2);                                                    
+ %INCLUDE MACROS(VSAMERRI,FILEREAD);                                            
+  /*******************************************************************/         
+  /*READ TODAY'S DATE                                                */         
+  /*******************************************************************/         
+  %FILEREAD(DATES,DATEFILE,DATELOGIC,0);                                        
+  DATELOGIC:                                                                    
+                                                                                
+     %GLOBAL D_TODAY;                                                           
+     %GLOBAL D_DATE;                                                            
+     %GLOBAL D_CYYMM;                                                           
+     %GLOBAL D_MONTH;                                                           
+     %GLOBAL D_YEAR;                                                            
+     %GLOBAL D_DAY;                                                             
+     %GLOBAL MONTH;                                                             
+                                                                                
+     ATTRIB  MONTH_T   FORMAT=$CHAR10.;                                         
+                                                                                
+     INPUT @1  COMMENT $1.                                                      
+           @2  TYPE    $9.                                                      
+           @11 INDATE  $9.                                                      
+           @11 INYEAR  $4.                                                      
+           @64 INDATE1 $7.                                                      
+           @64 INCYYMM $5.                                                      
+           @65 INYY1   $2.                                                      
+           @67 INMM1   $2.                                                      
+           @69 INDD1   $2.                                                      
+           @;                                                                   
+                                                                                
+     IF COMMENT NE '*' AND TYPE EQ 'CURRENT  ' THEN DO;                         
+        CALL SYMPUT('D_TODAY',PUT(INDATE1,$7.));                                
+        CALL SYMPUT('D_DATE',PUT(INDATE,$9.));                                  
+        CALL SYMPUT('D_CYYMM',PUT(INCYYMM,$5.));                                
+        CALL SYMPUT('D_YEAR',PUT(INYEAR,$4.));                                  
+        CALL SYMPUT('D_DAY',PUT(INDD1,$2.));                                    
+     END;                                                                       
+     ELSE RETURN;                                                               
+                                                                                
+     SELECT (INMM1);                                                            
+         WHEN ('01') MONTH_T  = 'JANUARY';                                      
+         WHEN ('02') MONTH_T  = 'FEBRUARY';                                     
+         WHEN ('03') MONTH_T  = 'MARCH';                                        
+         WHEN ('04') MONTH_T  = 'APRIL';                                        
+         WHEN ('05') MONTH_T  = 'MAY';                                          
+         WHEN ('06') MONTH_T  = 'JUNE';                                         
+         WHEN ('07') MONTH_T  = 'JULY';                                         
+         WHEN ('08') MONTH_T  = 'AUGUST';                                       
+         WHEN ('09') MONTH_T  = 'SEPTEMBER';                                    
+         WHEN ('10') MONTH_T  = 'OCTOBER';                                      
+         WHEN ('11') MONTH_T  = 'NOVEMBER';                                     
+         WHEN ('12') MONTH_T  = 'DECEMBER';                                     
+         OTHERWISE   MONTH_T  = ' ';                                            
+     END;                                                                       
+                                                                                
+     CALL SYMPUT('MONTH',PUT(MONTH_T,$03.));                                    
+                                                                                
+     KEEP D_TODAY D_DATE D_CYYMM D_MONTH D_YEAR D_DAY MONTH;                    
+    OUTPUT;                                                                     
+  RETURN;                                                                       
+                                                                                
+                                                                                
+ /*****************************************************************/            
+ /* THE FOLLOWING WILL GENERATE THE FTP INPUT CARD.               */            
+ /*****************************************************************/            
+  DATA FTPTXT;                                                                  
+                                                                                
+   ATTRIB TXT1     FORMAT=$CHAR80.                                              
+          TXT2     FORMAT=$CHAR80.                                              
+          TXT3     FORMAT=$CHAR80.                                              
+          TXT4     FORMAT=$CHAR80.;                                             
+                                                                                
+                                                                                
+ /* FIND THE O/P FILENAMES */                                                   
+   FID1=FOPEN('REPORT');                                                        
+   FNAME1 = FINFO(FID1,'DSNAME');                                               
+                                                                                
+   TXT1 = "CD T362337";                                                         
+   TXT2  = "PUT '"||TRIM(FNAME1)||"' + ";                                       
+   TXT3  = "CPM_Benefit_Report_"                                                
+          ||"&MONTH&D_YEAR..CSV";                                               
+   TXT4 = "QUIT";                                                               
+                                                                                
+   OUTPUT;                                                                      
+  RETURN;                                                                       
+                                                                                
+  DATA _NULL_;                                                                  
+    SET FTPTXT;                                                                 
+    FILE FTPCARD;                                                               
+    PUT @1  TXT1        $80.;                                                   
+    PUT @1  TXT2        $80.;                                                   
+    PUT @1  TXT3        $80.;                                                   
+    PUT @1  TXT4        $80.;                                                   
+RUN;                                                                            
+ /*****************************************************************/            
+ /* THE FOLLOWING WILL GENERATE SMTP MAILING CARD.                */            
+ /*****************************************************************/            
+  DATA SMTPTXT;                                                                 
+                                                                                
+   ATTRIB TXT1     FORMAT=$CHAR80.                                              
+          TXT2     FORMAT=$CHAR80.                                              
+          TXT3     FORMAT=$CHAR80.                                              
+          TXT4     FORMAT=$CHAR80.                                              
+          TXT5     FORMAT=$CHAR80.                                              
+          TXT6     FORMAT=$CHAR80.;                                             
+                                                                                
+                                                                                
+   TXT1 = "GB_PDS_Control@manulife.com";                                        
+   TXT2 = "  ";                                                                 
+   TXT3 = "CPM_Benefit_Report_"                                                 
+          ||"&MONTH&D_YEAR"                                                     
+          ||" IS SAVED TO LAN.";                                                
+   TXT4 = " ";                                                                  
+   TXT5 = "THE OUTPUT EXTRACT CAN BE FOUND IN THE FOLLOWING FOLDER:";           
+   TXT6 = "S:\can\GB\CA PIA\GB PDS Control Reports\CPM Benefit";                
+   OUTPUT;                                                                      
+  RETURN;                                                                       
+                                                                                
+  DATA _NULL_;                                                                  
+    SET SMTPTXT;                                                                
+    FILE SMTPCARD;                                                              
+    PUT @1  TXT1        $80.;                                                   
+    PUT @1  TXT2        $80.;                                                   
+    PUT @1  TXT3        $80.;                                                   
+    PUT @1  TXT4        $80.;                                                   
+    PUT @1  TXT5        $80.;                                                   
+    PUT @1  TXT6        $80.;                                                   
+RUN;                                                                            

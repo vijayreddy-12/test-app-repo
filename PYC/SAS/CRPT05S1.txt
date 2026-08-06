@@ -1,0 +1,74 @@
+/*******************************************************************/           
+/* --------------------------------------------------------------- */           
+/*            M A I N T E N A N C E     L O G                      */           
+/*            ===============================                      */           
+/*                                                                 */           
+/* DATE:        NAME:     DESCRIPTION:                             */           
+/* ---------    --------  ---------------------------------------- */           
+/* 17DEC2018    Likhitha  ORIGINAL VERSION (TL-362347)             */           
+/*=================================================================*/           
+/*******************************************************************/           
+/*            D E S C R I P T I O N                                */           
+/*                                                                 */           
+/* THIS SAS PIECE EXTRACT THE SPEDRGCA','MDPSDC','MDPDRUGP'       */            
+/* FUNCTIONS FROM CPD FOR ALL ACTIVE GROUP/DIVS.                   */           
+/*                                                                 */           
+/*=================================================================*/           
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    A.GROUP_ID "GROUP",                                                         
+    A.DIV_ID "DIVISION",                                                        
+    A.SPONSOR_NAME "SPONSOR",                                                   
+    C.FUNCTION_NAME "FUNCTION",                                                 
+    C.ACC_IND "ACCIND"                                                          
+    FROM DBCYCP1.TGD A,DBCYCP1.TGDFA C                                          
+    WHERE A.GROUP_ID = C.GROUP_ID   AND                                         
+          A.DIV_ID = C.DIV_ID       AND                                         
+          A.CONTRACT_STAT_CD = 'I'  AND                                         
+          C.FUNCTION_NAME IN ('SPEDRGCA','MDPSDC','MDPDRUGP')                   
+    ORDER BY A.GROUP_ID,A.DIV_ID );                                             
+                                                                                
+    ATTRIB ACC_IND_DES FORMAT=$25.;                                             
+                                                                                
+ DATA TEMP1;                                                                    
+  SET GRPLIST;                                                                  
+   IF ACCIND = 'Y' THEN ACC_IND_DES = "Yes                  ";                  
+   IF ACCIND = 'N' THEN ACC_IND_DES = "No                   ";                  
+   IF ACCIND = '5' THEN ACC_IND_DES = "Voluntary            ";                  
+   IF ACCIND = '6' THEN ACC_IND_DES = "Mandatory            ";                  
+   IF ACCIND = 'H' THEN ACC_IND_DES = "None                 ";                  
+   IF ACCIND = '1' THEN ACC_IND_DES = "My Drug Plan         ";                  
+   IF ACCIND = '2' THEN ACC_IND_DES = "Pharmacy Value Finder";                  
+   IF ACCIND = '3' THEN ACC_IND_DES = "Both                 ";                  
+   IF ACCIND = '4' THEN ACC_IND_DES = "Both PVF First       ";                  
+   OUTPUT;                                                                      
+   RETURN;                                                                      
+                                                                                
+                                                                                
+ DATA REPORT;                                                                   
+  FILE REPORT;                                                                  
+   SET TEMP1;                                                                   
+  IF _N_=1 THEN DO;                                                             
+                                                                                
+  PUT 'GROUP#~DIVISION~SPONSOR~Speciality Drug Care~'                           
+      'My Drug Plan~SDC~';                                                      
+      END;                                                                      
+                                                                                
+   PUT   @1    GROUP                                 07.                        
+         @8    '~'                                                              
+         @9    DIVISION                              03.                        
+         @12   '~'                                                              
+         @13   SPONSOR                               60.                        
+         @73   '~'                                                              
+         @74   FUNCTION                              08.                        
+         @82   '~'                                                              
+         @83   ACC_IND_DES                           25.                        
+         @108  '~'                                                              
+       ;                                                                        
+ RUN;                                                                           
+/*                                                                              

@@ -1,0 +1,28 @@
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    B.CUST_ID  "CUSTID",                                                        
+    B.FUNCTION_NAME "FUNCNAME",                                                 
+    B.ACC_IND  "ACCIND"                                                         
+    FROM DBCYCP1.TUT  A,                                                        
+         DBCYCP1.TFNCT B                                                        
+    WHERE A.CUST_ID = B.CUST_ID AND                                             
+          B.FUNCTION_NAME = 'PASECUPD'                                          
+    ORDER BY B.CUST_ID                                                          
+     );                                                                         
+                                                                                
+                                                                                
+ DATA DATA2;                                                                    
+   FILE PASECUPD;                                                               
+   SET GRPLIST;                                                                 
+                                                                                
+                                                                                
+   PUT   @1    CUSTID                                11.                        
+         @12   '~'                                                              
+         @13   ACCIND                                01.                        
+         ;                                                                      
+    RUN;                                                                        

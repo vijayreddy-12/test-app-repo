@@ -1,0 +1,87 @@
+ /*-- OBTAIN DB2 SSID AND CREATID ID FROM JCL PARM-------*/             00271019
+ DATA _NULL_;                                                           00272019
+    COMMA   = INDEX("&SYSPARM",',');                                    00273019
+    SSID    = SUBSTR("&SYSPARM",1,COMMA-1);                             00274019
+    CREATID = SUBSTR("&SYSPARM",COMMA+1);                               00274119
+    CREATOR = 'DBCYC'||CREATID;                                         00274219
+    IF SSID NOT IN ('PDBC','DDBC') THEN DO ;                            00274419
+       PUT '>>>>> SSID MUST BE PDBC OR DDBC <<<<<';                     00274621
+       PUT '>>>>> PGM TERMINATED ABNORMALLY <<<<<';                     00274721
+       ABORT ABEND 16;                                                  00274819
+    END;                                                                00274919
+    IF CREATID NOT IN ('P1','T1') THEN DO ;                             00275019
+       PUT '>>>>> SYSPARM MUST BE P1 OR T1  <<<<<';                     00275321
+       PUT '>>>>> PGM TERMINATED ABNORMALLY <<<<<';                     00275421
+       ABORT ABEND 16;                                                  00275619
+    END;                                                                00275719
+    CALL SYMPUT ('SSID'   , SSID);                                      00275919
+    CALL SYMPUT ('CREATOR', CREATOR);                                   00276019
+                                                                        00276419
+ RUN;                                                                   00276819
+   %PUT SSID=&SSID;                                                     00276921
+   %PUT CREATOR=&CREATOR;                                               00277021
+                                                                        00277119
+   OPTIONS DB2SSID=&SSID LINESIZE=120 NOCENTER;                         00277321
+                                                                        00278019
+ PROC SQL ;                                                             00280009
+   CREATE TABLE GRPLIST AS                                              00290000
+   SELECT *                                                             00300000
+   FROM CONNECTION TO DB2                                               00310000
+                                                                        00311017
+   (SELECT TPAA.GROUP_ID          AS GROUP_ID                           00320017
+      ,    TPAA.DIV_ID            AS DIV_ID                             00330017
+      ,    TUT.USER_ID            AS USER_ID                            00340017
+      ,    TGD.SPONSOR_NAME       AS SPONSOR_NAME                       00350017
+                                                                        00351017
+    FROM   &CREATOR..TFNCT           TFNCT                              00360017
+      ,    &CREATOR..TPAA            TPAA                               00370017
+      ,    &CREATOR..TUT             TUT                                00380017
+      ,    &CREATOR..TCUST           TCUST                              00390017
+      ,    &CREATOR..TGD             TGD                                00400017
+                                                                        00401017
+    WHERE  TFNCT.FUNCTION_NAME     = 'DISRPT  '                         00410017
+     AND   TFNCT.ACC_IND           = 'Y'                                00420017
+     AND   TFNCT.CUST_ID           = TPAA.CUST_ID                       00430017
+     AND   TFNCT.CUST_ID           = TCUST.CUST_ID                      00440017
+     AND   TCUST.ROLE         NOT IN ('I', 'R')                         00450017
+     AND   TPAA.PA_STAT_CD         = 'A'                                00460017
+     AND   TPAA.GROUP_ID      NOT IN ('0011111','0011112')              00470017
+     AND   TUT.USER_ID      NOT LIKE 'CFB%'                             00480017
+     AND   TUT.USER_ID      NOT LIKE 'BPS%'                             00490017
+     AND   TUT.USER_ID      NOT LIKE '%TEST%'                           00500017
+     AND   TPAA.GROUP_ID           = TGD.GROUP_ID                       00510017
+     AND   TPAA.DIV_ID             = TGD.DIV_ID                         00520017
+     AND   TFNCT.CUST_ID           = TUT.CUST_ID);                      00530017
+                                                                        00540017
+ PROC SORT DATA=GRPLIST;                                                00550000
+   BY GROUP_ID DIV_ID USER_ID;                                          00560000
+                                                                        00570000
+ DATA REPORT;                                                           00580000
+   FILE REPORT;                                                         00590000
+   SET GRPLIST;                                                         00600000
+   PUT   @1    GROUP_ID       7.                                        00610000
+         @8    ';'                                                      00620000
+         @9    DIV_ID         3.                                        00630000
+         @12   ';'                                                      00640000
+         @13   USER_ID        20.                                       00650000
+         @33   ';'                                                      00660000
+         @34   SPONSOR_NAME;                                            00670000
+                                                                        00680017
+ DATA REPORT;                                                           00690022
+   FILE HDRCOUNT;                                                       00700022
+   PUT   @1    'GROUP'                                                  00720022
+         @8    ','                                                      00730023
+         @9    'GROUP NAME'                                             00740022
+         @97   ','                                                      00750023
+         @98   'COUNT';                                                 00760022
+                                                                        00790022
+ DATA REPORT;                                                           00800022
+   FILE HDRDATA;                                                        00810022
+   PUT   @1    'GROUP'                                                  00820022
+         @8    ','                                                      00830023
+         @9    'DIV'                                                    00840022
+         @12   ','                                                      00850023
+         @13   'USER'                                                   00860022
+         @33   ','                                                      00861023
+         @34   'GROUP NAME';                                            00862022
+                                                                        00870022

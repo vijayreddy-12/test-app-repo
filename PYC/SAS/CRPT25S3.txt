@@ -1,0 +1,41 @@
+ %INCLUDE INCLUDE(OPTIONS1);    /* SAS OPTIONS */                               
+ %INCLUDE MACROS(VSAMERRI,FILEREAD);                                            
+                                                                                
+ /******************************************************************/           
+ /**  READ IN THE RECORDS THAT ARE TO BE CHANGED                   */           
+ /******************************************************************/           
+  DATA ACTV;                                                                    
+   INFILE ACTIVATE END=EOF;                                                     
+    INPUT                                                                       
+      @1    FIRST              $CHAR80.                                         
+      @81   REST               $CHAR120.                                        
+      ;                                                                         
+                                                                                
+                                                                                
+  DATA REGD;                                                                    
+  INFILE REGISTER END=EOF;                                                      
+                                                                                
+    INPUT                                                                       
+      @1    FIRST              $CHAR80.                                         
+      @81   REST               $CHAR120.                                        
+      ;                                                                         
+                                                                                
+                                                                                
+  PROC SORT DATA=ACTV;                                                          
+  BY FIRST;                                                                     
+                                                                                
+  PROC SORT DATA = REGD;                                                        
+  BY FIRST;                                                                     
+                                                                                
+ DATA REGDACTV;                                                                 
+  MERGE ACTV(IN=K1) REGD(IN=K2);                                                
+  BY FIRST;                                                                     
+                                                                                
+  IF K1 AND K2 THEN OUTPUT;                                                     
+                                                                                
+                                                                                
+  DATA REPORT;                                                                  
+    FILE REPORT;                                                                
+    SET REGDACTV;                                                               
+    PUT   @1    FIRST            $CHAR80.                                       
+          @81   REST             $CHAR120.;                                     

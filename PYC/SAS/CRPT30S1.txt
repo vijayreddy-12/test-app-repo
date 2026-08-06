@@ -1,0 +1,91 @@
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    TP.GROUP_ID "GROUP",                                                        
+    TP.DIV_ID "DIVISION",                                                       
+    TC.SPONSOR_NAME "COMPANY NAME",                                             
+    TC.CUST_FIRST_NAME "FIRST NAME",                                            
+    TC.CUST_LAST_NAME "LAST NAME",                                              
+    TC.ROLE "ROLE",                                                             
+    TC.CUST_ADDR_1 "ADDRESS1",                                                  
+    TC.CUST_ADDR_2 "ADDRESS2",                                                  
+    TC.CUST_ADDR_CITY "CITY",                                                   
+    TC.CUST_ADDR_PROV "PROVINCE",                                               
+    TC.CUST_ADDR_COUNTRY "COUNTRY",                                             
+    TC.CUST_ADDR_POST_CD "POST CODE",                                           
+    TC.EMAIL_ADDR "EMAIL ADDRESS" ,                                             
+    TC.BUS_PHONE_NUM "BUSPHONE",                                                
+    TC.BUS_PHONE_EXT "EXTN",                                                    
+    TC.PHONE_NUM "PHONE",                                                       
+    TP.BILL_PRSNT_IND "BILL_PRSNT"                                              
+    FROM DBCYCP1.TPAA TP, DBCYCP1.TCUST TC, DBCYCP1.TGD GD                      
+    WHERE                                                                       
+       TP.GROUP_ID = GD.GROUP_ID AND                                            
+       TP.DIV_ID = GD.DIV_ID AND                                                
+       GD.CONTRACT_STAT_CD = 'I' AND                                            
+       TP.CUST_ID = TC.CUST_ID AND                                              
+       TC.CUST_STAT_CD = 'A' AND                                                
+       TC.ROLE = 'P' AND                                                        
+       TP.PA_STAT_CD  IN ('A')                                                  
+   );                                                                           
+                                                                                
+ DATA REPORT;                                                                   
+   FILE REPORT;                                                                 
+   SET GRPLIST;                                                                 
+   PUT   @1    GROUP                                 07.                        
+         @8    '~'                                                              
+         @9    DIVISION                              03.                        
+         @12   '~'                                                              
+         @13   COMPANY_NAME                          60.                        
+         @73   '~'                                                              
+         @74   FIRST_NAME                            30.                        
+         @104  '~'                                                              
+         @105  LAST_NAME                             30.                        
+         @135  '~'                                                              
+         @136  ROLE                                  01.                        
+         @137  '~'                                                              
+         @138  BILL_PRSNT                            01.                        
+         @139  '~'                                                              
+         @140  ADDRESS1                              60.                        
+         @200  '~'                                                              
+         @201  ADDRESS2                              60.                        
+         @261  '~'                                                              
+         @262  CITY                                  60.                        
+         @322  '~'                                                              
+         @323  PROVINCE                              30.                        
+         @353  '~'                                                              
+         @354  COUNTRY                               30.                        
+         @384  '~'                                                              
+         @385  POST_CODE                             09.                        
+         @394  '~'                                                              
+         @395  EMAIL_ADDRESS                         60.                        
+         @455  '~'                                                              
+         @456  BUSPHONE                              10.                        
+         @466  '~'                                                              
+         @467  EXTN                                  06.                        
+         @473  '~'                                                              
+         ;                                                                      
+                                                                                
+ DATA TITLES;                                                                   
+   FILE TITLES;                                                                 
+   PUT     'GROUP'               +(-0) '~'                                      
+           'DIVISION'            +(-0) '~'                                      
+           'COMPANY_NAME'        +(-0) '~'                                      
+           'FIRST_NAME'          +(-0) '~'                                      
+           'LAST_NAME'           +(-0) '~'                                      
+           'ROLE'                +(-0) '~'                                      
+           'BILL_PRSNT'          +(-0) '~'                                      
+           'ADDRESS1'            +(-0) '~'                                      
+           'ADDRESS2'            +(-0) '~'                                      
+           'CITY'                +(-0) '~'                                      
+           'PROVINCE'            +(-0) '~'                                      
+           'COUNTRY'             +(-0) '~'                                      
+           'POST_CODE'           +(-0) '~'                                      
+           'EMAIL_ADDRESS'       +(-0) '~'                                      
+           'PHONE'               +(-0) '~'                                      
+           'EXTN'                +(-0) '~'                                      
+         ;                                                                      

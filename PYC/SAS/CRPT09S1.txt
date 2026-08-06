@@ -1,0 +1,223 @@
+ %INCLUDE MACROS(VSAMERRI,FILEREAD);                                    00840000
+                                                                                
+ OPTIONS SOURCE SOURCE2 DATE NUMBER MACROGEN MPRINT                             
+         MISSING='.' NOCENTER LINESIZE=133;                                     
+                                                                                
+  /*-------------------------------------------------------             00860000
+    - READ YESTERDAY'S DATE                               -             00870000
+    -------------------------------------------------------*/           00880000
+  %FILEREAD(DATES,DATEFILE,DATELOGIC,0);                                00890000
+  DATELOGIC:                                                            00900000
+                                                                        00910000
+  %GLOBAL D_DATE_TIME;                                                  00920000
+                                                                        00930000
+  ATTRIB TEMP_DATE FORMAT=$CHAR28.;                                     00960000
+                                                                        00970000
+    INPUT @1  COMMENT $1.                                               00980000
+          @2  TYPE    $9.                                               00990000
+          @38 DATEYMD $CHAR10.                                          01000000
+          @;                                                            01030000
+                                                                        01040000
+    IF COMMENT EQ '*' OR TYPE NE 'CURRENT  ' THEN RETURN;               01050000
+                                                                        01060000
+    TEMP_DATE = "'" || DATEYMD || " 23:59:59.000000" || "'";            01300000
+                                                                        01290000
+    CALL SYMPUT('D_DATE_TIME',PUT(TEMP_DATE,$28.));                     01310000
+                                                                        01320000
+  /*KEEP D_DATE_TIME; */                                                01330000
+                                                                                
+    OUTPUT;                                                             01340000
+                                                                                
+  RETURN;                                                               01350000
+                                                                                
+  PROC PRINT DATA=DATES;                                                        
+                                                                                
+  DATA _NULL_;                                                                  
+     PUT " ";                                                                   
+     PUT "DATE TIME IS '&D_DATE_TIME.'";                                        
+     PUT " ";                                                                   
+                                                                                
+  /*-------------------------------------------------------             00860000
+    - GET ADVISOR DETAILS                                 -             00870000
+    -------------------------------------------------------*/           00880000
+                                                                                
+  OPTIONS LINESIZE=100 DB2SSID=PDBC NOCENTER;                                   
+                                                                         0085000
+  PROC SQL;                                                                     
+     CREATE TABLE ADVQUERY AS                                                   
+     SELECT *                                                                   
+     FROM CONNECTION TO DB2                                                     
+     (SELECT TC.CUST_ID         AS ADVID                                        
+            ,TC.CUST_FIRST_NAME AS ADVFNM                                       
+            ,TC.CUST_LAST_NAME  AS ADVLNM                                       
+            ,TA.ADVISOR_ID      AS SELLCD                                       
+            ,YEAR(TA.CHN_TS)    AS SCYYYY                                       
+            ,MONTH(TA.CHN_TS)   AS SCMM                                         
+            ,DAY(TA.CHN_TS)     AS SCDD                                         
+            ,HOUR(TA.CHN_TS)    AS SCHH                                         
+            ,MINUTE(TA.CHN_TS)  AS SCMN                                         
+            ,TC.CHN_USER_ID     AS CHUID                                        
+            ,YEAR(TC.CHN_TS)    AS CHYYYY                                       
+            ,MONTH(TC.CHN_TS)   AS CHMM                                         
+            ,DAY(TC.CHN_TS)     AS CHDD                                         
+            ,HOUR(TC.CHN_TS)    AS CHHH                                         
+            ,MINUTE(TC.CHN_TS)  AS CHMN                                         
+      FROM DBCYCP1.TCUST TC JOIN DBCYCP1.TADVSR TA                              
+        ON TC.CUST_ID = TA.CUST_ID                                              
+      WHERE TA.CHN_TS > &D_DATE_TIME                                            
+     );                                                                         
+                                                                                
+  PROC PRINT DATA=ADVQUERY;                                                     
+                                                                                
+  /*-------------------------------------------------------             00860000
+    - FORMAT CHANGE TIMESTAMPS                            -             00870000
+    -------------------------------------------------------*/           00880000
+                                                                                
+  DATA ADVLIST;                                                                 
+    SET ADVQUERY;                                                               
+                                                                                
+     ATTRIB SCDYYYY FORMAT=$CHAR4.                                              
+            SCDMM   FORMAT=$CHAR2.                                              
+            SCDDD   FORMAT=$CHAR2.                                              
+            SCDHH   FORMAT=$CHAR2.                                              
+            SCDMN   FORMAT=$CHAR2.                                              
+            SCTS    FORMAT=$CHAR25.;                                            
+                                                                                
+     SCDYYYY = PUT(SCYYYY, $04.);                                               
+                                                                                
+     IF SCMM < 10 THEN                                                          
+     DO;                                                                        
+        SCDMM = '0' || PUT(SCMM, $01.);                                         
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        SCDMM = PUT(SCMM, $02.);                                                
+     END;                                                                       
+                                                                                
+     IF SCDD < 10 THEN                                                          
+     DO;                                                                        
+        SCDDD   = '0'|| PUT(SCDD, $01.);                                        
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        SCDDD   = PUT(SCDD, $02.);                                              
+     END;                                                                       
+                                                                                
+     IF SCHH < 10 THEN                                                          
+     DO;                                                                        
+        SCDHH   = '0' || PUT(SCHH, $01.);                                       
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        SCDHH   = PUT(SCHH, $02.);                                              
+     END;                                                                       
+                                                                                
+     IF SCMN < 10 THEN                                                          
+     DO;                                                                        
+        SCDMN   = '0' || PUT(SCMN, $01.);                                       
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        SCDMN   = PUT(SCMN, $02.);                                              
+     END;                                                                       
+                                                                                
+     SCTS = SCDYYYY || '-' || SCDMM || '-' || SCDDD || ' ' ||                   
+            SCDHH || ':' || SCDMN;                                              
+                                                                                
+     ATTRIB CHDYYYY FORMAT=$CHAR4.                                              
+            CHDMM   FORMAT=$CHAR2.                                              
+            CHDDD   FORMAT=$CHAR2.                                              
+            CHDHH   FORMAT=$CHAR2.                                              
+            CHDMN   FORMAT=$CHAR2.                                              
+            CHTS    FORMAT=$CHAR16.;                                            
+                                                                                
+     CHDYYYY = PUT(CHYYYY, $04.);                                               
+                                                                                
+     IF CHMM < 10 THEN                                                          
+     DO;                                                                        
+        CHDMM = '0' || PUT(CHMM, $01.);                                         
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        CHDMM = PUT(CHMM, $02.);                                                
+     END;                                                                       
+                                                                                
+     IF CHDD < 10 THEN                                                          
+     DO;                                                                        
+        CHDDD   = '0'|| PUT(CHDD, $01.);                                        
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        CHDDD   = PUT(CHDD, $02.);                                              
+     END;                                                                       
+                                                                                
+     IF CHHH < 10 THEN                                                          
+     DO;                                                                        
+        CHDHH   = '0' || PUT(CHHH, $01.);                                       
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        CHDHH   = PUT(CHHH, $02.);                                              
+     END;                                                                       
+                                                                                
+     IF CHMN < 10 THEN                                                          
+     DO;                                                                        
+        CHDMN   = '0' || PUT(CHMN, $01.);                                       
+     END;                                                                       
+     ELSE                                                                       
+     DO;                                                                        
+        CHDMN   = PUT(CHMN, $02.);                                              
+     END;                                                                       
+                                                                                
+     CHTS = CHDYYYY || '-' || CHDMM || '-' || CHDDD || ' ' ||                   
+            CHDHH || ':' || CHDMN;                                              
+                                                                                
+    OUTPUT;                                                                     
+    RETURN;                                                                     
+                                                                                
+  /*-------------------------------------------------------             00860000
+    - PRODUCE REPORT                                      -             00870000
+    -------------------------------------------------------*/           00880000
+                                                                                
+  DATA CPDEXTR;                                                                 
+    FILE ADVEXTR;                                                               
+    SET ADVLIST;                                                                
+                                                                                
+  /* COLUMN TITLES BEFORE THE FIRST RECORD                 */                   
+                                                                                
+    IF (_N_ = 1) THEN                                                           
+    DO;                                                                         
+       PUT   @1    'ADVISOR ID'                                                 
+             @11   ','                                                          
+             @12   'ADVISOR FIRST NAME'                                         
+             @30   ','                                                          
+             @31   'ADVISOR LAST NAME'                                          
+             @48   ','                                                          
+             @49   'SELLING CODE (SC)'                                          
+             @66   ','                                                          
+             @67   'SC CHANGE TIME'                                             
+             @81   ','                                                          
+             @82   'ADV UPDATER ID'                                             
+             @96   ','                                                          
+             @97   'ADV CHANGE TIME'                                            
+             @112  ','                                                          
+             ;                                                                  
+    END;                                                                        
+                                                                                
+    PUT   @1    ADVID              $11.                                         
+          @12   ','                                                             
+          @13   ADVFNM             $30.                                         
+          @43   ','                                                             
+          @44   ADVLNM             $30.                                         
+          @74   ','                                                             
+          @75   SELLCD             $06.                                         
+          @81   ','                                                             
+          @82   SCTS               $16.                                         
+          @98   ','                                                             
+          @99   CHUID              $20.                                         
+          @119  ','                                                             
+          @120  CHTS               $16.                                         
+          @136  ','                                                             
+          ;                                                                     
+                                                                                
+ RUN;                                                                   03360000

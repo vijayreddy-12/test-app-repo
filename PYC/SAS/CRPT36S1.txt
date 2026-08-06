@@ -1,0 +1,46 @@
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    C.GROUP_ID "GROUP",                                                         
+    C.DIV_ID "DIVISION",                                                        
+    C.SITE "SITE",                                                              
+    C.FUNCTION_NAME  "FUNCTION_NAME",                                           
+    C.ACC_IND "ACCIND",                                                         
+    D.SPONSOR_NAME "SPONSOR_NAME"                                               
+    FROM DBCYCP1.TGDFA  C, DBCYCP1.TGD D                                        
+    WHERE C.SITE IN('PA') AND                                                   
+          D.CONTRACT_STAT_CD IN ( 'I','P') AND                                  
+          C.FUNCTION_NAME  = 'WRKADVSR' AND                                     
+          C.GROUP_ID = D.GROUP_ID  AND                                          
+          C.DIV_ID   = D.DIV_ID                                                 
+     );                                                                         
+                                                                                
+                                                                                
+ DATA DATA2;                                                                    
+   FILE ALLFORM;                                                                
+   SET GRPLIST;                                                                 
+                                                                                
+     IF _N_=1 THEN DO;                                                          
+     PUT   'GROUP#'                                        +(-0) ';'            
+           'DIVISION'                                      +(-0) ';'            
+           'SPONSOR_NAME'                                  +(-0) ';'            
+           'FUNCTION_NAME'                                 +(-0) ';'            
+           'ACT_IND'                                       +(-0) ';';           
+     END;                                                                       
+                                                                                
+   PUT   @1    GROUP                                 07.                        
+         @8    '$'                                                              
+         @9    DIVISION                              03.                        
+         @12   '$'                                                              
+         @13   SPONSOR_NAME                          60.                        
+         @73   '$'                                                              
+         @74   FUNCTION_NAME                         08.                        
+         @82   '$'                                                              
+         @83   ACCIND                                01.                        
+         @84   '$'                                                              
+         ;                                                                      
+    RUN;                                                                        

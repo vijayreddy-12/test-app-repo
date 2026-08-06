@@ -1,0 +1,138 @@
+/*******************************************************************/           
+/* --------------------------------------------------------------- */           
+/*            M A I N T E N A N C E     L O G                      */           
+/*            ===============================                      */           
+/*                                                                 */           
+/* DATE:        NAME:     DESCRIPTION:                             */           
+/* ---------    --------  ---------------------------------------- */           
+/* 31OCT2018    Likhitha  ORIGINAL VERSION (TL-372343)             */           
+/*=================================================================*/           
+/*******************************************************************/           
+/*            D E S C R I P T I O N                                */           
+/*                                                                 */           
+/* THIS SAS PIECE EXTRACT THE DETAILS OF PLAN ADMINISTRTOR FROM CPD*/           
+/*                                                                 */           
+/*=================================================================*/           
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    TU.USER_ID "USER",                                                          
+    TP.GROUP_ID "GROUP",                                                        
+    TP.DIV_ID "DIVISION",                                                       
+    TG.SPONSOR_NAME "GROUP_NAME",                                               
+    TC.ROLE "ROLE",                                                             
+    TC.CUST_FIRST_NAME "FIRST_NAME",                                            
+    TC.CUST_LAST_NAME "LAST_NAME",                                              
+    TC.LANG_CD           "LANGCD",                                              
+    TC.CUST_STAT_CD "STATUS",                                                   
+    TC.CUST_STAT_REAS_CD "REASON",                                              
+    DATE(TC.CHN_TS)  "DATE_CHANGED",                                            
+    TC.EMAIL_ADDR "EMAIL_ADDRESS",                                              
+    TC.CUST_ADDR_1 "ADDR_1",                                                    
+    TC.CUST_ADDR_2 "ADDR_2",                                                    
+    TC.CUST_ADDR_CITY "CITY",                                                   
+    TC.CUST_ADDR_PROV "PROVINCE",                                               
+    TC.CUST_ADDR_COUNTRY "COUNTRY",                                             
+    TC.CUST_ADDR_POST_CD "POSTAL_CD"                                            
+    FROM DBCYCP1.TUT TU,                                                        
+         DBCYCP1.TCUST TC,                                                      
+         DBCYCP1.TPAA TP,                                                       
+         DBCYCP1.TGD  TG                                                        
+    WHERE                                                                       
+          TU.CUST_ID = TC.CUST_ID AND                                           
+          TC.CUST_ID = TP.CUST_ID AND                                           
+          TC.CUST_STAT_CD = 'A' AND                                             
+          TC.ROLE IN ('A','P') AND                                              
+          TP.GROUP_ID = TG.GROUP_ID AND                                         
+          TP.DIV_ID   = TG.DIV_ID AND                                           
+          TG.CONTRACT_STAT_CD = 'I'                                             
+    ORDER BY TP.GROUP_ID,TP.DIV_ID                                              
+   );                                                                           
+                                                                                
+     ATTRIB ROLE_EXP FORMAT=$30.;                                               
+     ATTRIB STATUS_EXP  FORMAT=$10.;                                            
+     ATTRIB REASON_EXP  FORMAT=$50.;                                            
+                                                                                
+ DATA TEMP1;                                                                    
+   SET GRPLIST;                                                                 
+  IF STATUS = "A" THEN STATUS_EXP = "Active    ";                               
+  IF STATUS = "S" THEN STATUS_EXP = "Suspended ";                               
+  IF ROLE = " " THEN ROLE_EXP = "Default value for TGCT        ";               
+  IF ROLE = "A" THEN ROLE_EXP = "Plan Advisor                  ";               
+  IF ROLE = "C" THEN ROLE_EXP = "CSR                           ";               
+  IF ROLE = "I" THEN ROLE_EXP = "Internal Manulife Staff       ";               
+  IF ROLE = "M" THEN ROLE_EXP = "Plan Advisor Manager          ";               
+  IF ROLE = "P" THEN ROLE_EXP = "Plan Administrator            ";               
+  IF ROLE = "R" THEN ROLE_EXP = "RGO Staff                     ";               
+  IF ROLE = "S" THEN ROLE_EXP = "CSR with Access to Staff Plan ";               
+  IF ROLE = "T" THEN ROLE_EXP = "MLI (Trainer)                 ";               
+  IF REASON = "A" THEN REASON_EXP = "PAM Requested                   ";         
+  IF REASON = "B" THEN REASON_EXP = "Gipsy Batch Activation          ";         
+  IF REASON = "C" THEN REASON_EXP = "Conversion                      ";         
+  IF REASON = "D" THEN REASON_EXP = "Post Conversion                 ";         
+  IF REASON = "E" THEN REASON_EXP = "Use VO Address for VO/HP new               
+                                     business                        ";         
+  IF REASON = "G" THEN REASON_EXP = "MLAC GIS 3.0 preactivation                 
+                                     batch process                   ";         
+  IF REASON = "H" THEN REASON_EXP = "Use HP address information      ";         
+  IF REASON = "M" THEN REASON_EXP = "MLI Requested                   ";         
+  IF REASON = "N" THEN REASON_EXP = "                                ";         
+  IF REASON = "O" THEN REASON_EXP = "Use VO address information      ";         
+  IF REASON = "P" THEN REASON_EXP = "Password Suspended              ";         
+  IF REASON = "Q" THEN REASON_EXP = "PVQ VIOLATION                   ";         
+  IF REASON = "R" THEN REASON_EXP = "RGO Requested                   ";         
+  IF REASON = "T" THEN REASON_EXP = "Terminated                      ";         
+  IF REASON = "V" THEN REASON_EXP = "VO Pre-registration             ";         
+   OUTPUT;                                                                      
+   RETURN;                                                                      
+                                                                                
+ DATA REPORT;                                                                   
+   FILE REPORT;                                                                 
+   SET TEMP1;                                                                   
+    IF _N_=1 THEN DO;                                                           
+                                                                                
+    PUT 'GROUP~DIV~SPONSER_NAME~ROLE~FIRST_NAME~LAST_NAME~LANG~'                
+        'STATUS~REASON~CHANGE~E-mail~ADDR-1~ADDR-2~CITY~PROV~'                  
+        'COUNTRY~POSTAL_CODE';                                                  
+        END;                                                                    
+                                                                                
+   PUT   @01   GROUP                      07.                                   
+         @08   '~'                                                              
+         @09   DIVISION                   03.                                   
+         @12   '~'                                                              
+         @13   GROUP_NAME                 60.                                   
+         @73   '~'                                                              
+         @74   ROLE_EXP                   30.                                   
+         @104  '~'                                                              
+         @105  FIRST_NAME                 30.                                   
+         @135  '~'                                                              
+         @136  LAST_NAME                  30.                                   
+         @166  '~'                                                              
+         @167  LANGCD                     01.                                   
+         @168  '~'                                                              
+         @169  STATUS_EXP                 10.                                   
+         @179  '~'                                                              
+         @180  REASON_EXP                 50.                                   
+         @230  '~'                                                              
+         @231  DATE_CHANGED           DATE10.                                   
+         @257  '~'                                                              
+         @258  EMAIL_ADDRESS              60.                                   
+         @318  '~'                                                              
+         @319  ADDR_1                     60.                                   
+         @379  '~'                                                              
+         @380  ADDR_2                     60.                                   
+         @440  '~'                                                              
+         @441  CITY                       60.                                   
+         @501  '~'                                                              
+         @502  PROVINCE                   30.                                   
+         @532  '~'                                                              
+         @533  COUNTRY                    30.                                   
+         @563  '~'                                                              
+         @564  POSTAL_CD                  09.                                   
+         @573  '~'                                                              
+          ;                                                                     
+      RUN;                                                                      

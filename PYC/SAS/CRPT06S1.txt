@@ -1,0 +1,78 @@
+/*******************************************************************/           
+/* --------------------------------------------------------------- */           
+/*            M A I N T E N A N C E     L O G                      */           
+/*            ===============================                      */           
+/*                                                                 */           
+/* DATE:        NAME:     DESCRIPTION:                             */           
+/* ---------    --------  ---------------------------------------- */           
+/* 12DEC2018    Aftab     ORIGINAL VERSION (TL-362337)             */           
+/*=================================================================*/           
+/*******************************************************************/           
+/*            D E S C R I P T I O N                                */           
+/*                                                                 */           
+/* THIS SAS PIECE EXTRACT THE 'Site Authority',                    */           
+/* 'Accum Balances' and all OCS indicators                         */           
+/* FUNCTIONS FROM CPD FOR ALL ACTIVE GROUP/DIVS FROM PMSS SITE     */           
+/*                                                                 */           
+/*=================================================================*/           
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    A.GROUP_ID "GROUP",                                                         
+    A.DIV_ID "DIVISION",                                                        
+    A.AUTH_PMSS_IND "AUTH_IND",                                                 
+    C.FUNCTION_NAME "FUNCTION",                                                 
+    C.ACC_IND "ACCIND"                                                          
+    FROM DBCYCP1.TGD A,DBCYCP1.TGDFA C                                          
+    WHERE A.GROUP_ID = C.GROUP_ID   AND                                         
+          A.DIV_ID = C.DIV_ID       AND                                         
+          A.CONTRACT_STAT_CD = 'I'  AND                                         
+          C.SITE = 'PMSS'  AND                                                  
+          C.FUNCTION_NAME IN ('ACCUM','OCSADD','OCSAMCSE','OCSCI',              
+                              'OCSDENT','OCSDEPLF','OCSDRUG',                   
+                              'OCSLTD', 'OCSATTCH')                             
+    ORDER BY A.GROUP_ID,A.DIV_ID );                                             
+                                                                                
+    ATTRIB ACC_IND_DES FORMAT=$09.;                                             
+    ATTRIB AUTH_IND_DES FORMAT=$09.;                                            
+                                                                                
+ DATA TEMP1;                                                                    
+  SET GRPLIST;                                                                  
+   IF AUTH_IND = 'Y' THEN AUTH_IND_DES = "Yes    ";                             
+   IF AUTH_IND = 'N' THEN AUTH_IND_DES = "No     ";                             
+   IF ACCIND = 'Y' THEN ACC_IND_DES = "Yes      ";                              
+   IF ACCIND = 'N' THEN ACC_IND_DES = "No       ";                              
+   IF ACCIND = 'C' THEN ACC_IND_DES = "Choice   ";                              
+   IF ACCIND = 'O' THEN ACC_IND_DES = "Optional ";                              
+   OUTPUT;                                                                      
+   RETURN;                                                                      
+                                                                                
+                                                                                
+ DATA ALLFUNC;                                                                  
+  FILE ALLFUNC;                                                                 
+   SET TEMP1;                                                                   
+  IF _N_=1 THEN DO;                                                             
+                                                                                
+  PUT 'GROUP#,DIVISION,Site Authority,Accum Balances,'                          
+      'AD&D Claims,AMCS Claim Submission,Critical Illness Claims,'              
+      'Dental Claims,Dependent Life Claims,Drug Claims,'                        
+      'LTD Claims,Mandatory Attachment,';                                       
+      END;                                                                      
+                                                                                
+   PUT   @1    GROUP                                 07.                        
+         @8    ','                                                              
+         @9    DIVISION                              03.                        
+         @12   ','                                                              
+         @13   AUTH_IND_DES                          09.                        
+         @22   ','                                                              
+         @23   FUNCTION                              08.                        
+         @31   ','                                                              
+         @32   ACC_IND_DES                           09.                        
+         @41   ','                                                              
+       ;                                                                        
+   RUN;                                                                         
+/*                                                                              
