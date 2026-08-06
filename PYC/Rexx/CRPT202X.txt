@@ -1,0 +1,40 @@
+/* REXX                                                                         
+  This routine accepts a dataset name as input.                                 
+  The routine will concoct an FTP card name based                               
+  on the original DSN provided, it will append the                              
+  suffix .FTPCARD                                                               
+  The routine will further create an FTP control                                
+  card containing a taget dsn suffixed with the                                 
+  system date (in the format PA_ Emails_YYYYMMDD.txt)                           
+  and write it to the .FTPCARD suffixed dataset. */                             
+                                                                                
+arg origdsn                                                                     
+                                                                                
+string = origdsn || '.FTPCARD'                                                  
+x = outtrap('TRASH.')                                                           
+IF  SYSDSN("'"string"'") = 'OK'   THEN                                          
+ DO                                                                             
+   /*   FILE EXISTS - ALLOCATE WITH DISP=SHR  */                                
+   "ALLOC F(OUT1) DA('"string"') SHR REUSE"                                     
+   say string ' allocated as DISP=SHR'                                          
+ END                                                                            
+ELSE                                                                            
+ DO                                                                             
+   /*   FILE DOES NOT EXIST - ALLOCATE WITH DISP=NEW  */                        
+   "ALLOC F(OUT1) DA('"string"') NEW CATALOG REUSE" ,                           
+   "TRACKS SPACE(1,1) LRECL(80) RECFM(F,B) DSORG(PS)"                           
+   say string ' allocated as DISP=NEW'                                          
+ END                                                                            
+x = outtrap('off')                                                              
+                                                                                
+parse value date( 'Standard' ) with yr 5 .                                      
+dx = date('o')                                                                  
+mm = Substr(dx, 4, 2)                                                           
+dd = Substr(dx, 7, 2)                                                           
+target = 'PA_Emails_' || yr || mm || dd || '.txt'                               
+SC.1 = "put '" || origdsn || "' +"                                              
+SC.2 = '    "' || target || '"'                                                 
+"EXECIO * DISKW OUT1 (STEM SC. FINIS"                                           
+say SC.1                                                                        
+say SC.2                                                                        
+"FREE FILE(OUT1)"                                                               

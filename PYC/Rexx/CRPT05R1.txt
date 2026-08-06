@@ -1,0 +1,176 @@
+/*--- Rexx  ---------------------------------------------- */
+ 
+/*******************************************************************/
+/* --------------------------------------------------------------- */
+/*            M A I N T E N A N C E     L O G                      */
+/*            ===============================                      */
+/*                                                                 */
+/* DATE:        NAME:     DESCRIPTION:                             */
+/* ---------    --------  ---------------------------------------- */
+/* 17DEC2018    MINARUL   ORIGINAL VERSION (TL-362347)             */
+/*=================================================================*/
+/*******************************************************************/
+/*            D E S C R I P T I O N                                */
+/*                                                                 */
+/* THIS PROGRAM READS ALL THE RECORD FROM EXTRACT/INPUT FILE      */
+/* AND CREATE A SINGLE RECORD FOR EACH GROUP/DIV HAVING ALL THE    */
+/* THREE FUNCTION'S ACC_IND IN A SINGLE ROW INSTEAD OF THREE       */
+/* DIFFERENT ROW AS WE GET FROM CPD EXTRACT.                       */
+/*                                                                 */
+/*=================================================================*/
+Call INIT
+Call Readit
+Call FINISH
+Exit
+ 
+INIT:
+ 
+HLQ = 'TYC'
+If USERID() = 'PYC' Then
+  HLQ = 'PYC'
+ 
+#FUNC = 03
+FNA1. = '                         '
+FUNC.1 = 'SPEDRGCA'
+FUNC.2 = 'MDPDRUGP'
+FUNC.3 = 'MDPSDC  '
+ 
+Return
+ 
+ 
+Readit:
+ 
+"execio * diskr REPORT (stem REPORT. finis)"
+ 
+incount = 1
+outcount = 0
+grpcount = 1
+grp1. = '       '
+div1. = '   '
+grp2. = '       '
+div2. = '   '
+ 
+/* ------------------------------------------------------------ */
+/*  process the first record (i.e. header record) from i/p  */
+/* ------------------------------------------------------------ */
+   If incount = 1 then
+    do
+      call BUILD_HEADER
+      incount = incount + 1
+    end
+ 
+/* ********************************************************** */
+/* Process records from I/P  one by one untill last record is read */
+/* ********************************************************** */
+Do While incount <= REPORT.0
+/* rec = substr( REPORT.incount, 1, 20)   */
+   grp2.incount = substr( REPORT.incount, 1, 7)
+   div2.incount = substr( REPORT.incount, 9, 3)
+   spo2.incount = substr( REPORT.incount, 13, 60)
+   func2.incount = substr( REPORT.incount, 74, 8)
+   ind2.incount = substr( REPORT.incount, 83, 25)
+ 
+/* ------------------------------------------------------------ */
+/*  process the very first record from i/p file                 */
+/* ------------------------------------------------------------ */
+   If incount = 2 then
+    Do
+      outcount = outcount + 1
+      call UPD_FN_NAME_ARRAY
+    End
+/* ------------------------------------------------------------ */
+/* ------------------------------------------------------------ */
+/*  process all remaining records from i/p file                 */
+/* ------------------------------------------------------------ */
+ 
+   If incount > 2 then
+    do
+      prevcnt = incount - 1
+      prevgrp = grp2.prevcnt
+      prevdiv = div2.prevcnt
+      prevspo = spo2.prevcnt
+ 
+      If prevgrp = grp2.incount & prevdiv = div2.incount then
+         call UPD_FN_NAME_ARRAY
+      else
+       Do
+       If prevgrp = grp2.incount & prevdiv ^= div2.incount then
+        Do
+          outgrp = grp2.incount
+          outdiv = div2.prevcnt
+          outspo = spo2.prevcnt
+          outcount = outcount + 1
+          call BUILD_OUTREC
+          call UPD_FN_NAME_ARRAY
+        End
+/*     If prevgrp ^= grp2.incount & prevdiv ^= div2.incount then */
+       If prevgrp ^= grp2.incount  then
+        Do
+          outgrp = grp2.prevcnt
+          outdiv = div2.prevcnt
+          outspo = spo2.prevcnt
+          outcount = outcount + 1
+          call BUILD_OUTREC
+          call UPD_FN_NAME_ARRAY
+        End
+      end
+    end
+/* ------------------------------------------------------------ */
+   incount = incount + 1
+end   /* end of Do-While loop */
+/* ********************************************************** */
+ 
+/* ---------------------------------------------------------  */
+/*    build out-rec for the last rec from i/p file ---------  */
+/* ---------------------------------------------------------  */
+      lastcnt = incount - 1
+   If lastcnt = REPORT.0 then
+    do
+      outgrp = grp2.prevcnt
+      outdiv = div2.prevcnt
+      outspo = spo2.prevcnt
+      outcount = outcount + 1
+      call BUILD_OUTREC
+    end
+   "EXECIO" QUEUED()" DISKW GRPSWTCH (FINIS"
+ 
+Return
+ 
+ 
+UPD_FN_NAME_ARRAY:
+ 
+Do S = 1 to #Func
+ 
+   If func2.incount = FUNC.S Then
+    do
+      FNA1.S = ind2.incount
+ 
+      leave
+    end
+End
+Return
+ 
+BUILD_HEADER:
+ OUTF.outcount = REPORT.incount
+queue OUTF.outcount
+Return
+ 
+BUILD_OUTREC:
+   OUTF.outcount = FNA1.1
+  Do I = 2 to #Func
+        STOR.i        = FNA1.i
+        OUTF.outcount = OUTF.outcount || '~' || STOR.i
+  End
+OUTF.outcount = outgrp || '~' || outdiv || '~' || outspo || '~' ||,
+                OUTF.outcount
+queue OUTF.outcount
+FNA1. = '                         '
+Return
+ 
+ 
+FINISH:
+say ' '
+say 'Report was written to' dname
+say ' '
+ 
+Return

@@ -1,0 +1,47 @@
+/* REXX */                                                              00010000
+/*                                                                      00020000
+   This routine creates a set of FTP cards containing                   00030000
+   the date and time in the target file names.                          00040000
+*/                                                                      00050000
+                                                                        00060000
+ SOURCE = 'PYC.YCRPT30'                                                 00070000
+ string = SOURCE || '.FTPCARD'                                          00080000
+ x = outtrap('TRASH.')                                                  00090000
+ IF  SYSDSN("'"string"'") = 'OK'   THEN                                 00100000
+  DO                                                                    00110000
+    /*   FILE EXISTS - ALLOCATE WITH DISP=SHR  */                       00120000
+    "ALLOC F(OUT1) DA('"string"') SHR REUSE"                            00130000
+    say string ' allocated as DISP=SHR'                                 00140000
+  END                                                                   00150000
+ ELSE                                                                   00160000
+  DO                                                                    00170000
+    /*   FILE DOES NOT EXIST - ALLOCATE WITH DISP=NEW  */               00180000
+    "ALLOC F(OUT1) DA('"string"') NEW CATALOG REUSE" ,                  00190000
+    "TRACKS SPACE(1,1) LRECL(80) RECFM(F,B) DSORG(PS)"                  00200000
+    say string ' allocated as DISP=NEW'                                 00210000
+  END                                                                   00220000
+ x = outtrap('off')                                                     00230000
+                                                                        00240000
+ parse value date( 'Standard' ) with yr 5 .                             00250000
+ dx = date('o')                                                         00260000
+ mm = Substr(dx, 4, 2)                                                  00270000
+ dd = Substr(dx, 7, 2)                                                  00280000
+ hh = Substr(time(),1,2)                                                00290000
+ mn = Substr(time(),4,2)                                                00300000
+ DSNS = 'CPD.EXTRACT.D' || yr || mm || dd || '.T' || hh || mn           00310000
+ Top = DSNS || '.TOP'                                                   00320000
+ Bot = DSNS || '.BOTTOM'                                                00330000
+ SC.1 = 'cd J1443'                                                      00340000
+ SC.2 = 'ls -l'                                                         00350000
+ SC.3 = "put 'PYC.YCRPT30.EXTRACT.TOP' +"                               00360000
+ SC.4 = '    "' || Top || '"'                                           00370000
+ SC.5 = "put 'PYC.YCRPT30.EXTRACT.BOTTOM' +"                            00380000
+ SC.6 = '    "' || Bot || '"'                                           00390000
+ SC.7 = 'ls -l'                                                         00400000
+ SC.8 = 'quit'                                                          00410000
+                                                                        00420000
+                                                                        00430000
+"EXECIO * DISKW OUT1 (STEM SC. FINIS"                                   00440000
+"FREE FILE(OUT1)"                                                       00450000
+                                                                        00460000
+Exit                                                                    00470000

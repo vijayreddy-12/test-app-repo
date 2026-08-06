@@ -1,0 +1,91 @@
+/* -  Rexx  ----------------------------------------------         */   00010003
+/*                                                                 */   00020003
+/* Given today's date, return a low and high date for the previous */   00030003
+/* month in a format suitable for DB2 queries. Include Leap year   */   00040003
+/* logic. Also create FTP cards with a file name that includes     */   00050003
+/* the month & year.                                               */   00060003
+/*                                                                 */   00070003
+DATECARD = 'PYC.YCRPT35.DB2DATES'                                       00100003
+FTPCARD  = 'PYC.YCRPT35.FTPCARDS'                                       00110003
+Today = Date('Base')                                                    00120003
+ISOdate = Date('Standard', today, 'Base')                               00130003
+ccyy = substr(ISOdate,1,4)                                              00140003
+mm = substr(ISOdate,5,2)                                                00150003
+mm = mm - 1                                                             00160003
+if mm = 0 then                                                          00170003
+ do                                                                     00180003
+    mm = 12                                                             00190003
+    ccyy = ccyy - 1                                                     00200003
+ end                                                                    00210003
+if length(mm) = 1 then                                                  00220003
+ do                                                                     00230003
+   mm = '0' || mm                                                       00240003
+ end                                                                    00250003
+                                                                        00260003
+days.   = 31                        /* jan mar may jul aug oct dec*/    00270003
+days.04 = 30                        /* apr                        */    00280003
+days.06 = 30                        /* jun                        */    00290003
+days.09 = 30                        /* sep                        */    00300003
+days.11 = 30                        /* nov                        */    00310003
+days.02 = 28 + (ccyy//4=0) - (ccyy//100=0) + (ccyy//400=0)              00320003
+                                                                        00330003
+DC.1 = "'" || ccyy || '-' || mm || "-01'  " || ,                        00340003
+       "'" || ccyy || '-' || mm || '-' || days.mm || "'"                00350003
+                                                                        00360003
+Say ' '                                                                 00370003
+Say 'From/To Dates created for Extract are: ' DC.1                      00380003
+Say ' '                                                                 00390003
+                                                                        00400003
+  IF  SYSDSN("'"DATECARD"'") = 'OK' THEN                                00410003
+   DO                                                                   00420003
+     /*   FILE EXISTS - ALLOCATE WITH DISP=SHR  */                      00430003
+     "ALLOC F(OUT) DA('"DATECARD"') SHR REUSE"                          00440003
+     Say DATECARD ' Allocated as SHR'                                   00450003
+   END                                                                  00460003
+  ELSE                                                                  00470003
+   DO                                                                   00480003
+     /*   FILE DOES NOT EXIST - ALLOCATE WITH DISP=NEW  */              00490003
+     "ALLOC F(OUT) DA('"DATECARD"') NEW CATALOG REUSE" ,                00500003
+     "TRACKS SPACE(1,1) LRECL(80) RECFM(F,B) DSORG(PS)"                 00510003
+     Say DATECARD ' Allocated as NEW'                                   00520003
+   END                                                                  00530003
+                                                                        00540003
+   "EXECIO * DISKW OUT (STEM DC. FINIS"                                 00550003
+   "FREE FILE(OUT)"                                                     00560003
+                                                                        00570003
+                                                                        00580003
+parse value date( 'Standard' ) with yr 5 .                              00590003
+YY = substr( yr, 3 )                                                    00600003
+mn = substr( date(month), 1, 3 )                                        00610003
+MN = translate(mn)                                                      00620003
+  IF  SYSDSN("'"FTPCARD"'") = 'OK' THEN                                 00630003
+   DO                                                                   00640003
+     /*   FILE EXISTS - ALLOCATE WITH DISP=SHR  */                      00650003
+     "ALLOC F(OUT) DA('"FTPCARD"') SHR REUSE"                           00660003
+     Say FTPCARD '  Allocated as SHR'                                   00670003
+   END                                                                  00680003
+  ELSE                                                                  00690003
+   DO                                                                   00700003
+     /*   FILE DOES NOT EXIST - ALLOCATE WITH DISP=NEW  */              00710003
+     "ALLOC F(OUT) DA('"FTPCARD"') NEW CATALOG REUSE" ,                 00720003
+     "TRACKS SPACE(1,1) LRECL(80) RECFM(F,B) DSORG(PS)"                 00730003
+     Say FTPCARD ' Allocated as NEW'                                    00740003
+   END                                                                  00750003
+                                                                        00760003
+   FC.1 = 'CD J1442'                                                    00770003
+   FC.2 = 'ls -l'                                                       00780003
+   FC.3 = "put 'PYC.YCRPT35.EXTRACT' +"                                 00790003
+   FC.4 = '"PYCRPT35_' || MN || YY || '.CSV"'                           00800003
+   FC.5 = 'ls -l'                                                       00810003
+   FC.6 = 'quit'                                                        00820003
+                                                                        00830003
+   Say ' '                                                              00840003
+   Say "Extract File Name to be FTP'ed to LAN is : " FC.4               00850003
+   Say ' '                                                              00860003
+                                                                        00870003
+   "EXECIO * DISKW OUT (STEM FC. FINIS"                                 00880003
+   "FREE FILE(OUT)"                                                     00890003
+                                                                        00900003
+                                                                        00910003
+                                                                        00920003
+Exit                                                                    00930003

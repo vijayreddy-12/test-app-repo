@@ -1,0 +1,84 @@
+/* REXX */                                                              00010000
+/*                                                                      00020000
+   This routine creates a set of FTP cards based on the contents        00030000
+   of several (up to 15) input files. The process completes when        00040000
+   an empty input file is encountered. A date is built into the         00050000
+   target file name.                                                    00060000
+*/                                                                      00070000
+                                                                        00080000
+ SOURCE = 'PYC.YCRPT25'                                                 00090000
+ string = SOURCE || '.FTPCARD'                                          00100000
+ x = outtrap('TRASH.')                                                  00110000
+ IF  SYSDSN("'"string"'") = 'OK'   THEN                                 00120000
+  DO                                                                    00130000
+    /*   FILE EXISTS - ALLOCATE WITH DISP=SHR  */                       00140000
+    "ALLOC F(OUT1) DA('"string"') SHR REUSE"                            00150000
+    say string ' allocated as DISP=SHR'                                 00160000
+  END                                                                   00170000
+ ELSE                                                                   00180000
+  DO                                                                    00190000
+    /*   FILE DOES NOT EXIST - ALLOCATE WITH DISP=NEW  */               00200000
+    "ALLOC F(OUT1) DA('"string"') NEW CATALOG REUSE" ,                  00210000
+    "TRACKS SPACE(1,1) LRECL(80) RECFM(F,B) DSORG(PS)"                  00220000
+    say string ' allocated as DISP=NEW'                                 00230000
+  END                                                                   00240000
+ x = outtrap('off')                                                     00250000
+                                                                        00260000
+ parse value date( 'Standard' ) with yr 5 .                             00270000
+ dx = date('o')                                                         00280000
+ mm = Substr(dx, 4, 2)                                                  00290000
+ dd = Substr(dx, 7, 2)                                                  00300000
+                                                                        00310000
+ call BUILD_FTP_CARDS                                                   00320000
+                                                                        00330000
+                                                                        00340000
+                                                                        00350000
+"EXECIO * DISKW OUT1 (STEM SC. FINIS"                                   00360000
+"FREE FILE(OUT1)"                                                       00370000
+                                                                        00380000
+BUILD_FTP_CARDS:                                                        00390000
+                                                                        00400000
+I = 1                                                                   00410000
+J = 1                                                                   00420000
+DO WHILE i <= 9                                                         00430000
+   DSN = SOURCE || ".EXT.P0" || i                                       00440000
+   p = pos('.',DSN)                                                     00450000
+   ODSN = SUBSTR(DSN,P+1)                                               00460000
+   "ALLOC DA('"DSN"') F(DUMMY) SHR REUSE"                               00470000
+   "EXECIO * DISKR DUMMY (STEM REC. finis)"                             00480000
+   "FREE F(DUMMY)"                                                      00490000
+   If REC.0 > 0 then                                                    00500000
+    Do                                                                  00510000
+      target = ODSN || ".D" || yr || mm || dd || '.csv'                 00520000
+      SC.j = "put '" || DSN || "' +"                                    00530000
+      say SC.j                                                          00540000
+      j = j + 1                                                         00550000
+      SC.j = '    "' || target || '"'                                   00560000
+      say SC.j                                                          00570000
+      i = i + 1                                                         00580000
+      j = j + 1                                                         00590000
+    End                                                                 00600000
+   Else                                                                 00610000
+    Return                                                              00620000
+END                                                                     00630000
+DO WHILE i <= 15                                                        00640000
+   DSN = SOURCE || ".EXT.P" || i                                        00650000
+   p = pos('.',DSN)                                                     00660000
+   ODSN = SUBSTR(DSN,P+1)                                               00670000
+   "ALLOC DA('"DSN"') F(DUMMY) SHR REUSE"                               00680000
+   "EXECIO * DISKR DUMMY (STEM REC. finis)"                             00690000
+   "FREE F(DUMMY)"                                                      00700000
+   If REC.0 > 0 then                                                    00710000
+    Do                                                                  00720000
+      target = ODSN || ".D" || yr || mm || dd || '.csv'                 00730000
+      SC.j = "put '" || DSN || "' +"                                    00740000
+      say SC.j                                                          00750000
+      j = j + 1                                                         00760000
+      SC.j = '    "' || target || '"'                                   00770000
+      say SC.j                                                          00780000
+      i = i + 1                                                         00790000
+      j = j + 1                                                         00800000
+    End                                                                 00810000
+   Else                                                                 00820000
+    Return                                                              00830000
+END                                                                     00840000
