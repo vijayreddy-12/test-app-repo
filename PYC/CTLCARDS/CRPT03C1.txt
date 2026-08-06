@@ -1,0 +1,3 @@
+  SORT FIELDS=COPY                                                              
+  ALTSEQ CODE=(6B40,A16B)                                                       
+  OUTREC BUILD=(1,500,TRAN=ALTSEQ)                                              

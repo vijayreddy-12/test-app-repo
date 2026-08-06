@@ -1,0 +1,3 @@
+  SORT FIELDS=COPY                                                              
+  OUTFIL FNAMES=(OUT01,OUT02,OUT03,OUT04,OUT05,OUT06,OUT07,OUT08,OUT09,X        
+               OUT10,OUT11,OUT12,OUT13,OUT14,OUT15),SPLITBY=600000              

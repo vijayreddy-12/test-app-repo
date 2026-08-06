@@ -1,0 +1,4 @@
+  INREC FIELDS=(1,120,2X,C'00001')                                              
+  SORT FIELDS=(1,7,CH,A)                                                        
+  SUM FIELDS=(123,5,ZD)                                                         
+  OUTREC FIELDS=(1,7,C';',34,86,2X,C';',123,5,17X)                              

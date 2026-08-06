@@ -1,0 +1,15 @@
+HELO ACDNIBU                                                                    
+RSET                                                                            
+MAIL FROM:<SYSI_BATCH@MANULIFE.COM>                                             
+RCPT TO:<GB_WEBINARS@MANULIFE.CA>                                               
+DATA                                                                            
+FROM: SYSI_BATCH@MANULIFE.COM                                                   
+TO: GB_WEBINARS@MANULIFE.CA                                                     
+SUBJECT: PYCRPT10 - GB PA ADDITIONS/TERMINATIONS MONTHLY REPORT                 
+MIME-VERSION: 1.0                                                               
+CONTENT-TYPE: MULTIPART/MIXED; BOUNDARY="SIMPLE BOUNDARY"                       
+--SIMPLE BOUNDARY                                                               
+CONTENT-TYPE: TEXT/PLAIN                                                        
+                                                                                
+PLEASE SEE THE REPORT ATTACHED. THANK YOU.                                      
+                                                                                

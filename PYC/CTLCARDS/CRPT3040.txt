@@ -1,0 +1,2 @@
+ INCLUDE COND=(1,11,CH,GE,C'0100174~000')                                       
+ SORT FIELDS=COPY                                                               

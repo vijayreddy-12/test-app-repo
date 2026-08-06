@@ -1,0 +1,3 @@
+ SORT FIELDS=COPY                                                               
+ OUTFIL FILES=01,ENDREC=900000                                                  
+ OUTFIL FILES=02,STARTREC=900001                                                

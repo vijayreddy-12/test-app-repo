@@ -1,0 +1,6 @@
+ SORT FIELDS=COPY                                                               
+ INCLUDE COND=(((83,1,CH,EQ,C'Y'),AND,(85,1,CH,EQ,C'Y')),OR,                    
+               ((83,1,CH,EQ,C'N'),AND,(85,1,CH,EQ,C'Y')),OR,                    
+               ((83,1,CH,EQ,C' '),AND,(85,1,CH,EQ,C'Y')),OR,                    
+               ((83,1,CH,EQ,C'Y'),AND,(85,1,CH,EQ,C'N')),OR,                    
+               ((83,1,CH,EQ,C'Y'),AND,(85,1,CH,EQ,C' ')))                       

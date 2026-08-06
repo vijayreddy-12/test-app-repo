@@ -1,0 +1,13 @@
+                                                                                
+EFAP WPA Listing                                                                
+                                                                                
+The Bi-weekly Work Place Advisor report is now complete and can be obtained     
+from the LAN location:                                                          
+                                                                                
+   S:\can\GB\group marketing\Employee & Family Assistance Program\Reports   --> 
+     \Monthly remittance                                                        
+  as file:                                                                      
+     WPA Bi-weekly Listing.xls                                                  
+                                                                                
+Please move/rename the report so it is not overwritten by a subsequent          
+execution of PYCRPT36 (if so desired).                                          

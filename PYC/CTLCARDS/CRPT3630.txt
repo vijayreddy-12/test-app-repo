@@ -1,0 +1,6 @@
+  JOINKEYS FILE=F1,FIELDS=(1,82,A)                                              
+  JOINKEYS FILE=F2,FIELDS=(1,82,A)                                              
+  JOIN UNPAIRED,F1                                                              
+  REFORMAT FIELDS=(F1:1,84,F2:83,2)                                             
+  SORT FIELDS=(1,82,CH,A)                                                       
+  OUTFIL FILES=OUT                                                              

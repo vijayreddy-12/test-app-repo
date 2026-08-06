@@ -1,0 +1,66 @@
+OPTIONS LINESIZE=120 DB2SSID=PDBC NOCENTER;                                     
+                                                                                
+PROC SQL;                                                                       
+   CREATE TABLE GRPLIST AS                                                      
+   SELECT *                                                                     
+   FROM CONNECTION TO DB2                                                       
+   (SELECT DISTINCT                                                             
+    B.GROUP_ID "GROUPID",                                                       
+    B.DIV_ID   "DIVID",                                                         
+    A.USER_ID  "USERID",                                                        
+    C.CUST_FIRST_NAME "FNAME",                                                  
+    C.CUST_LAST_NAME "LNAME",                                                   
+    C.CUST_STAT_CD  "PASTATCD1",                                                
+    D.FUNCTION_NAME "FUNCNAME",                                                 
+    D.ACC_IND  "ACCIND",                                                        
+    B.PA_STAT_CD "PASTATCD"                                                     
+    FROM DBCYCP1.TUT  A,                                                        
+         DBCYCP1.TPAA B,                                                        
+         DBCYCP1.TCUST C,                                                       
+         DBCYCP1.TFNCT D                                                        
+    WHERE A.CUST_ID = B.CUST_ID AND                                             
+          B.CUST_ID = C.CUST_ID AND                                             
+          C.CUST_ID  = D.CUST_ID  AND                                           
+          D.FUNCTION_NAME = 'PASECUPD' AND                                      
+          D.ACC_IND       = 'Y'        AND                                      
+          ( A.USER_ID NOT LIKE '%PAAM' OR                                       
+            A.USER_ID NOT LIKE 'PAAM%')                                         
+    ORDER BY A.USER_ID                                                          
+     );                                                                         
+                                                                                
+                                                                                
+ DATA DATA2;                                                                    
+   FILE ALLFUNC;                                                                
+   SET GRPLIST;                                                                 
+                                                                                
+     IF _N_=1 THEN DO;                                                          
+     PUT   'GROUP'                                         +(-0) ','            
+           'DIV'                                           +(-0) ','            
+           'USER_ID'                                       +(-0) ','            
+           'FIRST_NAME'                                    +(-0) ','            
+           'LAST_NAME'                                     +(-0) ','            
+           'FUNCTION'                                      +(-0) ','            
+           'ACCESS_IND'                                    +(-0) ','            
+           'PA_STAT_CD'                                    +(-0) ','            
+           'CUST_STAT_CD'                                  +(-0) ',';           
+     END;                                                                       
+                                                                                
+   PUT   @1    GROUPID                               07.                        
+         @08   ','                                                              
+         @09   DIVID                                 03.                        
+         @12   ','                                                              
+         @13   USERID                                20.                        
+         @33   ','                                                              
+         @34   FNAME                                 30.                        
+         @64   ','                                                              
+         @65   LNAME                                 30.                        
+         @95   ','                                                              
+         @96   FUNCNAME                              08.                        
+         @104  ','                                                              
+         @105  ACCIND                                01.                        
+         @106  ','                                                              
+         @107  PASTATCD                              01.                        
+         @108  ','                                                              
+         @109  PASTATCD1                             01.                        
+         ;                                                                      
+    RUN;                                                                        

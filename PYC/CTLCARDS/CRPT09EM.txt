@@ -1,0 +1,19 @@
+HELO ACDNIBU                                                                    
+RSET                                                                            
+MAIL FROM:<SYSI_BATCH@MANULIFE.COM>                                             
+RCPT TO:<GB_ESCALATIONS@MANULIFE.COM>                                           
+DATA                                                                            
+FROM: SYSI_BATCH@MANULIFE.COM                                                   
+TO: GB_ESCALATIONS@MANULIFE.COM                                                 
+SUBJECT: ADVISOR SELLING CODE CHANGES                                           
+MIME-VERSION: 1.0                                                               
+CONTENT-TYPE: MULTIPART/MIXED; BOUNDARY="SIMPLE BOUNDARY"                       
+--SIMPLE BOUNDARY                                                               
+CONTENT-TYPE: TEXT/PLAIN                                                        
+                                                                                
+THIS IS A TEMPORARY EMAIL TO MITIGATE ADVISORS WITH INCORRECT SELLING           
+CODES (TEST)                                                                    
+--SIMPLE BOUNDARY                                                               
+CONTENT-TYPE: TEXT/PLAIN                                                        
+CONTENT-DISPOSITION: ATTACHMENT; FILENAME=ADVISOR_SELLING_CODE.CSV              
+                                                                                

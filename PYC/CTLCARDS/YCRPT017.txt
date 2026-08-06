@@ -1,0 +1,18 @@
+HELO ACDNIBU                                                                    
+RSET                                                                            
+MAIL FROM: <BATCH@ACDNIBU>                                                      
+RCPT TO: <Sean_Oneill@manulife.com>                                             
+DATA                                                                            
+FROM: CDIS-INSTITUTIONAL_SERVICE_DESK@MANULIFE.COM                              
+TO: <Sean_Oneill@manulife.com>                                                  
+SUBJECT:Monthly report of LTD/STD & AMS report registration on PA SITE          
+Note : Monthly report on uptake of LTD/STD and AMS report registration          
+       on the PA SITE.                                                          
+MIME-VERSION: 1.0                                                               
+CONTENT-TYPE: MULTIPART/MIXED; BOUNDARY="SIMPLE BOUNDARY"                       
+Note : Monthly report on uptake of LTD/STD and AMS report registration          
+       on the PA SITE.                                                          
+--SIMPLE BOUNDARY                                                               
+CONTENT-TYPE: TEXT/PLAIN                                                        
+CONTENT-DISPOSITION: ATTACHMENT; FILENAME=Report_Detail.CSV                     
+                                                                                

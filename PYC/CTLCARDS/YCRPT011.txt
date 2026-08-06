@@ -1,0 +1,2 @@
+  SELECT FROM(INPUT)  TO(TEMP1)  ON(1,120,CH)  FIRST                            
+  SORT   FROM(TEMP1)  TO(OUTPUT) USING(CTL1)                                    

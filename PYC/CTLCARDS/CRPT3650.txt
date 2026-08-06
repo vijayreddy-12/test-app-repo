@@ -1,0 +1,8 @@
+CD J1436                                                                        
+cd Monthly remittance                                                           
+ls -l                                                                           
+LOCSITE SBD=(IBM-1047,ISO8859-1)                                                
+put 'PYC.YCRPT36.FINAL' +                                                       
+"WPA Bi-weekly Listing.txt"                                                     
+ls -l                                                                           
+quit                                                                            

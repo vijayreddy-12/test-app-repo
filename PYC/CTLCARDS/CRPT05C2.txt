@@ -1,0 +1,3 @@
+ SORT FIELDS=COPY                                                               
+ ALTSEQ CODE=(6B40,A16B)  <-REPLACE ALL COMMA TO SPACE AND ~ TO COMMA           
+ OUTREC BUILD=(1,150,TRAN=ALTSEQ)                                               
