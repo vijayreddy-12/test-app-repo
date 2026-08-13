@@ -60,7 +60,8 @@
 //*  SET UP EMAIL HEADER - REQUIRED SO THAT HEADER LRECL MATCHED REPORT         
 //*********************************************************************         
 //*                                                                             
-//STEP02  EXEC PGM=FILEAID,                                                     
+//*STEP02   EXEC PGM=FILEAID,                                           GBPYCUPD
+//STEP02   EXEC FILEAID,                                                GBPYCUPD
 //             REGION=4096K                                                     
 //*                                                                             
 //SYSPRINT  DD SYSOUT=*                                                         
