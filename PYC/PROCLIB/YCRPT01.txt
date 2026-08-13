@@ -232,7 +232,8 @@
 //*  FORMAT CONTROL CARD YCRPT017 TO 120 CARACTERS                              
 //*********************************************************************         
 //*                                                                             
-//STEP09   EXEC PGM=FILEAID,                                                    
+//*STEP09   EXEC PGM=FILEAID,                                           GBPYCUPD
+//STEP09   EXEC FILEAID,                                                GBPYCUPD
 //         COND=(0,LT)                                                          
 //*                                                                             
 //DD01     DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT017),                            
@@ -255,7 +256,8 @@
 //*  FORMAT CONTROL CARD YCRPT018 TO 120 CARACTERS                              
 //*********************************************************************         
 //*                                                                             
-//STEP10   EXEC PGM=FILEAID,                                                    
+//*STEP10   EXEC PGM=FILEAID,                                           GBPYCUPD
+//STEP10   EXEC FILEAID,                                                GBPYCUPD
 //         COND=(0,LT)                                                          
 //*                                                                             
 //DD01     DD DSN=&CSTAT..&CLVL..CTLCARDS(YCRPT018),                            
@@ -278,7 +280,8 @@
 //*  MERGE CTRCARDS & FILES TO LRECL=120                                        
 //*********************************************************************         
 //*                                                                             
-//STEP11   EXEC PGM=FILEAID,                                                    
+//*STEP11   EXEC PGM=FILEAID,                                           GBPYCUPD
+//STEP11   EXEC FILEAID,                                                GBPYCUPD
 //         COND=(0,LT)                                                          
 //*                                                                             
 //DD01     DD DSN=&&YCRPT017,                                                   
