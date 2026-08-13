@@ -84,7 +84,8 @@
 //*  SET UP EMAIL HEADER - REQUIRED SO THAT HEADER LRECL MATCHES REPORT         
 //*********************************************************************         
 //*                                                                             
-//STEP04  EXEC PGM=FILEAID,                                                     
+//*STEP04   EXEC PGM=FILEAID,                                           GBPYCUPD
+//STEP04   EXEC FILEAID,                                                GBPYCUPD
 //             REGION=4096K                                                     
 //*                                                                             
 //SYSPRINT  DD SYSOUT=*                                                         
@@ -106,7 +107,8 @@
 //*  COMPLETE HEADER - REQUIRED TO SEPARATE EMAIL BODY FROM ATTACHMENT          
 //*********************************************************************         
 //*                                                                             
-//STEP04A EXEC PGM=FILEAID,                                                     
+//*STEP04A  EXEC PGM=FILEAID,                                           GBPYCUPD
+//STEP04A  EXEC FILEAID,                                                GBPYCUPD
 //             REGION=4096K                                                     
 //*                                                                             
 //SYSPRINT  DD SYSOUT=*                                                         
