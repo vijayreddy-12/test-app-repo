@@ -1,0 +1,12 @@
+{
+  "Application": "EPF",
+  "RootPath": "F:\\Raincode\\DefaultVolume\\EPF\\P\\MAIN",
+  "JclPath": "F:\\Raincode\\DefaultVolume\\EPF\\P\\MAIN\\JCLLIB",
+  "LogPath": "F:\\Raincode\\Logs\\EPF",
+  "SysoutPath": "F:\\Raincode\\SYSOUT",
+  "SubmitExecutable": "submit",
+  "SubmitArguments": [],
+  "EnvironmentVariables": {},
+  "RetentionDays": 365,
+  "SuccessMaxReturnCode": 4
+}

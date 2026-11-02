@@ -1,0 +1,12 @@
+{
+  "Application": "EGS",
+  "RootPath": "F:\\Raincode\\DefaultVolume\\EGS\\P\\MAIN",
+  "JclPath": "F:\\Raincode\\DefaultVolume\\EGS\\P\\MAIN\\JCLLIB",
+  "LogPath": "F:\\Raincode\\Logs\\EGS",
+  "SysoutPath": "F:\\Raincode\\SYSOUT",
+  "SubmitExecutable": "submit",
+  "SubmitArguments": [],
+  "EnvironmentVariables": {},
+  "RetentionDays": 365,
+  "SuccessMaxReturnCode": 4
+}
